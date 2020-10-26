@@ -79,6 +79,7 @@ static void ThreeBemfSample(void)
     ADCSample.UBemf = (uint16_t)(*(BaseJqrResultAddress));
     ADCSample.VBemf = (uint16_t)(*(BaseJqrResultAddress + 1));
     ADCSample.WBemf = (uint16_t)(*(BaseJqrResultAddress + 2));
+    ADCSample.Voltage = (uint16_t)(*(BaseJqrResultAddress + 3));
 }
 /*****************************************************************************
  函 数 名  : ADCAnalogSample

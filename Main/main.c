@@ -19,15 +19,13 @@ int main()
 		switch (mcState)
 		{
 		case mcRun:
-			// if (ADCSample.Voltage)
 			// Protect_Voltage();
-			// Ps("BAT=", ADCSample.Voltage);
-			// Ps("Current = ", ADCSample.Average);
 			// Protect_Current();
 			break;
 		default:
 			break;
 		}
 		// printf("Ubemf=%d, Vbemf=%d, Wbemf=%d\r\n", ADCSample.UBemf, ADCSample.VBemf, ADCSample.WBemf);
+		// printf("voltage=%d\n", ADCSample.Voltage);
 	}
 }

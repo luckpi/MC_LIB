@@ -165,6 +165,7 @@ void ADC_Init(void)
     Gpio_SetAnalogMode(GpioPortA, GpioPin0); //PA00
     Gpio_SetAnalogMode(GpioPortA, GpioPin1); //PA01
     Gpio_SetAnalogMode(GpioPortA, GpioPin2); //PA02
+    Gpio_SetAnalogMode(GpioPortA, GpioPin3); //PA03
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralAdcBgr, TRUE);
 
@@ -174,26 +175,27 @@ void ADC_Init(void)
     M0P_BGR->CR_f.TS_EN = 0x0u;
     delay100us(10);
 
-    stcAdcCfg.enAdcOpMode = AdcSCanMode;          //连续采样模式
-    stcAdcCfg.enAdcClkDiv = AdcClkSysTDiv2;       //Adc工作时钟 PCLK/2
-    stcAdcCfg.enAdcSampTimeSel = AdcSampTime8Clk; //采样时钟 8个周期
+    stcAdcCfg.enAdcOpMode = AdcSCanMode;          // 连续采样模式
+    stcAdcCfg.enAdcClkDiv = AdcClkSysTDiv2;       // Adc工作时钟 PCLK/2
+    stcAdcCfg.enAdcSampTimeSel = AdcSampTime8Clk; // 采样时钟 8个周期
     stcAdcCfg.enAdcRefVolSel = RefVolSelAVDD;     // 为了速度使用VDD
     stcAdcCfg.bAdcInBufEn = FALSE;
 
     Adc_Init(&stcAdcCfg); //Adc初始化
 
-    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH0); //配置插队扫描转换通道
-    Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH1);
-    Adc_ConfigJqrChannel(JQRCH2MUX, AdcExInputCH2); //采样顺序CH2 --> CH1 --> CH0
-
-    EnableNvic(ADC_IRQn, IrqLevel1, TRUE); //Adc开中断
-    // Adc_EnableIrq();                       //使能Adc中断
+    // 配置插队扫描转换通道,采样顺序CH0 --> CH1 --> CH2 --> CH3
+    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH0); // U
+    Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH1); // V
+    Adc_ConfigJqrChannel(JQRCH2MUX, AdcExInputCH2); // W
+    Adc_ConfigJqrChannel(JQRCH3MUX, AdcExInputCH3); // VBUS
+    EnableNvic(ADC_IRQn, IrqLevel1, TRUE);          //Adc开中断
+    // Adc_EnableIrq();                       // 使能Adc中断 放在强拖之前开
 
     stcAdcIrq.bAdcJQRIrq = TRUE;
     stcAdcIrqCalbaks.pfnAdcJQRIrq = ADC_ISR;
     Adc_ConfigIrq(&stcAdcIrq, &stcAdcIrqCalbaks); //中断函数入口配置
 
-    u8AdcScanCnt = 3; //转换次数3次(3-1已在库函数内计算)
+    u8AdcScanCnt = 4; //转换次数3次(3-1已在库函数内计算)
 
     Adc_ConfigJqrMode(&stcAdcCfg, u8AdcScanCnt, FALSE); //配置插队扫描转换模式
 
