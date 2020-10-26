@@ -32,8 +32,7 @@ static void MotorAhead(void)
 static void MotorInit(void)
 {
     Common_Init(); // 变量初始化
-    // TOTAL_INT_DISEN;
-    // ALL_INT_DISEN;
+    // ALL_INT_DISEN; // 关闭所有中断
     PortOutput_Config(0, 0, 0, 0, 0, 0); // 打开下管充电
     // PWMPortBrake(); //充电
     delay1ms(10);
@@ -44,7 +43,7 @@ static void MotorInit(void)
 
 /*****************************************************************************
  函 数 名  : MotorAlign
- 功能描述  : 
+ 功能描述  : 定位初始相位，开启ADC中断，准备进入强拖启动
  输入参数  : 无
  输出参数  : void
 *****************************************************************************/
@@ -57,11 +56,7 @@ static void MotorAlign(void)
     PortOutput_Config(0, 1, 0, 1, 0, 1);
     delay10us(100);
     // IPD(); // 定位需要根据电机调整
-    // SFRPAGE = 0x02; // 中断标志清零
-    // EXINTCON = 0x00;
-    // ALL_INT_EN;
-    // CMP_INT_EN;
-    // TIMER2_INT_EN;
+    // SFRPAGE = 0x02; // 清除所有中断标识位
     Adc_EnableIrq(); //使能Adc中断
     mcState = mcDrag;
 }
@@ -92,7 +87,7 @@ void StartupDrag(void)
         ADC_CNT = 0;
         Halless.Zero_Flag = 0; //此处用作标识位
         Halless.Check_Count = 0;
-        if (++Zero_CNT > 24) // 需要调整切入闭环的时间
+        if (++Zero_CNT >= 24) // 需要调整切入闭环的时间
         {
             Zero_CNT = 0;
             EnterRunInit();
@@ -115,7 +110,6 @@ void StartupDrag(void)
             Halless.Phase = 1;
         }
         PWMSwitchPhase();
-        Halless.Check_Count = 0;
         HoldParm.PWMDutyCycle += 1;
         UP16LIMIT(HoldParm.PWMDutyCycle, PWM_DUTYCYCLE_25, PWM_START_DUTY);
         PWMChangeDuty(HoldParm.PWMDutyCycle);
