@@ -30,32 +30,32 @@ void PWMSwitchPhase(void)
     {
         switch (Halless.Phase)
         {
-        case 1: // U+ V-
+        case 0: // U+ V-
             // PortOutput_Config(0x06, 0x01, 0x00, 0x00, 0x00, 0x01);
             M0P_TIM3_MODE23->FLTR_f.OCMA2_FLTA2 = PWM_Close;
             M0P_TIM3_MODE23->FLTR_f.OCMA0_FLTA0 = PWM_Open;
             break;
-        case 2: // U+ W-
+        case 1: // U+ W-
             // PortOutput_Config(0x06, 0x01, 0x00, 0x01, 0x00, 0x00);
             M0P_TIM3_MODE23->FLTR_f.OCMB1_FLTB1 = Close_Mode;
             M0P_TIM3_MODE23->FLTR_f.OCMB2_FLTB2 = Open_Mode;
             break;
-        case 3: // V+ W-
+        case 2: // V+ W-
             // PortOutput_Config(0x00, 0x01, 0x06, 0x01, 0x00, 0x00);
             M0P_TIM3_MODE23->FLTR_f.OCMA0_FLTA0 = PWM_Close;
             M0P_TIM3_MODE23->FLTR_f.OCMA1_FLTA1 = PWM_Open;
             break;
-        case 4: // V+ U-
+        case 3: // V+ U-
             // PortOutput_Config(0x00, 0x00, 0x06, 0x01, 0x00, 0x01);
             M0P_TIM3_MODE23->FLTR_f.OCMB2_FLTB2 = Close_Mode;
             M0P_TIM3_MODE23->FLTR_f.OCMB0_FLTB0 = Open_Mode;
             break;
-        case 5: // W+ U-
+        case 4: // W+ U-
             // PortOutput_Config(0x00, 0x00, 0x00, 0x01, 0x06, 0x01);
             M0P_TIM3_MODE23->FLTR_f.OCMA1_FLTA1 = PWM_Close;
             M0P_TIM3_MODE23->FLTR_f.OCMA2_FLTA2 = PWM_Open;
             break;
-        case 6: // W+ V-
+        case 5: // W+ V-
             // PortOutput_Config(0x00, 0x01, 0x00, 0x00, 0x06, 0x01);
             M0P_TIM3_MODE23->FLTR_f.OCMB0_FLTB0 = Close_Mode;
             M0P_TIM3_MODE23->FLTR_f.OCMB1_FLTB1 = Open_Mode;
@@ -69,32 +69,32 @@ void PWMSwitchPhase(void)
     {
         switch (Halless.Phase)
         {
-        case 1: // U+ V-
+        case 0: // U+ V-
             // PortOutput_Config(0x06, 0x01, 0x00, 0x00, 0x00, 0x01);
             M0P_TIM3_MODE23->FLTR_f.OCMB2_FLTB2 = Close_Mode;
             M0P_TIM3_MODE23->FLTR_f.OCMB1_FLTB1 = Open_Mode;
             break;
-        case 2: // W+ V-
+        case 1: // W+ V-
             // PortOutput_Config(0x00, 0x01, 0x0, 0x00, 0x06, 0x01);
             M0P_TIM3_MODE23->FLTR_f.OCMA0_FLTA0 = PWM_Close;
             M0P_TIM3_MODE23->FLTR_f.OCMA2_FLTA2 = PWM_Open;
             break;
-        case 3: // W+ U-
+        case 2: // W+ U-
             // PortOutput_Config(0x00, 0x00, 0x00, 0x01, 0x06, 0x01);
             M0P_TIM3_MODE23->FLTR_f.OCMB1_FLTB1 = Close_Mode;
             M0P_TIM3_MODE23->FLTR_f.OCMB0_FLTB0 = Open_Mode;
             break;
-        case 4: // V+ U-
+        case 3: // V+ U-
             // PortOutput_Config(0x00, 0x00, 0x06, 0x01, 0x00, 0x01);
             M0P_TIM3_MODE23->FLTR_f.OCMA2_FLTA2 = PWM_Close;
             M0P_TIM3_MODE23->FLTR_f.OCMA1_FLTA1 = PWM_Open;
             break;
-        case 5: // V+ W-
+        case 4: // V+ W-
             // PortOutput_Config(0x00, 0x01, 0x06, 0x01, 0x00, 0x00);
             M0P_TIM3_MODE23->FLTR_f.OCMB0_FLTB0 = Close_Mode;
             M0P_TIM3_MODE23->FLTR_f.OCMB2_FLTB2 = Open_Mode;
             break;
-        case 6: // U+ W-
+        case 5: // U+ W-
             // PortOutput_Config(0x06, 0x01, 0x00, 0x01, 0x00, 0x00);
             M0P_TIM3_MODE23->FLTR_f.OCMA1_FLTA1 = PWM_Close;
             M0P_TIM3_MODE23->FLTR_f.OCMA0_FLTA0 = PWM_Open;

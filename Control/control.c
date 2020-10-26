@@ -1,8 +1,7 @@
 #include "control.h"
 #include "pwm.h"
 #include "init.h"
-#include "Bemf.h"
-// #include "halless.h"
+#include "halless.h"
 #include "adc.h"
 // #include "protect.h"
 // #include "cmp.h"
@@ -105,9 +104,9 @@ void StartupDrag(void)
         {
             HoldParm.DragTime = 300;
         }
-        if (++Halless.Phase > 6)
+        if (++Halless.Phase > 5)
         {
-            Halless.Phase = 1;
+            Halless.Phase = 0;
         }
         PWMSwitchPhase();
         HoldParm.PWMDutyCycle += 1;

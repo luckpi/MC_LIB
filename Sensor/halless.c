@@ -1,4 +1,4 @@
-#include "Bemf.h"
+#include "halless.h"
 #include "common.h"
 #include "gpio.h"
 #include "pwm.h"
@@ -6,10 +6,10 @@
 #include "control.h"
 /*AND & OR 用于屏蔽有效BEMF信号的运算符*/
 /*与运算只获取当前要检测反电动势的状态， 通过异或检测当前反电动势变化情况*/
-const uint8_t ADC_MASK[2][8] = {0x00, 0x04, 0x02, 0x01, 0x04, 0x02, 0x01, 0x00,  //正转
-                                0x00, 0x04, 0x01, 0x02, 0x04, 0x01, 0x02, 0x00}; //反转
-const uint8_t ADC_XOR[2][8] = {0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00,   //正转
-                               0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00};  //反转
+const uint8_t ADC_MASK[2][6] = {0x04, 0x02, 0x01, 0x04, 0x02, 0x01,  //正转
+                                0x04, 0x01, 0x02, 0x04, 0x01, 0x02}; //反转
+const uint8_t ADC_XOR[2][6] = {0x00, 0xff, 0x00, 0xff, 0x00, 0xff,   //正转
+                               0xff, 0x00, 0xff, 0x00, 0xff, 0x00};  //反转
 /*BEMF 择多函数滤波*/
 /*通过检测多次，当捕获到三个反电动势边沿变化中，有两个有效信号则滤波完成*/
 const uint8_t ADC_BEMF_FILTER[64] =
@@ -26,22 +26,6 @@ const uint8_t ADC_BEMF_FILTER[64] =
 *****************************************************************************/
 void CalcSpeedTime(void)
 {
-    Halless.Zero_Flag = 0;
-    HoldParm.SpeedTime_Sum += HoldParm.SpeedTimeTemp;
-    if (++HoldParm.SpeedTime_Cnt >= 8)
-    {
-        HoldParm.SpeedTime_Cnt = 0;
-        HoldParm.SpeedTime = HoldParm.SpeedTime_Sum >> 3;
-        HoldParm.SpeedTime_Sum = 0;
-    }
-    if (HoldParm.SpeedTime)
-    {
-        HoldParm.RPM = 200000 / (HoldParm.SpeedTime * POLE_PAIRS);
-    }
-    else
-    {
-        HoldParm.RPM = 200000 / ((HoldParm.SpeedTimeTemp + 1) * POLE_PAIRS);
-    }
 }
 /*****************************************************************************
  函 数 名  : CheckZeroCrossing
@@ -64,15 +48,14 @@ void CheckZeroCrossing(void)
         Halless.BackEMFFilter = ADC_BEMF_FILTER[Halless.BackEMFFilter]; // 择多函数滤波
         if (Halless.BackEMFFilter & 0x01)
         {
-            if (++Halless.Phase > 6)
+            if (++Halless.Phase > 5)
             {
-                Halless.Phase = 1;
+                Halless.Phase = 0;
             }
             Halless.Zero_Flag = 1;
+            // CalcSpeedTime();
             Halless.Check_Count = 0;
             Halless.BackEMFFilter = 0;
-            // if (mcState == mcRun)
-            // CalcSpeedTime();
             PWMSwitchPhase(); // 换相
         }
         else if (Halless.Check_Count >= 1000 && mcState == mcRun)
