@@ -18,7 +18,7 @@
 ******************************************************************************/
 static void MotorAhead(void)
 {
-    PortOutput_Config(0, 1, 0, 1, 0, 1); // 所有输出口为低
+    PortOutput_Config(0, 0, 0, 0, 0, 0); // 所有输出口为低
     // Fault_InitOverUnderVoltage(); // 过压保护
     mcState = mcInit;
 }
@@ -32,10 +32,10 @@ static void MotorInit(void)
 {
     Common_Init(); // 变量初始化
     // ALL_INT_DISEN; // 关闭所有中断
-    PortOutput_Config(0, 0, 0, 0, 0, 0); // 打开下管充电
+    PortOutput_Config(0, 1, 0, 1, 0, 1); // 打开下管充电
     // PWMPortBrake(); //充电
     delay1ms(10);
-    PortOutput_Config(0, 1, 0, 1, 0, 1);
+    PortOutput_Config(0, 0, 0, 0, 0, 0);
     delay10us(5);
     mcState = mcAlign;
 }
@@ -52,7 +52,7 @@ static void MotorAlign(void)
     PWMChangeDuty(HoldParm.PWMDutyCycle);
     PWMSwitchPhase();
     delay1ms(200);
-    PortOutput_Config(0, 1, 0, 1, 0, 1);
+    PortOutput_Config(0, 0, 0, 0, 0, 0);
     delay10us(100);
     // IPD(); // 定位需要根据电机调整
     // SFRPAGE = 0x02; // 清除所有中断标识位
@@ -68,7 +68,7 @@ static void MotorAlign(void)
 void EnterRunInit(void)
 {
     mcState = mcRun;
-    Gpio_WriteOutputIO(GpioPortC, GpioPin13, FALSE);
+    Gpio_WriteOutputIO(GpioPortA, GpioPin3, TRUE);
 }
 /*****************************************************************************
  函 数 名  : StartupDrag
@@ -86,12 +86,13 @@ void StartupDrag(void)
         ADC_CNT = 0;
         Halless.Zero_Flag = 0; //此处用作标识位
         Halless.Check_Count = 0;
-        if (++Zero_CNT >= 24) // 需要调整切入闭环的时间
+        if (++Zero_CNT >= 12) // 需要调整切入闭环的时间
         {
             Zero_CNT = 0;
             EnterRunInit();
             return;
         }
+        Gpio_WriteOutputIO(GpioPortA, GpioPin3, TRUE);
     }
     else if (++ADC_CNT >= HoldParm.DragTime) // 需要调整强拖时间
     {
@@ -99,11 +100,11 @@ void StartupDrag(void)
         Zero_CNT = 0;
         Halless.Check_Count = 0;
         Halless.BackEMFFilter = 0;
-        HoldParm.DragTime -= ((HoldParm.DragTime / 15) + 1); // 需要调整强拖加速
-        if (HoldParm.DragTime < 300)
-        {
-            HoldParm.DragTime = 300;
-        }
+        // HoldParm.DragTime -= ((HoldParm.DragTime / 15) + 1); // 需要调整强拖加速
+        // if (HoldParm.DragTime < 500)
+        // {
+        //     HoldParm.DragTime = 500;
+        // }
         if (++Halless.Phase > 5)
         {
             Halless.Phase = 0;
@@ -112,6 +113,7 @@ void StartupDrag(void)
         HoldParm.PWMDutyCycle += 1;
         UP16LIMIT(HoldParm.PWMDutyCycle, PWM_DUTYCYCLE_25, PWM_START_DUTY);
         PWMChangeDuty(HoldParm.PWMDutyCycle);
+        Gpio_WriteOutputIO(GpioPortA, GpioPin3, FALSE);
     }
 }
 /*****************************************************************************
@@ -131,7 +133,7 @@ static void MotorRun(void)
         // UP16LIMIT(HoldParm.PWMDutyCycle, PWM_DUTYCYCLE_50, PWM_START_DUTY);
         // PWMChangeDuty(HoldParm.PWMDutyCycle);
         HoldParm.PWMDutyCycle += 1;
-        UP16LIMIT(HoldParm.PWMDutyCycle, PWM_DUTYCYCLE_50, PWM_MIN_DUTY);
+        UP16LIMIT(HoldParm.PWMDutyCycle, PWM_DUTYCYCLE_95, PWM_MIN_DUTY);
         PWMChangeDuty(HoldParm.PWMDutyCycle);
         // printf("RPM=%d\r\n", HoldParm.RPM);
     }
@@ -145,8 +147,8 @@ static void MotorRun(void)
 *****************************************************************************/
 void MotorStop(void)
 {
-    PortOutput_Config(0, 1, 0, 1, 0, 1);
-    Gpio_WriteOutputIO(GpioPortC, GpioPin13, TRUE);
+    PortOutput_Config(0, 0, 0, 0, 0, 0);
+    Gpio_WriteOutputIO(GpioPortA, GpioPin3, FALSE);
 }
 
 /*****************************************************************************

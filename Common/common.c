@@ -15,10 +15,10 @@ volatile SensorPara_T Halless;
 *****************************************************************************/
 void PowerupParaInit(void)
 {
-    PortOutput_Config(0, 1, 0, 1, 0, 1);
+    PortOutput_Config(0, 0, 0, 0, 0, 0);
     mcState = mcAhead;
     error_code = normal;
-    HoldParm.RotorDirection = CCW;
+    HoldParm.RotorDirection = CW;
 }
 /*****************************************************************************
  函 数 名  : Common_Init
@@ -32,7 +32,7 @@ void Common_Init(void)
     HoldParm.SpeedLoopCnt = 0;
     HoldParm.PWMDutyCycle = 0;
     HoldParm.SpeedTime = 0;
-    HoldParm.DragTime = 900;
+    HoldParm.DragTime = 1000;
     HoldParm.RPM = 0;
     HoldParm.Set_RPM = First_Gear;
     HoldParm.SpeedTime_Cnt = 0;

@@ -8,7 +8,7 @@ int main()
 	LED_Init();
 	PWM_Init();
 	ADC_Init();
-	UART_Init();
+	// UART_Init();
 	Common_Init();
 	PowerupParaInit();
 	delay1ms(200);
