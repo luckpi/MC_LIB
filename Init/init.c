@@ -75,8 +75,8 @@ void LED_Init(void)
     ///< 端口输入/输出值寄存器总线控制模式配置->AHB
     ledGpioCfg.enCtrlMode = GpioAHB;
     ///< GPIO IO PC13初始化（LED）
-    Gpio_Init(GpioPortA, GpioPin3, &ledGpioCfg);
-    Gpio_WriteOutputIO(GpioPortA, GpioPin3, FALSE);
+    Gpio_Init(GpioPortB, GpioPin5, &ledGpioCfg);
+    Gpio_WriteOutputIO(GpioPortB, GpioPin5, FALSE);
 }
 /**************************************************************************************************
  函 数 名  : Uart_Init
@@ -163,7 +163,7 @@ void ADC_Init(void)
     Gpio_SetAnalogMode(GpioPortA, GpioPin0);  //PA00
     Gpio_SetAnalogMode(GpioPortA, GpioPin1);  //PA01
     Gpio_SetAnalogMode(GpioPortA, GpioPin2);  //PA02
-    Gpio_SetAnalogMode(GpioPortB, GpioPin12); //PB12
+    // Gpio_SetAnalogMode(GpioPortB, GpioPin15); //PB15
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralAdcBgr, TRUE);
 
@@ -182,10 +182,10 @@ void ADC_Init(void)
     Adc_Init(&stcAdcCfg); //Adc初始化
 
     // 配置插队扫描转换通道,采样顺序CH0 --> CH1 --> CH2 --> CH3
-    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH0);  // U
-    Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH19); // V
-    Adc_ConfigJqrChannel(JQRCH2MUX, AdcExInputCH2);  // W
-    Adc_ConfigJqrChannel(JQRCH3MUX, AdcExInputCH1);  // VBUS
+    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH2);  // U
+    Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH1); // V
+    Adc_ConfigJqrChannel(JQRCH2MUX, AdcExInputCH0);  // W
+    // Adc_ConfigJqrChannel(JQRCH3MUX, AdcExInputCH22);  // VBUS
     EnableNvic(ADC_IRQn, IrqLevel1, TRUE);           //Adc开中断
     // Adc_EnableIrq();                       // 使能Adc中断 放在强拖之前开
 
@@ -193,7 +193,7 @@ void ADC_Init(void)
     stcAdcIrqCalbaks.pfnAdcJQRIrq = ADC_ISR;
     Adc_ConfigIrq(&stcAdcIrq, &stcAdcIrqCalbaks); //中断函数入口配置
 
-    u8AdcScanCnt = 4; //转换次数3次(3-1已在库函数内计算)
+    u8AdcScanCnt = 3; //转换次数3次(3-1已在库函数内计算)
 
     Adc_ConfigJqrMode(&stcAdcCfg, u8AdcScanCnt, FALSE); //配置插队扫描转换模式
 
@@ -233,20 +233,20 @@ void PWM_Init(void)
     Gpio_Init(GpioPortA, GpioPin8, &stcTIM3Port);
     Gpio_SetAfMode(GpioPortA, GpioPin8, GpioAf2); //PA08设置为TIM3_CH0A
 
-    Gpio_Init(GpioPortB, GpioPin13, &stcTIM3Port);
-    Gpio_SetAfMode(GpioPortB, GpioPin13, GpioAf3); //PB13设置为TIM3_CH0B
+    Gpio_Init(GpioPortA, GpioPin7, &stcTIM3Port);
+    Gpio_SetAfMode(GpioPortA, GpioPin7, GpioAf4); //PA07设置为TIM3_CH0B
 
     Gpio_Init(GpioPortA, GpioPin9, &stcTIM3Port);
-    Gpio_SetAfMode(GpioPortA, GpioPin9, GpioAf2); //PA9设置为TIM3_CH1A
+    Gpio_SetAfMode(GpioPortA, GpioPin9, GpioAf2); //PA09设置为TIM3_CH1A
 
-    Gpio_Init(GpioPortB, GpioPin14, &stcTIM3Port);
-    Gpio_SetAfMode(GpioPortB, GpioPin14, GpioAf3); //PB14设置为TIM3_CH1B
+    Gpio_Init(GpioPortB, GpioPin0, &stcTIM3Port);
+    Gpio_SetAfMode(GpioPortB, GpioPin0, GpioAf2); //PB00设置为TIM3_CH1B
 
     Gpio_Init(GpioPortA, GpioPin10, &stcTIM3Port);
     Gpio_SetAfMode(GpioPortA, GpioPin10, GpioAf2); //PA10设置为TIM3_CH2A
 
-    Gpio_Init(GpioPortB, GpioPin15, &stcTIM3Port);
-    Gpio_SetAfMode(GpioPortB, GpioPin15, GpioAf2); //PB15设置为TIM3_CH2B
+    Gpio_Init(GpioPortB, GpioPin1, &stcTIM3Port);
+    Gpio_SetAfMode(GpioPortB, GpioPin1, GpioAf3); //PB01设置为TIM3_CH2B
 
     stcTim3BaseCfg.enWorkMode = Tim3WorkMode3;          //三角波模式 中央对齐模式
     stcTim3BaseCfg.enCT = Tim3Timer;                    //定时器功能，计数时钟为内部PCLK

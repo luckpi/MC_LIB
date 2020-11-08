@@ -121,6 +121,7 @@ void ADC_ISR(void)
     case mcDrag:
         ThreeBemfSample();
         // ADCAnalogSample();
+        CheckZeroCrossing();
         StartupDrag();
         break;
     case mcRun:

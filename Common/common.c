@@ -32,7 +32,7 @@ void Common_Init(void)
     HoldParm.SpeedLoopCnt = 0;
     HoldParm.PWMDutyCycle = 0;
     HoldParm.SpeedTime = 0;
-    HoldParm.DragTime = 1000;
+    HoldParm.DragTime = 500;
     HoldParm.RPM = 0;
     HoldParm.Set_RPM = First_Gear;
     HoldParm.SpeedTime_Cnt = 0;
