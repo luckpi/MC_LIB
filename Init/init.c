@@ -1,6 +1,32 @@
 #include "init.h"
 #include "halless.h"
 #include "pwm.h"
+#include "dmac.h"
+#include "common.h"
+#include "opa.h"
+/*******************************************************************************
+ * Function implementation - global ('extern') and local ('static')
+ ******************************************************************************/
+
+/**
+ *******************************************************************************
+ ** \brief OPA 通用OPA
+ **
+ ******************************************************************************/
+void OPA_GpMode_Test(void)
+{
+    stc_opa_gain_config_t strGain;
+
+    DDL_ZERO_STRUCT(strGain);
+    OP0_INP();
+    OP0_INN();
+    OP0_OUT();
+    OP1_INP();
+    OP1_INN();
+    OP1_OUT();
+    OPA_Operate(OPA0, OpaGpMode, &strGain); //
+    OPA_Operate(OPA1, OpaGpMode, &strGain); //
+}
 /**************************************************************************************************
  函 数 名  : fputc
  功能描述  : printf串口转发
@@ -11,9 +37,9 @@ int fputc(int ch, FILE *f)
 {
     if (((uint8_t)ch) == '\n')
     {
-        Uart_SendData(UARTCH1, '\r');
+        Uart_SendData(UARTCH0, '\r');
     }
-    Uart_SendData(UARTCH1, ch);
+    Uart_SendData(UARTCH0, ch);
     return ch;
 }
 /**************************************************************************************************
@@ -101,13 +127,13 @@ void UART_Init(void)
     DDL_ZERO_STRUCT(stcMulti);
     DDL_ZERO_STRUCT(stcBaud);
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralUart1, TRUE);
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralUart0, TRUE);
     stcGpioCfg.enDir = GpioDirOut;
-    Gpio_Init(GpioPortD, GpioPin0, &stcGpioCfg);
-    Gpio_SetAfMode(GpioPortD, GpioPin0, GpioAf3); //TX
+    Gpio_Init(GpioPortB, GpioPin8, &stcGpioCfg);
+    Gpio_SetAfMode(GpioPortB, GpioPin8, GpioAf7); //TX
     stcGpioCfg.enDir = GpioDirIn;
-    Gpio_Init(GpioPortD, GpioPin1, &stcGpioCfg);
-    Gpio_SetAfMode(GpioPortD, GpioPin1, GpioAf3); //RX
+    Gpio_Init(GpioPortB, GpioPin9, &stcGpioCfg);
+    Gpio_SetAfMode(GpioPortB, GpioPin9, GpioAf7); //RX
 
     stcUartIrqCb.pfnRxIrqCb = NULL;
     stcUartIrqCb.pfnTxIrqCb = NULL;
@@ -118,26 +144,50 @@ void UART_Init(void)
     stcConfig.bTouchNvic = FALSE;
     if (TRUE == stcConfig.bTouchNvic)
     {
-        EnableNvic(UART1_IRQn, IrqLevel3, TRUE);
+        EnableNvic(UART0_IRQn, IrqLevel3, TRUE);
     }
     stcConfig.enRunMode = UartMode3; //模式3
     stcConfig.enStopBit = Uart1bit;  //1位停止位
 
     stcMulti.enMulti_mode = UartNormal;    //正常工作模式
-    Uart_SetMultiMode(UARTCH1, &stcMulti); //多主机单独配置
+    Uart_SetMultiMode(UARTCH0, &stcMulti); //多主机单独配置
     enTb8 = UartEven;                      //偶校验
-    Uart_SetMMDOrCk(UARTCH1, enTb8);
-    Uart_Init(UARTCH1, &stcConfig); //串口初始化函数
+    Uart_SetMMDOrCk(UARTCH0, enTb8);
+    Uart_Init(UARTCH0, &stcConfig); //串口初始化函数
 
-    Uart_SetClkDiv(UARTCH1, Uart8Or16Div); //采样分频
+    Uart_SetClkDiv(UARTCH0, Uart8Or16Div); //采样分频
     stcBaud.u32Pclk = Sysctrl_GetPClkFreq();
     stcBaud.enRunMode = UartMode3;
     stcBaud.u32Baud = 115200;
-    u16Scnt = Uart_CalScnt(UARTCH1, &stcBaud); //波特率值计算
-    Uart_SetBaud(UARTCH1, u16Scnt);            //波特率设置
+    u16Scnt = Uart_CalScnt(UARTCH0, &stcBaud); //波特率值计算
+    Uart_SetBaud(UARTCH0, u16Scnt);            //波特率设置
 
-    Uart_ClrStatus(UARTCH1, UartRC);  //清接收请求
-    Uart_EnableFunc(UARTCH1, UartRx); //使能收发
+    Uart_ClrStatus(UARTCH0, UartRC);  //清接收请求
+    Uart_EnableFunc(UARTCH0, UartRx); //使能收发
+}
+void DMA_Init(void)
+{
+    stc_dma_config_t stcDmaCfg;
+    DDL_ZERO_STRUCT(stcDmaCfg);
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralDma, TRUE);
+    stcDmaCfg.enMode = DmaBlock;
+    stcDmaCfg.u16BlockSize = 2;
+    stcDmaCfg.u16TransferCnt = 1; //Block模式，一次传输数据大小为 1,传输三次
+    stcDmaCfg.enTransferWidth = Dma32Bit;
+    stcDmaCfg.enSrcAddrMode = AddressIncrease;
+    stcDmaCfg.enDstAddrMode = AddressIncrease;
+    stcDmaCfg.bDestAddrReloadCtl = TRUE;
+    stcDmaCfg.bSrcAddrReloadCtl = TRUE;
+    stcDmaCfg.bSrcBcTcReloadCtl = TRUE;
+    stcDmaCfg.u32SrcAddress = (uint32_t) & (M0P_ADC->SQRRESULT0);
+    stcDmaCfg.u32DstAddress = (uint32_t) & (ADCSample.POT);
+    stcDmaCfg.bMsk = TRUE;               //DMAC 在传输完成时不清除 CONFA:ENS 位。这个功能允许连续传输而不需要 CPU 干预。
+    stcDmaCfg.enRequestNum = ADCSQRTrig; //设置为ADC SQR触发
+
+    Dma_InitChannel(DmaCh0, &stcDmaCfg);
+    //使能DMA，使能DMA0
+    Dma_Enable();
+    Dma_EnableChannel(DmaCh0);
 }
 /**************************************************************************************************
  函 数 名  : ADC_Init
@@ -147,7 +197,8 @@ void UART_Init(void)
 **************************************************************************************************/
 void ADC_Init(void)
 {
-    uint8_t u8AdcScanCnt;
+    uint8_t u8AdcSqrScanCnt;
+    uint8_t u8AdcJqrScanCnt;
     stc_adc_cfg_t stcAdcCfg;
     stc_adc_irq_t stcAdcIrq;
     stc_adc_irq_calbakfn_pt_t stcAdcIrqCalbaks;
@@ -160,10 +211,11 @@ void ADC_Init(void)
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
 
-    Gpio_SetAnalogMode(GpioPortA, GpioPin0);  //PA00
-    Gpio_SetAnalogMode(GpioPortA, GpioPin1);  //PA01
-    Gpio_SetAnalogMode(GpioPortA, GpioPin2);  //PA02
-    // Gpio_SetAnalogMode(GpioPortB, GpioPin15); //PB15
+    Gpio_SetAnalogMode(GpioPortA, GpioPin0);  //PA00 W
+    Gpio_SetAnalogMode(GpioPortA, GpioPin1);  //PA01 V
+    Gpio_SetAnalogMode(GpioPortA, GpioPin2);  //PA02 U
+    Gpio_SetAnalogMode(GpioPortA, GpioPin3);  //PA02 POT
+    Gpio_SetAnalogMode(GpioPortB, GpioPin15); //PB15 VOLTAGE
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralAdcBgr, TRUE);
 
@@ -181,21 +233,31 @@ void ADC_Init(void)
 
     Adc_Init(&stcAdcCfg); //Adc初始化
 
+    // 配置顺序扫描转换通道,采样顺序CH0 --> CH1 --> CH2 --> CH3
+    Adc_ConfigSqrChannel(CH0MUX, AdcExInputCH3);  // 电位器
+    Adc_ConfigSqrChannel(CH1MUX, AdcExInputCH22); // 电压
+
+    u8AdcSqrScanCnt = 2; //转换次数2次(3-1已在库函数内计算)
+
+    Adc_ConfigDmaTrig(DmaSqr);
+    Adc_ConfigSqrMode(&stcAdcCfg, u8AdcSqrScanCnt, FALSE); // 配置扫描扫描转换模式
+    Adc_SQR_Start();                                       // 顺序扫描开始
+
     // 配置插队扫描转换通道,采样顺序CH0 --> CH1 --> CH2 --> CH3
-    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH2);  // U
+    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH2); // U
     Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH1); // V
-    Adc_ConfigJqrChannel(JQRCH2MUX, AdcExInputCH0);  // W
-    // Adc_ConfigJqrChannel(JQRCH3MUX, AdcExInputCH22);  // VBUS
-    EnableNvic(ADC_IRQn, IrqLevel1, TRUE);           //Adc开中断
-    // Adc_EnableIrq();                       // 使能Adc中断 放在强拖之前开
+    Adc_ConfigJqrChannel(JQRCH2MUX, AdcExInputCH0); // W
+    EnableNvic(ADC_IRQn, IrqLevel1, TRUE);          //Adc开中断
+
+    Adc_EnableIrq(); // 使能Adc中断 放在强拖之前开
 
     stcAdcIrq.bAdcJQRIrq = TRUE;
     stcAdcIrqCalbaks.pfnAdcJQRIrq = ADC_ISR;
     Adc_ConfigIrq(&stcAdcIrq, &stcAdcIrqCalbaks); //中断函数入口配置
 
-    u8AdcScanCnt = 3; //转换次数3次(3-1已在库函数内计算)
+    u8AdcJqrScanCnt = 3; //转换次数3次(3-1已在库函数内计算)
 
-    Adc_ConfigJqrMode(&stcAdcCfg, u8AdcScanCnt, FALSE); //配置插队扫描转换模式
+    Adc_ConfigJqrMode(&stcAdcCfg, u8AdcJqrScanCnt, FALSE); //配置插队扫描转换模式
 
     stcAdcExtTrigCfg.enAdcExtTrigRegSel = AdcExtTrig1;
     stcAdcExtTrigCfg.enAdcTrig1Sel = AdcTrigTimer3;
@@ -278,11 +340,13 @@ void PWM_Init(void)
     // stcTim3PortCmpCfg.bCHxBCmpBufEn = TRUE;              //B通道缓存控制
     stcTim3PortCmpCfg.enCHxBCmpIntSel = Tim3CmpIntNone; //B通道比较控制:无
 
-    // Tim3_M23_PortOutput_Config(Tim3CH0, &stcTim3PortCmpCfg); //比较输出端口配置
-    // Tim3_M23_PortOutput_Config(Tim3CH1, &stcTim3PortCmpCfg); //比较输出端口配置
-    // Tim3_M23_PortOutput_Config(Tim3CH2, &stcTim3PortCmpCfg); //比较输出端口配置
+    Tim3_M23_PortOutput_Config(Tim3CH0, &stcTim3PortCmpCfg); //比较输出端口配置
+    Tim3_M23_PortOutput_Config(Tim3CH1, &stcTim3PortCmpCfg); //比较输出端口配置
+    Tim3_M23_PortOutput_Config(Tim3CH2, &stcTim3PortCmpCfg); //比较输出端口配置
 
-    PortOutput_Config(0, 0, 0, 0, 0, 0); // 初始化，6个管全关断 mos管原因，下桥臂为0导通
+    Tim3_M23_CCR_Set(Tim3CCR0A, 0); //设置比较值A,(PWM互补模式下只需要设置比较值A)
+    Tim3_M23_CCR_Set(Tim3CCR1A, 0);
+    Tim3_M23_CCR_Set(Tim3CCR2A, 0);
 
     stcTim3TrigAdc.bEnTrigADC = TRUE;         //使能ADC触发全局控制
     stcTim3TrigAdc.bEnUevTrigADC = TRUE;      //Uev更新触发ADC

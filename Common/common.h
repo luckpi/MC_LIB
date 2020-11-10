@@ -55,7 +55,8 @@ typedef struct
 {
     uint8_t ChlState;       // 通道状态
     uint16_t CurrentOffset; // 电流放大零点
-    uint16_t Voltage;       // 电压采样值
+    uint32_t POT;           // 电位器
+    uint32_t Voltage;       // 电压采样值
     uint16_t Current;       // 电流采样值
     uint16_t UBemf;         // 反电动势U相
     uint16_t VBemf;         // 反电动势V相
