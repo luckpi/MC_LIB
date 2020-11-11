@@ -13,8 +13,8 @@ Clark：
 void Clark_Cala(void)
 {
     // SVP.Ic = 0 - (SVP.Ia + SVP.Ib);
-    SVP.Ialpha = SVP.Ia;
-    SVP.Ibeta = _IQmpy((SVP.Ia + _IQmpy2(SVP.Ib)), 18918); // _IQ(0.57735026918963)
+    SVP.Ialpha = _IQ15(SVP.Ia);
+    SVP.Ibeta = _IQmpy((_IQ15(SVP.Ia) + _IQmpy2(_IQ15(SVP.Ib))), 18918); // _IQ(0.57735026918963)
 }
 /*
 Park：
@@ -42,5 +42,3 @@ void InvPark(void)
     SVP.Valpha = _IQmpy(SVP.Vd, SVP.Cosine) - _IQmpy(SVP.Vq, SVP.Sine);
     SVP.Vbeta = _IQmpy(SVP.Vd, SVP.Sine) + _IQmpy(SVP.Vq, SVP.Cosine);
 }
-
-

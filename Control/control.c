@@ -3,6 +3,8 @@
 #include "init.h"
 #include "halless.h"
 #include "adc.h"
+#include "IQmath.h"
+#include "svgen_dq.h"
 // #include "protect.h"
 // #include "cmp.h"
 // #include "timer.h"
@@ -18,8 +20,8 @@
 ******************************************************************************/
 static void MotorAhead(void)
 {
+    Adc_EnableIrq(); // 使能Adc中断 放在强拖之前开
     // Fault_InitOverUnderVoltage(); // 过压保护
-    mcState = mcInit;
 }
 /******************************************************************************
  函 数 名  : MotorInit
@@ -48,13 +50,13 @@ static void MotorInit(void)
 static void MotorAlign(void)
 {
     HoldParm.PWMDutyCycle = PWM_START_DUTY;
-//    PWMChangeDuty(HoldParm.PWMDutyCycle);
-    PWMSwitchPhase();
+    //    PWMChangeDuty(HoldParm.PWMDutyCycle);
+
     delay1ms(100);
     delay10us(200);
     // IPD(); // 定位需要根据电机调整
     // SFRPAGE = 0x02; // 清除所有中断标识位
-    Adc_EnableIrq(); //使能Adc中断
+    PortOutput_Config(6, 6, 6, 6, 6, 6);
     mcState = mcDrag;
 }
 /*****************************************************************************
@@ -75,6 +77,21 @@ void EnterRunInit(void)
 *****************************************************************************/
 void StartupDrag(void)
 {
+    // static uint16_t ADC_CNT = 0;
+    // if (++ADC_CNT >= 50)
+    // {
+    //     ADC_CNT = 0;
+    SVP.Vd = 10000;
+    SVP.Vq = 0;
+    AngleSin_Cos.IQAngle += 10;
+    if (AngleSin_Cos.IQAngle > 65535)
+    {
+        AngleSin_Cos.IQAngle = 0;
+    }
+    InvPark();
+    svgendq_calc();
+    PWMChangeDuty((uint16_t)SVP.Ta, (uint16_t)SVP.Tb, (uint16_t)SVP.Tc);
+    // }
 }
 /*****************************************************************************
  函 数 名  : MotorRun

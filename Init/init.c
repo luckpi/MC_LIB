@@ -15,17 +15,36 @@
  ******************************************************************************/
 void OPA_GpMode_Test(void)
 {
-    stc_opa_gain_config_t strGain;
-
-    DDL_ZERO_STRUCT(strGain);
-    OP0_INP();
-    OP0_INN();
-    OP0_OUT();
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralOpa, TRUE);
     OP1_INP();
     OP1_INN();
     OP1_OUT();
-    OPA_Operate(OPA0, OpaGpMode, &strGain); //
-    OPA_Operate(OPA1, OpaGpMode, &strGain); //
+    OP2_INP();
+    OP2_INN();
+    OP2_OUT();
+    M0P_OPA->CR1_f.BIASSEL = 1;
+    M0P_OPA->CR1_f.MODE = 1;
+    M0P_OPA->CR1_f.NEGSEL = 3;
+    M0P_OPA->CR1_f.POEN = 0;
+    M0P_OPA->CR1_f.PGAGAIN = 5;
+    M0P_OPA->CR1_f.POSSEL = 3;
+    M0P_OPA->CR1_f.RESINMUX = 0;
+    M0P_OPA->CR1_f.RESSEL = 0;
+    M0P_OPA->CR1_f.UBUFSEL = 0;
+
+    M0P_OPA->CR2_f.BIASSEL = 1;
+    M0P_OPA->CR2_f.MODE = 1;
+    M0P_OPA->CR2_f.NEGSEL = 3;
+    M0P_OPA->CR2_f.POEN = 0;
+    M0P_OPA->CR2_f.PGAGAIN = 5;
+    M0P_OPA->CR2_f.POSSEL = 3;
+    M0P_OPA->CR2_f.RESINMUX = 0;
+    M0P_OPA->CR2_f.RESSEL = 0;
+    M0P_OPA->CR2_f.UBUFSEL = 0;
+    M0P_OPA->CR0_f.EN = 1;
+    M0P_OPA->CR1_f.EN = 1;
+    M0P_OPA->CR2_f.EN = 1;
 }
 /**************************************************************************************************
  函 数 名  : fputc
@@ -211,10 +230,9 @@ void ADC_Init(void)
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
 
-    Gpio_SetAnalogMode(GpioPortA, GpioPin0);  //PA00 W
-    Gpio_SetAnalogMode(GpioPortA, GpioPin1);  //PA01 V
-    Gpio_SetAnalogMode(GpioPortA, GpioPin2);  //PA02 U
     Gpio_SetAnalogMode(GpioPortA, GpioPin3);  //PA02 POT
+    Gpio_SetAnalogMode(GpioPortA, GpioPin5);  //PA05 IU
+    Gpio_SetAnalogMode(GpioPortA, GpioPin6);  //PA02 IV
     Gpio_SetAnalogMode(GpioPortB, GpioPin15); //PB15 VOLTAGE
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralAdcBgr, TRUE);
@@ -244,12 +262,11 @@ void ADC_Init(void)
     Adc_SQR_Start();                                       // 顺序扫描开始
 
     // 配置插队扫描转换通道,采样顺序CH0 --> CH1 --> CH2 --> CH3
-    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH2); // U
-    Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH1); // V
-    Adc_ConfigJqrChannel(JQRCH2MUX, AdcExInputCH0); // W
+    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH6); // IU
+    Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH5); // IV
     EnableNvic(ADC_IRQn, IrqLevel1, TRUE);          //Adc开中断
 
-    Adc_EnableIrq(); // 使能Adc中断 放在强拖之前开
+    // Adc_EnableIrq(); // 使能Adc中断 放在强拖之前开
 
     stcAdcIrq.bAdcJQRIrq = TRUE;
     stcAdcIrqCalbaks.pfnAdcJQRIrq = ADC_ISR;

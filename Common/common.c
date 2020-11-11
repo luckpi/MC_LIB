@@ -15,7 +15,7 @@ volatile SensorPara_T Halless;
 *****************************************************************************/
 void PowerupParaInit(void)
 {
-    // PortOutput_Config(0, 0, 0, 0, 0, 0);
+    PortOutput_Config(0, 0, 0, 0, 0, 0);
     mcState = mcAhead;
     error_code = normal;
     HoldParm.RotorDirection = CW;

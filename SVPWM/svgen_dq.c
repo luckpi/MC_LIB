@@ -2,7 +2,7 @@
 #include "IQmath.h"
 #include "common.h"
 #include "pwm.h"
-SVGENDQ SVP;
+SVGENDQ SVP = SVGENDQ_DEFAULTS;
 void svgendq_calc(void)
 {
     int32_t Va, Vb, Vc, t1, t2;

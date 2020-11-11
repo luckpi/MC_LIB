@@ -24,18 +24,52 @@ void CalcSpeedTime(void)
 void CheckZeroCrossing(void)
 {
 }
+
+
+
+
 /*****************************************************************************
- 函 数 名  : ThreeBemfSample
- 功能描述  : 三相BEMF采样
+ 函 数 名  : PhaseCurrentSample
+ 功能描述  : 相电流采样
  输入参数  : 无
  输出参数  : void
 *****************************************************************************/
 static void PhaseCurrentSample(void)
 {
     volatile uint32_t *BaseJqrResultAddress = (volatile uint32_t *)&(M0P_ADC->JQRRESULT0);
-    ADCSample.UBemf = (uint16_t)(*(BaseJqrResultAddress));
-    ADCSample.VBemf = (uint16_t)(*(BaseJqrResultAddress + 1));
-    ADCSample.WBemf = (uint16_t)(*(BaseJqrResultAddress + 2));
+    if (mcState == mcAhead)
+    {
+        SVP.Ia = (uint16_t)(*(BaseJqrResultAddress));
+        SVP.Ib = (uint16_t)(*(BaseJqrResultAddress + 1));
+    }
+    else
+    {
+        SVP.Ia = (uint16_t)(*(BaseJqrResultAddress)) - SVP.Ia_C;
+        SVP.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)) - SVP.Ib_C;
+    }
+}
+/*****************************************************************************
+ 函 数 名  : PhaseCurrentSample
+ 功能描述  : 相电流采样
+ 输入参数  : 无
+ 输出参数  : void
+*****************************************************************************/
+static void ADC_Calibrate(void)
+{
+    static uint8_t count = 0;
+    PhaseCurrentSample();
+    if (++count > 64)
+    {
+        count = 0;
+        SVP.Ia_C >>= 6;
+        SVP.Ib_C >>= 6;
+        mcState = mcInit;
+    }
+    else
+    {
+        SVP.Ia_C += SVP.Ia;
+        SVP.Ib_C += SVP.Ib;
+    }
 }
 /*****************************************************************************
  函 数 名  : ADCAnalogSample
@@ -55,24 +89,25 @@ static void PhaseCurrentSample(void)
 void ADC_ISR(void)
 {
     PhaseCurrentSample();
-    // switch (mcState)
-    // {
-
-    // // case mcDrag:
-    // //     ThreeBemfSample();
-    // //     // ADCAnalogSample();
-    // //     CheckZeroCrossing();
-    // //     StartupDrag();
-    // //     break;
-    // // case mcRun:
-    // //     HoldParm.SpeedLoopCnt++;
-    // //     ThreeBemfSample();
-    // //     // ADCAnalogSample();
-    // //     CheckZeroCrossing();
-    // //     break;
-    // // default:
-    // //     break;
-    // }
+    switch (mcState)
+    {
+    case mcAhead:
+        ADC_Calibrate();
+        break;
+    case mcDrag:
+        // ADCAnalogSample();
+        // CheckZeroCrossing();
+        PhaseCurrentSample();
+        StartupDrag();
+        break;
+    // case mcRun:
+    //     HoldParm.SpeedLoopCnt++;
+    //     // ADCAnalogSample();
+    //     CheckZeroCrossing();
+    //     break;
+    default:
+        break;
+    }
     Adc_SQR_Start();
     Tim3_ClearIntFlag(Tim3UevIrq); // 清除中断标识位
 }

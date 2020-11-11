@@ -10,6 +10,6 @@
 #define PWM_Close 0x00
 #define Open_Mode 0x01
 #define Close_Mode 0x00
-extern void PWMSwitchPhase(void);
+extern void PortOutput_Config(uint8_t U1, uint8_t U2, uint8_t V1, uint8_t V2, uint8_t W1, uint8_t W2);
 extern void PWMChangeDuty(uint16_t Ta, uint16_t Tb, uint16_t Tc);
 #endif
