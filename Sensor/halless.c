@@ -6,6 +6,7 @@
 #include "control.h"
 #include "svgen_dq.h"
 #include "IQmath.h"
+#include "smc.h"
 /*****************************************************************************
  函 数 名  : CalcSpeed
  功能描述  : 转速计算
@@ -25,9 +26,6 @@ void CheckZeroCrossing(void)
 {
 }
 
-
-
-
 /*****************************************************************************
  函 数 名  : PhaseCurrentSample
  功能描述  : 相电流采样
@@ -39,13 +37,13 @@ static void PhaseCurrentSample(void)
     volatile uint32_t *BaseJqrResultAddress = (volatile uint32_t *)&(M0P_ADC->JQRRESULT0);
     if (mcState == mcAhead)
     {
-        SVP.Ia = (uint16_t)(*(BaseJqrResultAddress));
-        SVP.Ib = (uint16_t)(*(BaseJqrResultAddress + 1));
+        SVM.Ia = (uint16_t)(*(BaseJqrResultAddress));
+        SVM.Ib = (uint16_t)(*(BaseJqrResultAddress + 1));
     }
     else
     {
-        SVP.Ia = (uint16_t)(*(BaseJqrResultAddress)) - SVP.Ia_C;
-        SVP.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)) - SVP.Ib_C;
+        SVM.Ia = (uint16_t)(*(BaseJqrResultAddress)) - SVM.Ia_C;
+        SVM.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)) - SVM.Ib_C;
     }
 }
 /*****************************************************************************
@@ -61,14 +59,14 @@ static void ADC_Calibrate(void)
     if (++count > 64)
     {
         count = 0;
-        SVP.Ia_C >>= 6;
-        SVP.Ib_C >>= 6;
+        SVM.Ia_C >>= 6;
+        SVM.Ib_C >>= 6;
         mcState = mcInit;
     }
     else
     {
-        SVP.Ia_C += SVP.Ia;
-        SVP.Ib_C += SVP.Ib;
+        SVM.Ia_C += SVM.Ia;
+        SVM.Ib_C += SVM.Ib;
     }
 }
 /*****************************************************************************
@@ -93,12 +91,19 @@ void ADC_ISR(void)
     {
     case mcAhead:
         ADC_Calibrate();
+        SMCInit(&smc1);
         break;
     case mcDrag:
         // ADCAnalogSample();
         // CheckZeroCrossing();
         PhaseCurrentSample();
+        Clark_Cala();
         StartupDrag();
+        smc1.Ibeta = SVM.Ibeta;
+        smc1.Ialpha = SVM.Ialpha;
+        smc1.Valpha = (SVM.Valpha * smc1.MaxVoltage) >> 15;
+        smc1.Vbeta = (SVM.Vbeta * smc1.MaxVoltage) >> 15;
+        SMC_Position_Estimation_Inline(&smc1);
         break;
     // case mcRun:
     //     HoldParm.SpeedLoopCnt++;

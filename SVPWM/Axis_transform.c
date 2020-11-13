@@ -12,9 +12,9 @@ Clark：
 */
 void Clark_Cala(void)
 {
-    // SVP.Ic = 0 - (SVP.Ia + SVP.Ib);
-    SVP.Ialpha = _IQ15(SVP.Ia);
-    SVP.Ibeta = _IQmpy((_IQ15(SVP.Ia) + _IQmpy2(_IQ15(SVP.Ib))), 18918); // _IQ(0.57735026918963)
+    // SVM.Ic = 0 - (SVM.Ia + SVM.Ib);
+    SVM.Ialpha = SVM.Ia;
+    SVM.Ibeta = _IQmpy((SVM.Ia + (SVM.Ib << 1)), 18918); // _IQ(0.57735026918963)
 }
 /*
 Park：
@@ -24,10 +24,10 @@ Park：
 void Park_Cala(void)
 {
     IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
-    SVP.Sine = AngleSin_Cos.IQSin;
-    SVP.Cosine = AngleSin_Cos.IQCos;
-    SVP.Ld = _IQmpy(SVP.Ialpha, SVP.Cosine) + _IQmpy(SVP.Ibeta, SVP.Sine);
-    SVP.Lq = _IQmpy(SVP.Ibeta, SVP.Cosine) - _IQmpy(SVP.Ialpha, SVP.Sine);
+    SVM.Sine = AngleSin_Cos.IQSin;
+    SVM.Cosine = AngleSin_Cos.IQCos;
+    SVM.Ld = _IQmpy(SVM.Ialpha, SVM.Cosine) + _IQmpy(SVM.Ibeta, SVM.Sine);
+    SVM.Lq = _IQmpy(SVM.Ibeta, SVM.Cosine) - _IQmpy(SVM.Ialpha, SVM.Sine);
 }
 /*
 InvPark：
@@ -37,8 +37,8 @@ InvPark：
 void InvPark(void)
 {
     IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
-    SVP.Sine = AngleSin_Cos.IQSin;
-    SVP.Cosine = AngleSin_Cos.IQCos;
-    SVP.Valpha = _IQmpy(SVP.Vd, SVP.Cosine) - _IQmpy(SVP.Vq, SVP.Sine);
-    SVP.Vbeta = _IQmpy(SVP.Vd, SVP.Sine) + _IQmpy(SVP.Vq, SVP.Cosine);
+    SVM.Sine = AngleSin_Cos.IQSin;
+    SVM.Cosine = AngleSin_Cos.IQCos;
+    SVM.Valpha = _IQmpy(SVM.Vd, SVM.Cosine) - _IQmpy(SVM.Vq, SVM.Sine);
+    SVM.Vbeta = _IQmpy(SVM.Vd, SVM.Sine) + _IQmpy(SVM.Vq, SVM.Cosine);
 }

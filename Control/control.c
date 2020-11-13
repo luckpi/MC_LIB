@@ -81,16 +81,16 @@ void StartupDrag(void)
     // if (++ADC_CNT >= 50)
     // {
     //     ADC_CNT = 0;
-    SVP.Vd = 10000;
-    SVP.Vq = 0;
-    AngleSin_Cos.IQAngle += 10;
+    SVM.Vd = 10000;
+    SVM.Vq = 0;
+    AngleSin_Cos.IQAngle += 25;
     if (AngleSin_Cos.IQAngle > 65535)
     {
         AngleSin_Cos.IQAngle = 0;
     }
     InvPark();
     svgendq_calc();
-    PWMChangeDuty((uint16_t)SVP.Ta, (uint16_t)SVP.Tb, (uint16_t)SVP.Tc);
+    PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
     // }
 }
 /*****************************************************************************

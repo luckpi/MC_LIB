@@ -4,7 +4,9 @@
 #define Abs(A) ((A >= 0) ? A : -A)
 #define Min(A, B) ((A <= B) ? A : B)
 #define Max(A, B) ((A >= B) ? A : B)
-
+#define Q15(Float_Value)                                        \
+    ((Float_Value < 0.0) ? (int16_t)(32768 * (Float_Value)-0.5) \
+                         : (int16_t)(32767 * (Float_Value) + 0.5))
 #define _IQ15(A) (int32_t)((A) << 15) //   32768
 #define _IQ(A) _IQ15(A)
 #define _IQmpy(A, B) (int32_t)((A * B) >> 15)

@@ -9,7 +9,7 @@
 #define PWMSYSCLK (48000000) // PWM时钟
 #define SYSCLK (48000000)    // 除PWM外的模块时钟
 
-#define PWM_FRE (20000) //PWM的频率
+#define PWM_FRE (16000) //PWM的频率
 #define PWM_FRE_SETATA ((PWMSYSCLK / PWM_FRE) >> 1)
 #define PWM_DUTYCYCLE_95 ((PWM_FRE_SETATA / 20) * 19) // PWM的占空比  95%
 #define PWM_DUTYCYCLE_75 ((PWM_FRE_SETATA / 4) * 3)   // PWM的占空比  75%

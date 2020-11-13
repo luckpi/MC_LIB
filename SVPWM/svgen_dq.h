@@ -27,7 +27,7 @@ typedef struct
     {                                                        \
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
     }
-extern SVGENDQ SVP; // SVPWM
+extern SVGENDQ SVM; // SVPWM
 extern void svgendq_calc(void);
 extern void Clark_Cala(void);
 extern void Park_Cala(void);
