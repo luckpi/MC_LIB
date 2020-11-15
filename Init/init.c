@@ -122,6 +122,8 @@ void LED_Init(void)
     ///< GPIO IO PC13初始化（LED）
     Gpio_Init(GpioPortB, GpioPin5, &ledGpioCfg);
     Gpio_WriteOutputIO(GpioPortB, GpioPin5, FALSE);
+    Gpio_Init(GpioPortB, GpioPin7, &ledGpioCfg);
+    Gpio_WriteOutputIO(GpioPortB, GpioPin7, FALSE);
 }
 /**************************************************************************************************
  函 数 名  : Uart_Init
@@ -370,7 +372,7 @@ void PWM_Init(void)
     Tim3_M23_TrigADC_Config(&stcTim3TrigAdc); //触发ADC配置
 
     stcTim3DeadTimeCfg.bEnDeadTime = TRUE;
-    stcTim3DeadTimeCfg.u8DeadTimeValue = 0x3f;
+    stcTim3DeadTimeCfg.u8DeadTimeValue = 0x73;
     Tim3_M23_DT_Config(&stcTim3DeadTimeCfg); //死区设置
 
     u8ValidPeriod = 1;                      //事件更新周期设置，0表示三角波每半个周期更新一次，每+1代表延迟半个周期

@@ -1,20 +1,15 @@
 #include "smc.h"
 #include "MotorConfig.h"
 #include "IQmath.h"
+#include "atan2.h"
 #define ONE_BY_SQRT3 0.5773502691
 uint16_t trans_counter = 0;
-int16_t Theta_error = 0;    //开环强制角度和估算角度的误差,在闭环的过程中慢慢减去误差,每次步进0.05度。
-int16_t PrevTheta = 0;      // Previous theta which is then subtracted from Theta to get
-                            // delta theta. This delta will be accumulated in AccumTheta, and
-                            // after a number of accumulations Omega is calculated.
-int16_t AccumTheta = 0;     // Accumulates delta theta over a number of times
-uint16_t AccumThetaCnt = 0; // Counter used to calculate motor speed. Is incremented
-                            // in SMC_Position_Estimation() subroutine, and accumulates
-                            // delta Theta. After N number of accumulations, Omega is
-                            // calculated. This N is diIrpPerCalc which is defined in
-                            // UserParms.h.
+int16_t Theta_error = 0;    // 开环强制角度和估算角度的误差,在闭环的过程中慢慢减去误差,每次步进0.05度。
+int16_t PrevTheta = 0;      // 上一次角度值
+int16_t AccumTheta = 0;     // 累加每次的角度变化量
+uint16_t AccumThetaCnt = 0; // 用于计算电机速度的计数器.
 MOTOR_ESTIM_PARM_T motorParm;
-SMC smc1 = SMC_DEFAULTS;
+SMC smc = SMC_DEFAULTS;
 ESTIM_PARM_T estimator;
 
 void SMCInit(SMC *s)
@@ -51,82 +46,51 @@ void SMCInit(SMC *s)
     return;
 }
 
-void CalcBEMF()
+void CalcBEMF(int16_t *EMF, int16_t *EMFF, int16_t Z)
 {
     int16_t temp_int1, temp_int2;
-    temp_int1 = (int16_t)((smc1.Kslf * smc1.Zalpha) >> 15);
-    temp_int2 = (int16_t)((smc1.Kslf * smc1.Ealpha) >> 15);
-    temp_int1 = temp_int1 - temp_int2;
-    smc1.Ealpha = smc1.Ealpha + temp_int1;
-    temp_int1 = (int16_t)((smc1.Kslf * smc1.Ealpha) >> 15);
-    temp_int2 = (int16_t)((smc1.Kslf * smc1.EalphaFinal) >> 15);
-    temp_int1 = temp_int1 - temp_int2;
-    smc1.EalphaFinal = smc1.EalphaFinal + temp_int1;
-
-    temp_int1 = (int16_t)((smc1.Kslf * smc1.Zbeta) >> 15);
-    temp_int2 = (int16_t)((smc1.Kslf * smc1.Ebeta) >> 15);
-    temp_int1 = temp_int1 - temp_int2;
-    smc1.Ebeta = smc1.Ebeta + temp_int1;
-    temp_int1 = (int16_t)((smc1.Kslf * smc1.Ebeta) >> 15);
-    temp_int2 = (int16_t)((smc1.Kslf * smc1.EbetaFinal) >> 15);
-    temp_int1 = temp_int1 - temp_int2;
-    smc1.EbetaFinal = smc1.EbetaFinal + temp_int1;
+    temp_int1 = (int16_t)((smc.Kslf * Z) >> 15);
+    temp_int2 = (int16_t)((smc.Kslf * (*EMF)) >> 15);
+    temp_int1 -= temp_int2;
+    (*EMF) += temp_int1;
+    temp_int1 = (int16_t)((smc.Kslf * (*EMF)) >> 15);
+    temp_int2 = (int16_t)((smc.Kslf * (*EMFF)) >> 15);
+    temp_int1 -= temp_int2;
+    (*EMFF) += temp_int1;
 }
-void CalcEstI()
+void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
-    int16_t temp_int1, temp_int2, temp_int3;
-    temp_int1 = (int16_t)((smc1.Gsmopos * smc1.Valpha) >> 15);
-    temp_int2 = (int16_t)((smc1.Gsmopos * smc1.Ealpha) >> 23); //原来右移15不行，改23可以
-    temp_int3 = (int16_t)((smc1.Gsmopos * smc1.Zalpha) >> 23); //原来右移15不行，改23可以
-
-    temp_int1 = temp_int1 - temp_int2;
-    temp_int1 = temp_int1 - temp_int3;
-    smc1.EstIalpha = temp_int1 + (int16_t)((smc1.Fsmopos * smc1.EstIalpha) >> 15);
-
-    temp_int1 = (int16_t)((smc1.Gsmopos * smc1.Vbeta) >> 15);
-    temp_int2 = (int16_t)((smc1.Gsmopos * smc1.Ebeta) >> 23); //原来右移15不行，改23可以
-    temp_int3 = (int16_t)((smc1.Gsmopos * smc1.Zbeta) >> 23); //原来右移15不行，改23可以
-
-    temp_int1 = temp_int1 - temp_int2;
-    temp_int1 = temp_int1 - temp_int3;
-    smc1.EstIbeta = temp_int1 + (int16_t)((smc1.Fsmopos * smc1.EstIbeta) >> 15);
-
-    smc1.IalphaError = smc1.EstIalpha - smc1.Ialpha;
-    smc1.IbetaError = smc1.EstIbeta - smc1.Ibeta;
-
-    if (Abs(smc1.IalphaError) < smc1.MaxSMCError)
+    int16_t temp_int1, temp_int2, temp_int3, I_Error;
+    temp_int1 = (int16_t)((smc.Gsmopos * U) >> 15);
+    temp_int2 = (int16_t)((smc.Gsmopos * EMF) >> 23);  //原来右移15不行，改23可以
+    temp_int3 = (int16_t)((smc.Gsmopos * (*Z)) >> 23); //原来右移15不行，改23可以
+    temp_int1 -= temp_int2;
+    temp_int1 -= temp_int3;
+    *EstI = temp_int1 + (int16_t)((smc.Fsmopos * (*EstI)) >> 15);
+    I_Error = (*EstI) - I;
+    if (Abs(I_Error) < smc.MaxSMCError)
     {
         // s->Zalpha = (s->Kslide * s->IalphaError) / s->MaxSMCError
-        smc1.Zalpha = (smc1.mdbi * smc1.IalphaError);
+        (*Z) = (smc.mdbi * I_Error);
     }
-    else if (smc1.IalphaError > 0)
+    else if (I_Error > 0)
     {
-        smc1.Zalpha = smc1.Kslide;
-    }
-    else
-    {
-        smc1.Zalpha = -smc1.Kslide;
-    }
-    if (Abs(smc1.IbetaError) < smc1.MaxSMCError)
-    {
-        smc1.Zbeta = (smc1.mdbi * smc1.IbetaError);
-    }
-    else if (smc1.IbetaError > 0)
-    {
-        smc1.Zbeta = smc1.Kslide;
+        (*Z) = smc.Kslide;
     }
     else
     {
-        smc1.Zbeta = -smc1.Kslide;
+        (*Z) = -smc.Kslide;
     }
 }
 
 void SMC_Position_Estimation_Inline(SMC *s)
 {
     int16_t Kslf_min;
-    CalcEstI();
-    CalcBEMF();
-    s->Theta = AngleSin_Cos.IQAngle / 360; // 应该是反正切求出角度，测试使用强托角度
+    CalcEstI(smc.Valpha, smc.Ialpha, smc.Ealpha, &smc.EstIalpha, &smc.Zalpha);
+    CalcEstI(smc.Vbeta, smc.Ibeta, smc.Ebeta, &smc.EstIbeta, &smc.Zbeta);
+    CalcBEMF(&smc.Ealpha, &smc.EalphaFinal, smc.Zalpha);
+    CalcBEMF(&smc.Ebeta, &smc.EbetaFinal, smc.Zbeta);
+    s->Theta = polynmApproxAtan2f(smc.EbetaFinal, smc.EalphaFinal); // 应该是反正切求出角度，测试使用强托角度
     AccumTheta += s->Theta - PrevTheta;
     PrevTheta = s->Theta;
     AccumThetaCnt++;
@@ -166,6 +130,5 @@ void SMC_Position_Estimation_Inline(SMC *s)
     }
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
     s->Theta = s->Theta + s->ThetaOffset;
-    s->Kslide = Q15(SMCGAIN);
     return;
 }

@@ -33,6 +33,8 @@ int main()
 		// // printf("Ubemf=%d, Vbemf=%d, Wbemf=%d\r\n", ADCSample.UBemf, ADCSample.VBemf, ADCSample.WBemf);
 		// printf("voltage=%d,POT=%d\n", ADCSample.Voltage, ADCSample.POT);
 		// delay1ms(1);
-		printf("Ia=%d,IaH=%d,Ualpha=%d,Ealpha=%d\n", smc1.Ialpha, smc1.EstIalpha, smc1.Valpha, smc1.EalphaFinal);
+		printf("Ia=%d,IaH=%d,Ualpha=%d\n", smc.Ialpha, smc.EstIalpha, smc.Valpha);
+		// printf("Ealpha=%d,Ebeta=%d\n", smc.EalphaFinal, smc.EbetaFinal);
+		// printf("ETheta=%d,Theta=%d\n", smc.Theta, AngleSin_Cos.IQAngle);
 	}
 }

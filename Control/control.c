@@ -83,10 +83,10 @@ void StartupDrag(void)
     //     ADC_CNT = 0;
     SVM.Vd = 10000;
     SVM.Vq = 0;
-    AngleSin_Cos.IQAngle += 25;
-    if (AngleSin_Cos.IQAngle > 65535)
+    AngleSin_Cos.IQAngle += 15;
+    if (AngleSin_Cos.IQAngle > 32767)
     {
-        AngleSin_Cos.IQAngle = 0;
+        AngleSin_Cos.IQAngle = -32768;
     }
     InvPark();
     svgendq_calc();

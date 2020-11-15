@@ -86,24 +86,26 @@ static void ADC_Calibrate(void)
 *****************************************************************************/
 void ADC_ISR(void)
 {
+    Gpio_WriteOutputIO(GpioPortB, GpioPin7, TRUE);
     PhaseCurrentSample();
     switch (mcState)
     {
     case mcAhead:
         ADC_Calibrate();
-        SMCInit(&smc1);
+        SMCInit(&smc);
+        AngleSin_Cos.IQAngle = 32767;
         break;
     case mcDrag:
         // ADCAnalogSample();
         // CheckZeroCrossing();
         PhaseCurrentSample();
         Clark_Cala();
+        smc.Ibeta = SVM.Ibeta;
+        smc.Ialpha = SVM.Ialpha;
+        smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 15;
+        smc.Vbeta = (SVM.Vbeta * smc.MaxVoltage) >> 15;
+        SMC_Position_Estimation_Inline(&smc);
         StartupDrag();
-        smc1.Ibeta = SVM.Ibeta;
-        smc1.Ialpha = SVM.Ialpha;
-        smc1.Valpha = (SVM.Valpha * smc1.MaxVoltage) >> 15;
-        smc1.Vbeta = (SVM.Vbeta * smc1.MaxVoltage) >> 15;
-        SMC_Position_Estimation_Inline(&smc1);
         break;
     // case mcRun:
     //     HoldParm.SpeedLoopCnt++;
@@ -115,4 +117,5 @@ void ADC_ISR(void)
     }
     Adc_SQR_Start();
     Tim3_ClearIntFlag(Tim3UevIrq); // 清除中断标识位
+    Gpio_WriteOutputIO(GpioPortB, GpioPin7, FALSE);
 }

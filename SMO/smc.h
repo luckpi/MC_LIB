@@ -125,7 +125,7 @@ typedef struct
 
 extern ESTIM_PARM_T estimator;
 extern MOTOR_ESTIM_PARM_T motorParm;
-extern SMC smc1;
+extern SMC smc;
 #define SMC_DEFAULTS                                                                 \
     {                                                                                \
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
@@ -153,10 +153,4 @@ extern uint16_t AccumThetaCnt; // Counter used to calculate motor speed. Is incr
 // UserParms.h.
 void SMCInit(SMC_handle);
 void SMC_Position_Estimation_Inline(SMC_handle);
-void CalcEstI(void);
-void CalcIError(void);
-void CalcZalpha(void);
-void CalcZbeta(void);
-void CalcBEMF(void);
-void CalcOmegaFltred(void);
 #endif
