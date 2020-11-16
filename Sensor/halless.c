@@ -100,9 +100,9 @@ void ADC_ISR(void)
         // CheckZeroCrossing();
         PhaseCurrentSample();
         Clark_Cala();
-        smc.Ibeta = SVM.Ibeta << 4;
+        smc.Ibeta = SVM.Ibeta << 4; // 需要调整电流数据格式
         smc.Ialpha = SVM.Ialpha << 4;
-        smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 9;
+        smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 9; // 需要调整电压数据格式
         smc.Vbeta = (SVM.Vbeta * smc.MaxVoltage) >> 9;
         SMC_Position_Estimation_Inline(&smc);
         StartupDrag();
