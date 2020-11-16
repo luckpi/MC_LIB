@@ -64,7 +64,7 @@ extern tPIParm PIParmQ;    /* Q轴电流PI控制器的参数 */
 extern tPIParm PIParmD;    /* D轴电流PI控制器的参数 */
 extern tPIParm PIParmQref; /* 速度PI控制器的参数 */
 extern void PI_Parameters(void);
-extern void CalcPI(tPIParm *pParm);
+extern void PI_Control(void);
 #endif
 
 

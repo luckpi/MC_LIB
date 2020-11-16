@@ -54,7 +54,7 @@ void PI_Parameters(void)
 
     return;
 }
-void CalcPI(tPIParm *pParm)
+static void CalcPI(tPIParm *pParm)
 {
     int16_t Err;
     int16_t U;
@@ -81,7 +81,7 @@ void CalcPI(tPIParm *pParm)
 
     pParm->qdSum = pParm->qdSum + pParm->qKi * Err - pParm->qKc * Exc;
 }
-inline void MC_APP_MC_DoControl(void)
+void PI_Control(void)
 {
     if (mcState == mcDrag) // 开环强拖
     {
@@ -111,13 +111,13 @@ inline void MC_APP_MC_DoControl(void)
         // PI control for Q
         PIParmQ.qInMeas = SVM.Lq;
         PIParmQ.qInRef = CtrlParm.IqRef;
-        MC_APP_MC_CalcPI(&PIParmQ);
+        CalcPI(&PIParmQ);
         SVM.Vq = PIParmQ.qOut;
 
         // PI control for D
         PIParmD.qInMeas = SVM.Ld;
         PIParmD.qInRef = CtrlParm.IdRef;
-        MC_APP_MC_CalcPI(&PIParmD);
+        CalcPI(&PIParmD);
         SVM.Vd = PIParmD.qOut;
     }
     else if (mcState == mcRun) // 闭环
@@ -146,7 +146,7 @@ inline void MC_APP_MC_DoControl(void)
         // 执行速度控制循环
         PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
         PIParmQref.qInRef = CtrlParm.VelRef * HoldParm.RotorDirection; // 电机参考速度和方向
-        MC_APP_MC_CalcPI(&PIParmQref);
+        CalcPI(&PIParmQref);
         CtrlParm.IqRef = PIParmQref.qOut;
 
         CtrlParm.IdRef = 0;
@@ -154,16 +154,16 @@ inline void MC_APP_MC_DoControl(void)
         // PI control for D
         PIParmD.qInMeas = SVM.Ld;        // This is in Amps
         PIParmD.qInRef = CtrlParm.IdRef; // This is in Amps
-        MC_APP_MC_CalcPI(&PIParmD);
+        CalcPI(&PIParmD);
         SVM.Vd = PIParmD.qOut; // This is in %. If should be converted to volts, multiply with (DC/2)
 
         // dynamic d-q adjustment
         // with d component priority
         // vq=sqrt (vs^2 - vd^2)
         // limit vq maximum to the one resulting from the calculation above
-        DoControl_Temp2 = PIParmD.qOut * PIParmD.qOut;
-        DoControl_Temp1 = 0.98 - DoControl_Temp2;
-        PIParmQ.qOutMax = sqrt(DoControl_Temp1);
+        // DoControl_Temp2 = PIParmD.qOut * PIParmD.qOut;
+        // DoControl_Temp1 = 0.98 - DoControl_Temp2;
+        // PIParmQ.qOutMax = IQSqrt(DoControl_Temp1);//要转Q30格式
 
         //Limit Q axis current
         if (CtrlParm.IqRef > CtrlParm.IqRefmax)
@@ -174,7 +174,9 @@ inline void MC_APP_MC_DoControl(void)
         // PI control for Q
         PIParmQ.qInMeas = SVM.Lq;        // This is in Amps
         PIParmQ.qInRef = CtrlParm.IqRef; // This is in Amps
-        MC_APP_MC_CalcPI(&PIParmQ);
+        CalcPI(&PIParmQ);
         SVM.Vq = PIParmQ.qOut; // This is in %. If should be converted to volts, multiply with (DC/2)
     }                          /* end of Closed Loop Vector Control */
 }
+
+

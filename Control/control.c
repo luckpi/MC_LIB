@@ -31,7 +31,6 @@ static void MotorAhead(void)
 ******************************************************************************/
 static void MotorInit(void)
 {
-    Common_Init(); // 变量初始化
     // ALL_INT_DISEN; // 关闭所有中断
     // PortOutput_Config(0, 1, 0, 1, 0, 1); // 打开下管充电
     // PWMPortBrake(); //充电
@@ -112,7 +111,8 @@ static void MotorRun(void)
 *****************************************************************************/
 void MotorStop(void)
 {
-    // PortOutput_Config(0, 0, 0, 0, 0, 0);
+    PortOutput_Config(0, 0, 0, 0, 0, 0);
+    Common_Init(); // 变量初始化
 }
 
 /*****************************************************************************

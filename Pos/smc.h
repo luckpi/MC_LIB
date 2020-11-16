@@ -73,6 +73,6 @@ extern int16_t AccumTheta; // Accumulates delta theta over a number of times
 extern uint16_t AccumThetaCnt; // Counter used to calculate motor speed. Is incremented
 extern MOTOR_ESTIM_PARM_T motorParm;
 extern SMC smc;
-void SMCInit(SMC_handle);
-void SMC_Position_Estimation_Inline(SMC_handle);
+void SMC_Init(SMC_handle);
+void SMC_Position_Estimation(SMC_handle);
 #endif

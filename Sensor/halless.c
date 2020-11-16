@@ -38,7 +38,6 @@ static void PhaseCurrentSample(void)
 static void ADC_Calibrate(void)
 {
     static uint8_t count = 0;
-    PhaseCurrentSample();
     if (++count > 64)
     {
         count = 0;
@@ -75,23 +74,21 @@ void ADC_ISR(void)
     {
     case mcAhead:
         ADC_Calibrate();
-        SMCInit(&smc);
+        SMC_Init(&smc);
         AngleSin_Cos.IQAngle = 32767;
         break;
     case mcDrag:
-        // ADCAnalogSample();
-        // CheckZeroCrossing();
-        PhaseCurrentSample();
         Clark_Cala();
-        smc.Ibeta = SVM.Ibeta << 4; // 需要调整电流数据格式
-        smc.Ialpha = SVM.Ialpha << 4;
+        smc.Ialpha = SVM.Ialpha << 4; // 需要调整电流数据格式
+        smc.Ibeta = SVM.Ibeta << 4;
         smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 9; // 需要调整电压数据格式
         smc.Vbeta = (SVM.Vbeta * smc.MaxVoltage) >> 9;
+        SMC_Position_Estimation(&smc);
         IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
         SVM.Sine = AngleSin_Cos.IQSin;
         SVM.Cosine = AngleSin_Cos.IQCos;
-        Park_Cala();
-        SMC_Position_Estimation_Inline(&smc);
+        // Park_Cala();
+        // PI_Control();
         StartupDrag();
         InvPark();
         svgendq_calc();

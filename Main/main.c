@@ -15,6 +15,7 @@ int main()
 	ADC_Init();
 	UART_Init();
 	PowerupParaInit();
+	Common_Init(); // 变量初始化
 	delay1ms(200);
 	while (1)
 	{

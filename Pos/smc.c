@@ -11,7 +11,7 @@ uint16_t AccumThetaCnt = 0; // 用于计算电机速度的计数器.
 MOTOR_ESTIM_PARM_T motorParm;
 SMC smc = SMC_DEFAULTS;
 
-void SMCInit(SMC *s)
+void SMC_Init(SMC *s)
 {
     //                R * Ts
     // Fsmopos = 1 - --------
@@ -82,7 +82,7 @@ void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
     }
 }
 
-void SMC_Position_Estimation_Inline(SMC *s)
+void SMC_Position_Estimation(SMC *s)
 {
     int16_t Kslf_min;
     CalcEstI(smc.Valpha, smc.Ialpha, smc.Ealpha, &smc.EstIalpha, &smc.Zalpha);
