@@ -9,5 +9,5 @@
 #define RL_B -9419
 #define RL_C (M_PI_4 - RL_A - RL_B)
 #define RL_EPSILON_F 1 /* small float value for zero-check */
-int16_t polynmApproxAtan2f(int16_t y, int16_t x);
+int16_t Atan2(int16_t y, int16_t x);
 #endif

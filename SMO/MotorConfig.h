@@ -44,7 +44,7 @@
 #define IRP_PERCALC 16          // 每个速度计算的PWM回路 (SPEEDLOOPTIME / LOOPTIMEINSEC)
 #define TRANSITION_STEPS 4      // IRP_PERCALC / 4
 
-#define SMCGAIN 0.85       // Slide Mode Controller Gain (0.0 to 0.9999)
+#define SMCGAIN 0.15       // Slide Mode Controller Gain (0.0 to 0.9999)
 #define MAXLINEARSMC 0.005 // If measured current - estimated current   \
                            // is less than MAXLINEARSMC, the slide mode \
                            // Controller will have a linear behavior    \
@@ -55,9 +55,9 @@
 #define MAX_VOLTAGE_VECTOR 0.98
 // Vd and Vq vector limitation variables
 
-#define SMO_SPEED_EST_MULTIPLIER Q15(0.9155273)
+#define SMO_SPEED_EST_MULTIPLIER 30000 // Q15(0.9155273)
 
-#define THETA_FILTER_CNST Q15(0.104719 * LOOPTIME_SEC * 32768.0) //2*pi/60*Ts*32768
+#define THETA_FILTER_CNST 2237 //Q15(0.104719 * LOOPTIME_SEC * 32768.0) // 2*pi/60*Ts*32768
 
 //***********************End of SMC Params************************************//
 #endif

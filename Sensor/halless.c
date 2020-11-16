@@ -100,10 +100,10 @@ void ADC_ISR(void)
         // CheckZeroCrossing();
         PhaseCurrentSample();
         Clark_Cala();
-        smc.Ibeta = SVM.Ibeta;
-        smc.Ialpha = SVM.Ialpha;
-        smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 15;
-        smc.Vbeta = (SVM.Vbeta * smc.MaxVoltage) >> 15;
+        smc.Ibeta = SVM.Ibeta << 4;
+        smc.Ialpha = SVM.Ialpha << 4;
+        smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 9;
+        smc.Vbeta = (SVM.Vbeta * smc.MaxVoltage) >> 9;
         SMC_Position_Estimation_Inline(&smc);
         StartupDrag();
         break;

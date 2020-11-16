@@ -20,6 +20,7 @@ int main()
 	{
 
 		MotorControl(); //电机控制
+
 		// // printf("%d\t", Halless.HallessState);
 		// switch (mcState)
 		// {
@@ -30,11 +31,11 @@ int main()
 		// default:
 		// 	break;
 		// }
-		// // printf("Ubemf=%d, Vbemf=%d, Wbemf=%d\r\n", ADCSample.UBemf, ADCSample.VBemf, ADCSample.WBemf);
 		// printf("voltage=%d,POT=%d\n", ADCSample.Voltage, ADCSample.POT);
 		// delay1ms(1);
 		printf("Ia=%d,IaH=%d,Ualpha=%d\n", smc.Ialpha, smc.EstIalpha, smc.Valpha);
-		// printf("Ealpha=%d,Ebeta=%d\n", smc.EalphaFinal, smc.EbetaFinal);
+		// printf("Ia=%d,Ib=%d\n", smc.Ialpha, smc.Ibeta);
+		// printf("Ealpha=%d,Ebeta=%d\n", smc.Ealpha, smc.Ebeta);
 		// printf("ETheta=%d,Theta=%d\n", smc.Theta, AngleSin_Cos.IQAngle);
 	}
 }

@@ -40,7 +40,7 @@ void SMCInit(SMC *s)
         s->Gsmopos = (((int32_t)0x7FFF << (15 - NORM_LSDTBASE_SCALINGFACTOR)) / motorParm.qLsDt);
 
     s->Kslide = Q15(SMCGAIN);
-    s->MaxSMCError = 10;
+    s->MaxSMCError = Q15(MAXLINEARSMC);
     s->mdbi = s->Kslide / s->MaxSMCError;
     s->FiltOmCoef = (int16_t)((ENDSPEED_ELECTR * THETA_FILTER_CNST) >> 15);
     return;
@@ -62,8 +62,8 @@ void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
     int16_t temp_int1, temp_int2, temp_int3, I_Error;
     temp_int1 = (int16_t)((smc.Gsmopos * U) >> 15);
-    temp_int2 = (int16_t)((smc.Gsmopos * EMF) >> 23);  //原来右移15不行，改23可以
-    temp_int3 = (int16_t)((smc.Gsmopos * (*Z)) >> 23); //原来右移15不行，改23可以
+    temp_int2 = (int16_t)((smc.Gsmopos * EMF) >> 15);  //原来右移15不行，改23可以
+    temp_int3 = (int16_t)((smc.Gsmopos * (*Z)) >> 15); //原来右移15不行，改23可以
     temp_int1 -= temp_int2;
     temp_int1 -= temp_int3;
     *EstI = temp_int1 + (int16_t)((smc.Fsmopos * (*EstI)) >> 15);
@@ -90,27 +90,32 @@ void SMC_Position_Estimation_Inline(SMC *s)
     CalcEstI(smc.Vbeta, smc.Ibeta, smc.Ebeta, &smc.EstIbeta, &smc.Zbeta);
     CalcBEMF(&smc.Ealpha, &smc.EalphaFinal, smc.Zalpha);
     CalcBEMF(&smc.Ebeta, &smc.EbetaFinal, smc.Zbeta);
-    s->Theta = polynmApproxAtan2f(smc.EbetaFinal, smc.EalphaFinal); // 应该是反正切求出角度，测试使用强托角度
-    AccumTheta += s->Theta - PrevTheta;
+    s->Theta = Atan2(-smc.EalphaFinal, s->EbetaFinal); // 应该是反正切求出角度，测试使用强托角度
+    AccumTheta += Abs(s->Theta - PrevTheta);
     PrevTheta = s->Theta;
     AccumThetaCnt++;
     if (AccumThetaCnt == IRP_PERCALC)
     {
-        //                    AccumThetaCnt * 60
-        // eRPM = -----------------------------
-        //               SpeedLoopTime * 65535
-        //           eRPM * 2
-        // RPM = ------------
-        //               P
-        //        For example:
-        //    AccumThetaCnt = 16384
-        //    SpeedLoopTime = 0.001
-        //Then:
-        //    Speed in eRPM is 15000 and RPM is 3000RPM
-        //
-        //                                   60
-        // SMO_SPEED_EST_MULTIPLIER = -------------------------
-        //                              SpeedLoopTime * 65535
+        /*******************************************************
+          
+                                 AccumThetaCnt * 60
+                    eRPM = -----------------------------
+                                SpeedLoopTime * 65535
+        
+                                    eRPM * 2
+                    RPM = -----------------------------
+                                        P
+        For example:
+        AccumThetaCnt = 16384
+        SpeedLoopTime = 0.001
+        Then:
+        Speed in eRPM is 15000 and RPM is 3000RPM
+        
+                                                60
+        SMO_SPEED_EST_MULTIPLIER = -----------------------------
+                                      SpeedLoopTime * 65535      
+
+        ********************************************************/
         s->Omega = (int16_t)((AccumTheta * SMO_SPEED_EST_MULTIPLIER) >> 15);
         AccumThetaCnt = 0;
         AccumTheta = 0;

@@ -7,8 +7,6 @@
 #define Q15(Float_Value)                                        \
     ((Float_Value < 0.0) ? (int16_t)(32768 * (Float_Value)-0.5) \
                          : (int16_t)(32767 * (Float_Value) + 0.5))
-#define _IQ15(A) (int32_t)((A) << 15) //   32768
-#define _IQ(A) _IQ15(A)
 #define _IQmpy(A, B) (int32_t)((A * B) >> 15)
 #define _IQ10mpy(A, B) (int32_t)((A * B) >> 10)
 #define _IQdiv2(A) (int32_t)((A) >> 1)
@@ -52,5 +50,3 @@ int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min);
 extern IQSin_Cos AngleSin_Cos;
 extern IQAtan IQAtan_Pare;
 #endif
-	
-		

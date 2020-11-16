@@ -81,9 +81,9 @@ void StartupDrag(void)
     // if (++ADC_CNT >= 50)
     // {
     //     ADC_CNT = 0;
-    SVM.Vd = 10000;
+    SVM.Vd = 8000;
     SVM.Vq = 0;
-    AngleSin_Cos.IQAngle += 15;
+    AngleSin_Cos.IQAngle += 10;
     if (AngleSin_Cos.IQAngle > 32767)
     {
         AngleSin_Cos.IQAngle = -32768;
