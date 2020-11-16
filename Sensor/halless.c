@@ -7,24 +7,7 @@
 #include "svgen_dq.h"
 #include "IQmath.h"
 #include "smc.h"
-/*****************************************************************************
- 函 数 名  : CalcSpeed
- 功能描述  : 转速计算
- 输入参数  : 无
- 输出参数  : void
-*****************************************************************************/
-void CalcSpeedTime(void)
-{
-}
-/*****************************************************************************
- 函 数 名  : CheckZeroCrossing
- 功能描述  : 过零点检测，采用择多滤波，在PWM高电平中间进行检测
- 输入参数  : 无
- 输出参数  : void
-*****************************************************************************/
-void CheckZeroCrossing(void)
-{
-}
+#include "PI.h"
 
 /*****************************************************************************
  函 数 名  : PhaseCurrentSample
@@ -104,8 +87,15 @@ void ADC_ISR(void)
         smc.Ialpha = SVM.Ialpha << 4;
         smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 9; // 需要调整电压数据格式
         smc.Vbeta = (SVM.Vbeta * smc.MaxVoltage) >> 9;
+        IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
+        SVM.Sine = AngleSin_Cos.IQSin;
+        SVM.Cosine = AngleSin_Cos.IQCos;
+        Park_Cala();
         SMC_Position_Estimation_Inline(&smc);
         StartupDrag();
+        InvPark();
+        svgendq_calc();
+        PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
         break;
     // case mcRun:
     //     HoldParm.SpeedLoopCnt++;

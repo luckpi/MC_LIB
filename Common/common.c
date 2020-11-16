@@ -1,12 +1,14 @@
 #include "common.h"
 #include "pwm.h"
 #include "adc.h"
+#include "PI.h"
+#include "svgen_dq.h"
+#include "smc.h"
 MotorState_T mcState;
 ErrorState_T error_code;
 volatile HoldControlPara_T HoldParm;
 volatile ADCSamplePara_T ADCSample;
 volatile PWMCatchPara_T CatchParm;
-volatile SensorPara_T Halless;
 /*****************************************************************************
  函 数 名  : PowerupParaInit
  功能描述  : 上电参数初始化
@@ -43,26 +45,52 @@ void Common_Init(void)
     ADCSample.Voltage = 0;
     ADCSample.OverCurrentCnt = 0;
     ADCSample.OverVoltageCnt = 0;
-    ADCSample.UBemf = 0;        // 反电动势U相
-    ADCSample.VBemf = 0;        // 反电动势V相
-    ADCSample.WBemf = 0;        // 反电动势W相
-    ADCSample.NeutralPoint = 0; // 反电动势中性点
     ADCSample.Sum = 0;
     ADCSample.Num = 0;
-    ADCSample.ChlState = Voltage_Chl; // 电压电流检测
+    ADCSample.ChlState = 0; // 电压电流检测
     CatchParm.Period = 0;
     CatchParm.Duty = 0;
     CatchParm.Flag_Cap_Valid = 0;
     CatchParm.PWMCnt = 0;
     CatchParm.DutyCycleUse = 0;
+
+    //SVM_init
+    SVM.Ia = 0;     // 直接测量
+    SVM.Ib = 0;     // 直接测量
+    SVM.Ic = 0;     // 根据Ia + Ib + Ic =0可得
+    SVM.Ia_C = 0;   // Ia校准误差
+    SVM.Ib_C = 0;   // Ia校准误差
+    SVM.Ialpha = 0; // Clark变换输出
+    SVM.Ibeta = 0;  // Clark变换输出
+    SVM.Sine = 0;   // 正弦
+    SVM.Cosine = 0; // 余弦
+    SVM.Ld = 0;     // Park d轴
+    SVM.Lq = 0;     // Park q轴
+    SVM.Vd = 0;     // PI输出
+    SVM.Vq = 0;     // PI输出
+    SVM.Valpha = 0; // Park逆变换输出
+    SVM.Vbeta = 0;  // Park逆变换输出
+    SVM.Ta = 0;     // SVP输出
+    SVM.Tb = 0;     // SVP输出
+    SVM.Tc = 0;     // SVP输出
+
+    //SMO_Init
+    smc.Valpha = 0;
+    smc.Ealpha = 0;
+    smc.EalphaFinal = 0;
+    smc.Zalpha = 0;
+    smc.EstIalpha = 0;
+    smc.Vbeta = 0;
+    smc.Ebeta = 0;
+    smc.EbetaFinal = 0;
+    smc.Zbeta = 0;
+    smc.EstIbeta = 0;
+    smc.Ialpha = 0;
+    smc.IalphaError = 0;
+    smc.Ibeta = 0;
+    smc.IbetaError = 0;
+    smc.Theta = 0;
+    smc.Omega = 0;
+    smc.MaxVoltage = 0;
     error_code = normal;
-    Halless.HallessState = 0;
-    Halless.Phase = 3;
-    Halless.LastPhase = 2;
-    Halless.Delay_Time = 0;
-    Halless.Zero_Flag = 0;
-    Halless.Check_Count = 0;
-    Halless.Filter_Times = 0;
-    Halless.BackEMFFilter = 0;
-    // PID_init();
 }

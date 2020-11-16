@@ -1,13 +1,11 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 #include "ddl.h"
-#define CW 0
-#define CCW 1
+#define CW 1
+#define CCW -1
 #define First_Gear 1000  // 一档
 #define Second_Gear 1500 // 二档
 #define Third_Gear 2500  // 三档
-#define Current_Chl 0x00 // 电流ADC通道
-#define Voltage_Chl 0x00 // 电压ADC通道
 // 控制顺序
 typedef enum
 {
@@ -58,10 +56,6 @@ typedef struct
     uint32_t POT;           // 电位器
     uint32_t Voltage;       // 电压采样值
     uint16_t Current;       // 电流采样值
-    uint16_t UBemf;         // 反电动势U相
-    uint16_t VBemf;         // 反电动势V相
-    uint16_t WBemf;         // 反电动势W相
-    uint16_t NeutralPoint;  // 反电动势中性点
     uint32_t Sum;           // 电流平均值和
     uint8_t Num;            // 电流平均值计数
     uint16_t Average;       // 电流平均值
@@ -79,19 +73,6 @@ typedef struct
     uint8_t Flag_Cap_Valid : 1;
 } PWMCatchPara_T;
 
-typedef struct
-{
-    uint8_t HallessState : 3;     // 反电动势输出
-    uint8_t LastHallessState : 3; //上一次反电动势输出
-    uint8_t BackEMFFilter;        // 反电动势滤波
-    uint8_t Phase : 3;            // 当前相位
-    uint8_t LastPhase : 3;        // 上一个相位
-    uint8_t Zero_Flag : 1;        // 过零点标识位
-    uint16_t Check_Count;         // 检测计数，换相时间计算
-    uint8_t Filter_Times;         // 滤波次数
-    uint16_t Delay_Time;          // 延时换相时间
-} SensorPara_T;
-extern volatile SensorPara_T Halless;
 
 extern MotorState_T mcState;
 extern ErrorState_T error_code;

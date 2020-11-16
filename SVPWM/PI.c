@@ -10,19 +10,55 @@ tPIParm PIParmQ;    /* Q轴电流PI控制器的参数 */
 tPIParm PIParmD;    /* D轴电流PI控制器的参数 */
 tPIParm PIParmQref; /* 速度PI控制器的参数 */
 
-#define direction 1                    // 方向
-#define MAX_MOTOR_CURRENT (float)(4.4) //最大电流
-void MC_APP_MC_InitPI(tPIParm *pParm)
+#define MAX_MOTOR_CURRENT 2 //最大电流
+// *****************************************************************************
+// *****************************************************************************
+// Section: MC PI Controller Routines
+// *****************************************************************************
+// *****************************************************************************
+static void InitPI(tPIParm *pParm)
 {
     pParm->qdSum = 0;
     pParm->qOut = 0;
 }
-
-void MC_APP_MC_CalcPI(tPIParm *pParm)
+void PI_Parameters(void)
 {
-    float Err;
-    float U;
-    float Exc;
+    CtrlParm.IdRef = 0; // d轴不做功
+    // PI D Term
+    PIParmD.qKp = D_CURRCNTR_PTERM;
+    PIParmD.qKi = D_CURRCNTR_ITERM;
+    PIParmD.qKc = D_CURRCNTR_CTERM;
+    PIParmD.qOutMax = D_CURRCNTR_OUTMAX;
+    PIParmD.qOutMin = -PIParmD.qOutMax;
+
+    InitPI(&PIParmD);
+
+    // PI Q Term
+    PIParmQ.qKp = Q_CURRCNTR_PTERM;
+    PIParmQ.qKi = Q_CURRCNTR_ITERM;
+    PIParmQ.qKc = Q_CURRCNTR_CTERM;
+    PIParmQ.qdSum = 0;
+    PIParmQ.qOutMax = Q_CURRCNTR_OUTMAX;
+    PIParmQ.qOutMin = -PIParmQ.qOutMax;
+
+    InitPI(&PIParmQ);
+
+    // PI Qref Term
+    PIParmQref.qKp = SPEEDCNTR_PTERM;
+    PIParmQref.qKi = SPEEDCNTR_ITERM;
+    PIParmQref.qKc = SPEEDCNTR_CTERM;
+    PIParmQref.qOutMax = SPEEDCNTR_OUTMAX;
+    PIParmQref.qOutMin = -PIParmQref.qOutMax;
+
+    InitPI(&PIParmQref);
+
+    return;
+}
+void CalcPI(tPIParm *pParm)
+{
+    int16_t Err;
+    int16_t U;
+    int16_t Exc;
 
     Err = pParm->qInRef - pParm->qInMeas;
     pParm->qErr = Err;
@@ -70,7 +106,7 @@ inline void MC_APP_MC_DoControl(void)
         // 要获得最大启动扭矩，请将q电流设置为最大可接受值
         // 值代表最大峰值
 
-        CtrlParm.IqRef = Q_CURRENT_REF_OPENLOOP * direction; //控制方向
+        CtrlParm.IqRef = Q_CURRENT_REF_OPENLOOP * HoldParm.RotorDirection; //控制方向
 
         // PI control for Q
         PIParmQ.qInMeas = SVM.Lq;
@@ -108,8 +144,8 @@ inline void MC_APP_MC_DoControl(void)
         CtrlParm.IqRefmax = MAX_MOTOR_CURRENT;
 
         // 执行速度控制循环
-        PIParmQref.qInMeas = smc.OmegaFltred;            // 反馈速度
-        PIParmQref.qInRef = CtrlParm.VelRef * direction; // 电机参考速度和方向
+        PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
+        PIParmQref.qInRef = CtrlParm.VelRef * HoldParm.RotorDirection; // 电机参考速度和方向
         MC_APP_MC_CalcPI(&PIParmQref);
         CtrlParm.IqRef = PIParmQref.qOut;
 

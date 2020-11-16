@@ -23,9 +23,6 @@ Park：
 */
 void Park_Cala(void)
 {
-    IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
-    SVM.Sine = AngleSin_Cos.IQSin;
-    SVM.Cosine = AngleSin_Cos.IQCos;
     SVM.Ld = _IQmpy(SVM.Ialpha, SVM.Cosine) + _IQmpy(SVM.Ibeta, SVM.Sine);
     SVM.Lq = _IQmpy(SVM.Ibeta, SVM.Cosine) - _IQmpy(SVM.Ialpha, SVM.Sine);
 }
@@ -36,9 +33,6 @@ InvPark：
 */
 void InvPark(void)
 {
-    IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
-    SVM.Sine = AngleSin_Cos.IQSin;
-    SVM.Cosine = AngleSin_Cos.IQCos;
     SVM.Valpha = _IQmpy(SVM.Vd, SVM.Cosine) - _IQmpy(SVM.Vq, SVM.Sine);
     SVM.Vbeta = _IQmpy(SVM.Vd, SVM.Sine) + _IQmpy(SVM.Vq, SVM.Cosine);
 }

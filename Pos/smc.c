@@ -10,7 +10,6 @@ int16_t AccumTheta = 0;     // 累加每次的角度变化量
 uint16_t AccumThetaCnt = 0; // 用于计算电机速度的计数器.
 MOTOR_ESTIM_PARM_T motorParm;
 SMC smc = SMC_DEFAULTS;
-ESTIM_PARM_T estimator;
 
 void SMCInit(SMC *s)
 {
@@ -91,7 +90,7 @@ void SMC_Position_Estimation_Inline(SMC *s)
     CalcBEMF(&smc.Ealpha, &smc.EalphaFinal, smc.Zalpha);
     CalcBEMF(&smc.Ebeta, &smc.EbetaFinal, smc.Zbeta);
     s->Theta = Atan2(-smc.EalphaFinal, s->EbetaFinal); // 应该是反正切求出角度，测试使用强托角度
-    AccumTheta += Abs(s->Theta - PrevTheta);
+    AccumTheta += Abs(s->Theta - PrevTheta);           // 可能有bug
     PrevTheta = s->Theta;
     AccumThetaCnt++;
     if (AccumThetaCnt == IRP_PERCALC)

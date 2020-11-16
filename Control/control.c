@@ -88,9 +88,6 @@ void StartupDrag(void)
     {
         AngleSin_Cos.IQAngle = -32768;
     }
-    InvPark();
-    svgendq_calc();
-    PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
     // }
 }
 /*****************************************************************************
