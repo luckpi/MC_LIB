@@ -26,7 +26,6 @@ void SMC_Init(SMC *s)
     motorParm.qLsDtBase = NORM_LSDTBASE;
     motorParm.qLsDt = motorParm.qLsDtBase;
     motorParm.qRs = NORM_RS;
-    s->MaxVoltage = (int16_t)((ADCSample.Voltage * Q15(ONE_BY_SQRT3)) >> 15);
     if (((int32_t)motorParm.qRs << NORM_RS_SCALINGFACTOR) >= ((int32_t)motorParm.qLsDt << NORM_LSDTBASE_SCALINGFACTOR))
 
         s->Fsmopos = Q15(0.0);
@@ -42,6 +41,7 @@ void SMC_Init(SMC *s)
     s->MaxSMCError = Q15(MAXLINEARSMC);
     s->mdbi = s->Kslide / s->MaxSMCError;
     s->FiltOmCoef = (int16_t)((ENDSPEED_ELECTR * THETA_FILTER_CNST) >> 15);
+    s->MaxVoltage = (int16_t)((ADCSample.Voltage * Q15(ONE_BY_SQRT3)) >> 15);
     return;
 }
 
