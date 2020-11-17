@@ -115,6 +115,14 @@ uint32_t IQSqrt(uint32_t M)
     }
     return N;
 }
-
-
-
+uint32_t HDIV_div(uint32_t Dividend, uint16_t Divisor)
+{
+    M0P_HDIV->SIGN_f.SIGN = 0;
+    (M0P_HDIV->DIVIDEND) = Dividend;
+    (M0P_HDIV->DIVISOR) = Divisor;
+    while (M0P_HDIV->STAT_f.END != TRUE)
+        ;
+    //M0P_HDIV->QUOTIENT_f.QUOTIENT;   //商
+    //M0P_HDIV->REMAINDER_f.REMAINDER; //余数
+    return (M0P_HDIV->QUOTIENT_f.QUOTIENT);
+}

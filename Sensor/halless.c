@@ -79,17 +79,17 @@ void ADC_ISR(void)
         break;
     case mcDrag:
         Clark_Cala();
-        smc.Ialpha = SVM.Ialpha << 9; // 需要调整电流数据Q15格式
-        smc.Ibeta = SVM.Ibeta << 9;
+        smc.Ialpha = SVM.Ialpha << 4; // 需要调整电流数据Q15格式
+        smc.Ibeta = SVM.Ibeta << 4;
         smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 9; // 需要调整电压数据Q15格式
         smc.Vbeta = (SVM.Vbeta * smc.MaxVoltage) >> 9;
         SMC_Position_Estimation(&smc);
+        StartupDrag();
         IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
         SVM.Sine = AngleSin_Cos.IQSin;
         SVM.Cosine = AngleSin_Cos.IQCos;
         Park_Cala();
-        // PI_Control();
-        StartupDrag();
+        PI_Control();
         InvPark();
         svgendq_calc();
         PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);

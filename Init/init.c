@@ -109,6 +109,7 @@ void LED_Init(void)
     DDL_ZERO_STRUCT(ledGpioCfg);
     ///< 打开GPIO外设时钟门控
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralDiv, TRUE);
     ///< 端口方向配置 -> 输出
     ledGpioCfg.enDir = GpioDirOut;
     ///< 端口驱动能力配置 -> 高驱动能力

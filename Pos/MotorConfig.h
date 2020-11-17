@@ -44,8 +44,8 @@
 #define IRP_PERCALC 16          // 每个速度计算的PWM回路 (SPEEDLOOPTIME / LOOPTIMEINSEC)
 #define TRANSITION_STEPS 4      // IRP_PERCALC / 4
 
-#define SMCGAIN 0.13      // Slide Mode Controller Gain (0.0 to 0.9999)
-#define MAXLINEARSMC 0.005 // If measured current - estimated current   \
+#define SMCGAIN 0.8      // Slide Mode Controller Gain (0.0 to 0.9999)
+#define MAXLINEARSMC 0.05 // If measured current - estimated current   \
                            // is less than MAXLINEARSMC, the slide mode \
                            // Controller will have a linear behavior    \
                            // instead of ON/OFF. Value from (0.0 to 0.9999)

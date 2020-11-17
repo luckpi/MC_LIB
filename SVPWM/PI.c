@@ -4,7 +4,7 @@
 #include "smc.h"
 float VelRefRaw;
 float DoControl_Temp1, DoControl_Temp2;
-short potReading;
+short potReading; // 读取到的ADC
 tCtrlParm CtrlParm;
 tPIParm PIParmQ;    /* Q轴电流PI控制器的参数 */
 tPIParm PIParmD;    /* D轴电流PI控制器的参数 */
@@ -23,7 +23,7 @@ static void InitPI(tPIParm *pParm)
 }
 void PI_Parameters(void)
 {
-    CtrlParm.IdRef = 0; // d轴不做功
+
     // PI D Term
     PIParmD.qKp = D_CURRCNTR_PTERM;
     PIParmD.qKi = D_CURRCNTR_ITERM;
@@ -37,7 +37,6 @@ void PI_Parameters(void)
     PIParmQ.qKp = Q_CURRCNTR_PTERM;
     PIParmQ.qKi = Q_CURRCNTR_ITERM;
     PIParmQ.qKc = Q_CURRCNTR_CTERM;
-    PIParmQ.qdSum = 0;
     PIParmQ.qOutMax = Q_CURRCNTR_OUTMAX;
     PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
@@ -52,6 +51,8 @@ void PI_Parameters(void)
 
     InitPI(&PIParmQref);
 
+    CtrlParm.IdRef = 0; // d轴不做功
+    
     return;
 }
 static void CalcPI(tPIParm *pParm)
@@ -62,7 +63,7 @@ static void CalcPI(tPIParm *pParm)
 
     Err = pParm->qInRef - pParm->qInMeas;
     pParm->qErr = Err;
-    U = pParm->qdSum + pParm->qKp * Err;
+    U = pParm->qdSum + (pParm->qKp * Err >> 15);
 
     if (U > pParm->qOutMax)
     {
@@ -79,7 +80,7 @@ static void CalcPI(tPIParm *pParm)
 
     Exc = U - pParm->qOut;
 
-    pParm->qdSum = pParm->qdSum + pParm->qKi * Err - pParm->qKc * Exc;
+    pParm->qdSum = pParm->qdSum + (pParm->qKi * Err >> 15) - (pParm->qKc * Exc >> 15);
 }
 void PI_Control(void)
 {
@@ -132,7 +133,7 @@ void PI_Control(void)
         //     CtrlParm.IdRef = 0.0;
         // }
 
-        VelRefRaw = (float)((float)potReading * POT_ADC_COUNT_FW_SPEED_RATIO); //速度控制
+        VelRefRaw = (float)(potReading * POT_ADC_COUNT_FW_SPEED_RATIO); //速度控制，值瞎给的
         /* LPF */
         CtrlParm.VelRef = (RL_1MINUS_WCTS_VELREF * (CtrlParm.VelRef)) + (RL_WCTS_VELREF * (VelRefRaw));
 
@@ -178,5 +179,3 @@ void PI_Control(void)
         SVM.Vq = PIParmQ.qOut; // This is in %. If should be converted to volts, multiply with (DC/2)
     }                          /* end of Closed Loop Vector Control */
 }
-
-

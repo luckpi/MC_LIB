@@ -5,26 +5,22 @@
 #include "atan2.h"
 #define PWM_FREQ 16000
 #define PWM_TS (float)(1.0 / PWM_FREQ)
-#define RL_WC_VELREF_FIL ((float)1.0)                                                                /* cross frequency of velocity reference filter */
-#define RL_WCTS_VELREF (float)(RL_WC_VELREF_FIL * PWM_TS)                                            /* Wc*Ts */
-#define RL_1MINUS_WCTS_VELREF (float)(1.0 - RL_WCTS_VELREF)                                          /* 1 - Wc*Ts */
-#define MAX_ADC_COUNT (float)4095                                                                    /* 12-bit ADC */
-#define NOMINAL_SPEED_RAD_PER_SEC_ELEC (float)(((NOMINAL_SPEED_RPM / 60) * 2 * M_PI) * NOPOLESPAIRS) // Value in RPM
-#define POT_ADC_COUNT_FW_SPEED_RATIO (float)(NOMINAL_SPEED_RAD_PER_SEC_ELEC / MAX_ADC_COUNT)
-#define Q_CURRENT_REF_OPENLOOP 13107                                                      //((float)0.4) 启动-电动机在电流控制模式下启动加速
-#define SINGLE_ELEC_ROT_RADS_PER_SEC (float)(2 * M_PI)                                    // 360°
-#define END_SPEED_RPS ((float)END_SPEED_RPM / 60)                                         // 结束时的转速   单位：s
-#define END_SPEED_RADS_PER_SEC_MECH (float)(END_SPEED_RPS * SINGLE_ELEC_ROT_RADS_PER_SEC) // 单对级电机转速转角度
-#define END_SPEED_RADS_PER_SEC_ELEC (float)(END_SPEED_RADS_PER_SEC_MECH * NOPOLESPAIRS)   // 电机转速转角度
+#define RL_WC_VELREF_FIL                  //    ((float)1.0)                                /* 速度参考滤波器的交叉频率 */
+#define RL_WCTS_VELREF 2                  //    (float)(RL_WC_VELREF_FIL * PWM_TS)          /* Wc*Ts */
+#define RL_1MINUS_WCTS_VELREF 32766       //    (float)(1.0 - RL_WCTS_VELREF)               /* 1 - Wc*Ts */
+#define MAX_ADC_COUNT 4095                //    (float)4095                                 /* 12-bit ADC */
+#define POT_ADC_COUNT_FW_SPEED_RATIO 1000 //    建议用角速度计算 / 4095
+#define Q_CURRENT_REF_OPENLOOP 13107      //    ((float)0.4) 启动-电动机在电流控制模式下启动加速
+#define END_SPEED_RADS_PER_SEC_ELEC 1000  //    目前给的值都是瞎写的，电机转速转角度
 /* PI controllers tuning values - */
 //******** D Control Loop Coefficients *******
-#define D_CURRCNTR_PTERM 655    //0.02
-#define D_CURRCNTR_ITERM 2      //(0.00005)
+#define D_CURRCNTR_PTERM 200    //0.02
+#define D_CURRCNTR_ITERM 3      //(0.00005)
 #define D_CURRCNTR_CTERM 16384  //0.5
 #define D_CURRCNTR_OUTMAX 32734 //0.99
 
 //******** Q Control Loop Coefficients *******
-#define Q_CURRCNTR_PTERM 655    //0.02
+#define Q_CURRCNTR_PTERM 2850    //0.02
 #define Q_CURRCNTR_ITERM 2      //(0.00005)
 #define Q_CURRCNTR_CTERM 16384  //0.5
 #define Q_CURRCNTR_OUTMAX 32734 //0.999
@@ -34,7 +30,6 @@
 #define SPEEDCNTR_ITERM 1     //(0.0000006)
 #define SPEEDCNTR_CTERM 16384 //0.5
 #define SPEEDCNTR_OUTMAX MAX_MOTOR_CURRENT
-
 typedef struct
 {
     int16_t qdSum;
@@ -66,5 +61,3 @@ extern tPIParm PIParmQref; /* 速度PI控制器的参数 */
 extern void PI_Parameters(void);
 extern void PI_Control(void);
 #endif
-
-

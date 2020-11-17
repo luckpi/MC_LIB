@@ -30,16 +30,16 @@ void SMC_Init(SMC *s)
 
         s->Fsmopos = Q15(0.0);
     else
-        s->Fsmopos = (0x7FFF - (((int32_t)motorParm.qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)) / motorParm.qLsDt));
+        s->Fsmopos = (0x7FFF - HDIV_div(((int32_t)motorParm.qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)), motorParm.qLsDt));
 
     if (((int32_t)motorParm.qLsDt << NORM_LSDTBASE_SCALINGFACTOR) < 32767)
         s->Gsmopos = 0x7FFF;
     else
-        s->Gsmopos = (((int32_t)0x7FFF << (15 - NORM_LSDTBASE_SCALINGFACTOR)) / motorParm.qLsDt);
+        s->Gsmopos = HDIV_div(((int32_t)0x7FFF << (15 - NORM_LSDTBASE_SCALINGFACTOR)), motorParm.qLsDt);
 
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
-    s->mdbi = s->Kslide / s->MaxSMCError;
+    s->mdbi = HDIV_div(s->Kslide, s->MaxSMCError);
     s->FiltOmCoef = (int16_t)((ENDSPEED_ELECTR * THETA_FILTER_CNST) >> 15);
     s->MaxVoltage = (int16_t)((ADCSample.Voltage * Q15(ONE_BY_SQRT3)) >> 15);
     return;

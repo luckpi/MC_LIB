@@ -93,4 +93,7 @@ void Common_Init(void)
     smc.Omega = 0;
     smc.MaxVoltage = 0;
     error_code = normal;
+
+    //PID_Init
+    PI_Parameters();
 }
