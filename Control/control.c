@@ -80,12 +80,12 @@ void StartupDrag(void)
     // if (++ADC_CNT >= 50)
     // {
     //     ADC_CNT = 0;
-    // SVM.Vd = 0;
-    // SVM.Vq = 13000;
-    AngleSin_Cos.IQAngle += 64;
-    if (AngleSin_Cos.IQAngle > 32767)
+    SVM.Vd = 0;
+    SVM.Vq = -20000;
+    AngleSin_Cos.IQAngle += 60;
+    if (AngleSin_Cos.IQAngle > 65535)
     {
-        AngleSin_Cos.IQAngle = -32768;
+        AngleSin_Cos.IQAngle = 0;
     }
     // }
 }

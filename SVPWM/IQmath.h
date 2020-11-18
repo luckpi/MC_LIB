@@ -49,5 +49,5 @@ void IQAtan_Cale(p_IQAtan pV);
 int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min);
 extern IQSin_Cos AngleSin_Cos;
 extern IQAtan IQAtan_Pare;
-extern uint32_t HDIV_div(uint32_t Dividend, uint16_t Divisor);
+extern int32_t HDIV_div(int32_t Dividend, int16_t Divisor);
 #endif

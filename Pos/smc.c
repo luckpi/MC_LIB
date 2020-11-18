@@ -5,7 +5,7 @@
 #define ONE_BY_SQRT3 0.5773502691
 uint16_t trans_counter = 0;
 int16_t Theta_error = 0;    // 开环强制角度和估算角度的误差,在闭环的过程中慢慢减去误差,每次步进0.05度。
-int16_t PrevTheta = 0;      // 上一次角度值
+uint16_t PrevTheta = 0;      // 上一次角度值
 int16_t AccumTheta = 0;     // 累加每次的角度变化量
 uint16_t AccumThetaCnt = 0; // 用于计算电机速度的计数器.
 MOTOR_ESTIM_PARM_T motorParm;
@@ -89,8 +89,8 @@ void SMC_Position_Estimation(SMC *s)
     CalcEstI(smc.Vbeta, smc.Ibeta, smc.Ebeta, &smc.EstIbeta, &smc.Zbeta);
     CalcBEMF(&smc.Ealpha, &smc.EalphaFinal, smc.Zalpha);
     CalcBEMF(&smc.Ebeta, &smc.EbetaFinal, smc.Zbeta);
-    s->Theta = Atan2(-smc.EalphaFinal, s->EbetaFinal); // 应该是反正切求出角度，测试使用强托角度
-    AccumTheta += Abs(s->Theta - PrevTheta);           // 可能有bug
+    s->Theta = (Atan2(s->EbetaFinal, smc.EalphaFinal)); // 应该是反正切求出角度，测试使用强托角度
+    AccumTheta += (s->Theta - PrevTheta);               // 可能有bug
     PrevTheta = s->Theta;
     AccumThetaCnt++;
     if (AccumThetaCnt == IRP_PERCALC)
@@ -115,7 +115,7 @@ void SMC_Position_Estimation(SMC *s)
                                       SpeedLoopTime * 65535      
 
         ********************************************************/
-        s->Omega = (int16_t)((AccumTheta * SMO_SPEED_EST_MULTIPLIER) >> 15);
+        s->Omega = (int16_t)((AccumTheta * SMO_SPEED_EST_MULTIPLIER) >> 15); // 电转速
         AccumThetaCnt = 0;
         AccumTheta = 0;
     }

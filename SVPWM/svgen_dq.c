@@ -23,71 +23,61 @@ void svgendq_calc(void)
         Sector += 2;
     if (Vc > 0)
         Sector += 4;
-    // 三相计算
-    Va = SVM.Vbeta;
-    Vb = _IQdiv2(SVM.Vbeta) + _IQmpy(28077, SVM.Valpha); // sqrt(3)/2
-    Vc = _IQdiv2(SVM.Vbeta) - _IQmpy(28077, SVM.Valpha); // sqrt(3)/2
 
-    if (Sector == 0) // Sector 0: this is special case for (Ualpha,Ubeta) = (0,0)
+    // if (Sector == 0) // Sector 0: this is special case for (Ualpha,Ubeta) = (0,0)
+    // {
+    //     SVM.Ta = 16384;
+    //     SVM.Tb = 16384;
+    //     SVM.Tc = 16384;
+    // }
+    if (Sector == 1) // Sector 1: t1=Z and t2=Y (abc ---> Tb,Ta,Tc)，60-120
     {
-        SVM.Ta = 16384;
-        SVM.Tb = 16384;
-        SVM.Tc = 16384;
-    }
-    else if (Sector == 1) // Sector 1: t1=Z and t2=Y (abc ---> Tb,Ta,Tc)，60-120
-    {
-        t1 = Vc;
-        t2 = Vb;
-        SVM.Tb = _IQmpy((32767 - t1 - t2), 16384); // tbon = (1-t1-t2)/2
-        SVM.Ta = SVM.Tb + t1;                      // taon = tbon+t1
-        SVM.Tc = SVM.Ta + t2;                      // tcon = taon+t2
+        t1 = -Vb;
+        t2 = -Vc;
+        SVM.Tc = (32767 - t1 - t2) >> 1; // tbon = (1-t1-t2)/2
+        SVM.Ta = SVM.Tc + t2;            // taon = tbon+t1
+        SVM.Tb = SVM.Ta + t1;            // tcon = taon+t2
     }
     else if (Sector == 2) //Sector 2: t1=Y and t2=-X (abc ---> Ta,Tc,Tb)，300-360
     {
-        t1 = Vb;
+        t1 = -Vc;
         t2 = -Va;
-        SVM.Ta = _IQmpy((32767 - t1 - t2), 16384); // taon = (1-t1-t2)/2
-        SVM.Tc = SVM.Ta + t1;                      // tcon = taon+t1
-        SVM.Tb = SVM.Tc + t2;                      // tbon = tcon+t2
+        SVM.Tb = (32767 - t1 - t2) >> 1; // taon = (1-t1-t2)/2
+        SVM.Tc = SVM.Tb + t2;            // tcon = taon+t1
+        SVM.Ta = SVM.Tc + t1;            // tbon = tcon+t2
     }
     else if (Sector == 3)
     // Sector 3: t1=-Z and t2=X (abc ---> Ta,Tb,Tc)，0-60
     {
-        t1 = -Vc;
+        t1 = Vb;
         t2 = Va;
-        SVM.Ta = _IQmpy((32767 - t1 - t2), 16384); // taon = (1-t1-t2)/2
-        SVM.Tb = SVM.Ta + t1;                      // tbon = taon+t1
-        SVM.Tc = SVM.Tb + t2;                      // tcon = tbon+t2
+        SVM.Tc = (32767 - t1 - t2) >> 1; // taon = (1-t1-t2)/2
+        SVM.Tb = SVM.Tc + t2;            // tbon = taon+t1
+        SVM.Ta = SVM.Tb + t1;            // tcon = tbon+t2
     }
     else if (Sector == 4)
     // Sector 4: t1=-X and t2=Z (abc ---> Tc,Tb,Ta)，180-240
     {
         t1 = -Va;
-        t2 = Vc;
-        SVM.Tc = _IQmpy((32767 - t1 - t2), 16384); // tcon = (1-t1-t2)/2
-        SVM.Tb = SVM.Tc + t1;                      // tbon = tcon+t1
-        SVM.Ta = SVM.Tb + t2;                      // taon = tbon+t2
+        t2 = -Vb;
+        SVM.Ta = (32767 - t1 - t2) >> 1; // tcon = (1-t1-t2)/2
+        SVM.Tb = SVM.Ta + t2;            // tbon = tcon+t1
+        SVM.Tc = SVM.Tb + t1;            // taon = tbon+t2
     }
     else if (Sector == 5) // Sector 5: t1=X and t2=-Y (abc ---> Tb,Tc,Ta)，120-180
     {
         t1 = Va;
-        t2 = -Vb;
-        SVM.Tb = _IQmpy((32767 - t1 - t2), 16384); // tbon = (1-t1-t2)/2
-        SVM.Tc = SVM.Tb + t1;                      // tcon = tbon+t1
-        SVM.Ta = SVM.Tc + t2;                      // taon = tcon+t2
+        t2 = Vc;
+        SVM.Ta = (32767 - t1 - t2) >> 1; // tbon = (1-t1-t2)/2
+        SVM.Tc = SVM.Ta + t2;            // tcon = tbon+t1
+        SVM.Tb = SVM.Tc + t1;            // taon = tcon+t2
     }
     else if (Sector == 6) // Sector 6: t1=-Y and t2=-Z (abc ---> Tc,Ta,Tb)，240-300
     {
-        t1 = -Vb;
-        t2 = -Vc;
-        SVM.Tc = _IQmpy((32767 - t1 - t2), 16384); // tcon = (1-t1-t2)/2
-        SVM.Ta = SVM.Tc + t1;                      // taon = tcon+t1
-        SVM.Tb = SVM.Ta + t2;                      // tbon = taon+t2
+        t1 = Vc;
+        t2 = Vb;
+        SVM.Tb = (32767 - t1 - t2) >> 1; // tcon = (1-t1-t2)/2
+        SVM.Ta = SVM.Tb + t2;            // taon = tcon+t1
+        SVM.Tc = SVM.Ta + t1;            // tbon = taon+t2
     }
-    // // Convert the unsigned GLOBAL_Q format (ranged (0,1)) -> signed GLOBAL_Q format (ranged(-1,1))
-    // SVM.Ta = (2.0 * (SVM.Ta - 0.5));
-    // SVM.Tb = (2.0 * (SVM.Tb - 0.5));
-    // SVM.Tc = (2.0 * (SVM.Tc - 0.5));
-    // printf("Ta=%d,Tb=%d,Tc=%d\n", SVM.Ta, SVM.Tb, SVM.Tc);
-    // printf("%d", Sector);
 }

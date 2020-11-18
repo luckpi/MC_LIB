@@ -1,7 +1,7 @@
 #ifndef _MOTORCFG_H
 #define _MOTORCFG_H
 #include "common.h"
-
+#define MAX_MOTOR_CURRENT 15 //最大电流
 /*************** PWM and Control Timing Parameters ****************************/
 /* Specify PWM Frequency in Hertz */
 #define PWMFREQUENCY_HZ 16000
@@ -36,28 +36,4 @@
 /* End speed of open loop ramp up converted into electrical speed */
 #define ENDSPEED_ELECTR END_SPEED_RPM *NOPOLESPAIRS
 
-//***********************SMC Params*********************************************//
-#define LOOPTIMEINSEC 0.0000625 // PWM Period = 1.0 / PWMFREQUENCY
-#define SPEEDLOOPFREQ 1000      // 速度环频率（以赫兹为单位）。 此值必须 \
-                                                              // 为整数以避免预编译器错误
-#define SPEEDLOOPTIME 0.001     // 调速周期 (1.0 / SPEEDLOOPFREQ)
-#define IRP_PERCALC 16          // 每个速度计算的PWM回路 (SPEEDLOOPTIME / LOOPTIMEINSEC)
-#define TRANSITION_STEPS 4      // IRP_PERCALC / 4
-
-#define SMCGAIN 0.8      // Slide Mode Controller Gain (0.0 to 0.9999)
-#define MAXLINEARSMC 0.05 // If measured current - estimated current   \
-                           // is less than MAXLINEARSMC, the slide mode \
-                           // Controller will have a linear behavior    \
-                           // instead of ON/OFF. Value from (0.0 to 0.9999)
-
-#define STARTUPRAMP_THETA_OPENLOOP_SCALER 10
-
-#define MAX_VOLTAGE_VECTOR 0.98
-// Vd and Vq vector limitation variables
-
-#define SMO_SPEED_EST_MULTIPLIER 30000 // Q15(0.9155273)
-
-#define THETA_FILTER_CNST 7028 //Q15(0.104719 * LOOPTIME_SEC * 32768.0) // 2*pi/60*Ts*32768
-
-//***********************End of SMC Params************************************//
 #endif

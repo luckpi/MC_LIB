@@ -25,8 +25,9 @@ static void PhaseCurrentSample(void)
     }
     else
     {
-        SVM.Ia = (uint16_t)(*(BaseJqrResultAddress)) - SVM.Ia_C;
-        SVM.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)) - SVM.Ib_C;
+        //把电流转变成%比格式  //电流增益 Imax / 2048
+        SVM.Ia = (uint16_t)(-((*(BaseJqrResultAddress + 1)) - SVM.Ib_C) << 4);
+        SVM.Ib = (uint16_t)(-((*(BaseJqrResultAddress)) - SVM.Ia_C) << 4);
     }
 }
 /*****************************************************************************
@@ -75,21 +76,21 @@ void ADC_ISR(void)
     case mcAhead:
         ADC_Calibrate();
         SMC_Init(&smc);
-        AngleSin_Cos.IQAngle = 32767;
+        AngleSin_Cos.IQAngle = 0;
         break;
     case mcDrag:
         Clark_Cala();
-        smc.Ialpha = SVM.Ialpha << 4; // 需要调整电流数据Q15格式
-        smc.Ibeta = SVM.Ibeta << 4;
-        smc.Valpha = (SVM.Valpha * smc.MaxVoltage) >> 9; // 需要调整电压数据Q15格式
-        smc.Vbeta = (SVM.Vbeta * smc.MaxVoltage) >> 9;
+        smc.Ialpha = SVM.Ialpha; // 需要调整电流数据Q15格式
+        smc.Ibeta = SVM.Ibeta;
+        smc.Valpha = SVM.Valpha; // 需要调整电压数据Q15格式
+        smc.Vbeta = SVM.Vbeta;
         SMC_Position_Estimation(&smc);
         StartupDrag();
         IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
         SVM.Sine = AngleSin_Cos.IQSin;
         SVM.Cosine = AngleSin_Cos.IQCos;
-        Park_Cala();
-        PI_Control();
+        // Park_Cala();
+        // PI_Control();
         InvPark();
         svgendq_calc();
         PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);

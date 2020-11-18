@@ -10,7 +10,6 @@ tPIParm PIParmQ;    /* Q轴电流PI控制器的参数 */
 tPIParm PIParmD;    /* D轴电流PI控制器的参数 */
 tPIParm PIParmQref; /* 速度PI控制器的参数 */
 
-#define MAX_MOTOR_CURRENT 2 //最大电流
 // *****************************************************************************
 // *****************************************************************************
 // Section: MC PI Controller Routines
@@ -52,7 +51,7 @@ void PI_Parameters(void)
     InitPI(&PIParmQref);
 
     CtrlParm.IdRef = 0; // d轴不做功
-    
+
     return;
 }
 static void CalcPI(tPIParm *pParm)
@@ -63,7 +62,7 @@ static void CalcPI(tPIParm *pParm)
 
     Err = pParm->qInRef - pParm->qInMeas;
     pParm->qErr = Err;
-    U = pParm->qdSum + (pParm->qKp * Err >> 15);
+    U = pParm->qdSum + ((pParm->qKp * Err) >> 15);
 
     if (U > pParm->qOutMax)
     {
@@ -80,7 +79,7 @@ static void CalcPI(tPIParm *pParm)
 
     Exc = U - pParm->qOut;
 
-    pParm->qdSum = pParm->qdSum + (pParm->qKi * Err >> 15) - (pParm->qKc * Exc >> 15);
+    pParm->qdSum = pParm->qdSum + ((pParm->qKi * Err) >> 15) - ((pParm->qKc * Exc) >> 15);
 }
 void PI_Control(void)
 {

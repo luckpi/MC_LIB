@@ -115,9 +115,9 @@ uint32_t IQSqrt(uint32_t M)
     }
     return N;
 }
-uint32_t HDIV_div(uint32_t Dividend, uint16_t Divisor)
+int32_t HDIV_div(int32_t Dividend, int16_t Divisor)
 {
-    M0P_HDIV->SIGN_f.SIGN = 0;
+    M0P_HDIV->SIGN_f.SIGN = 1;
     (M0P_HDIV->DIVIDEND) = Dividend;
     (M0P_HDIV->DIVISOR) = Divisor;
     while (M0P_HDIV->STAT_f.END != TRUE)
