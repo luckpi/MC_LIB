@@ -1,6 +1,7 @@
 #ifndef _PWM_H
 #define _PWM_H
 #include "timer3.h"
+#include "common.h"
 #define UP16LIMIT(var, max, min)               \
     {                                          \
         (var) = (var) > (max) ? (max) : (var); \

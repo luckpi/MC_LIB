@@ -1,7 +1,10 @@
 #include "PI.h"
+#include "smc.h"
+#include "atan2.h"
 #include "IQmath.h"
 #include "svgen_dq.h"
-#include "smc.h"
+#include "MotorConfig.h"
+
 float VelRefRaw;
 float DoControl_Temp1, DoControl_Temp2;
 short potReading; // 读取到的ADC
@@ -37,7 +40,7 @@ void PI_Parameters(void)
     PIParmQ.qKi = Q_CURRCNTR_ITERM;
     PIParmQ.qKc = Q_CURRCNTR_CTERM;
     PIParmQ.qOutMax = Q_CURRCNTR_OUTMAX;
-    PIParmQ.qOutMin = -PIParmQ.qOutMax;
+    PIParmQ.qOutMin = -PIParmQref.qOutMax;
 
     InitPI(&PIParmQ);
 
@@ -62,7 +65,7 @@ static void CalcPI(tPIParm *pParm)
 
     Err = pParm->qInRef - pParm->qInMeas;
     pParm->qErr = Err;
-    U = pParm->qdSum + ((pParm->qKp * Err) >> 15);
+    U = pParm->qdSum + (int16_t)(_IQmpy(pParm->qKp, Err));
 
     if (U > pParm->qOutMax)
     {
@@ -79,11 +82,11 @@ static void CalcPI(tPIParm *pParm)
 
     Exc = U - pParm->qOut;
 
-    pParm->qdSum = pParm->qdSum + ((pParm->qKi * Err) >> 15) - ((pParm->qKc * Exc) >> 15);
+    pParm->qdSum += (int16_t)(_IQmpy(pParm->qKi, Err)) - (int16_t)(_IQmpy(pParm->qKc, Exc));
 }
 void PI_Control(void)
 {
-    if (mcState == mcDrag) // 开环强拖
+    if (mcState == mcAlign || mcState == mcDrag) // 开环强拖
     {
         // OPENLOOP:  force rotating angle,Vd,Vq
         // if (mcState == mcDrag) //开环结束
@@ -100,7 +103,6 @@ void PI_Control(void)
         //     Startup_Lock_Count = 0;
         //     Startup_Ramp_Angle_Rads_Per_Sec = 0;
         // }
-
         // q当前参考等于vel参考
         // 而d当前参考等于0
         // 要获得最大启动扭矩，请将q电流设置为最大可接受值
@@ -109,13 +111,13 @@ void PI_Control(void)
         CtrlParm.IqRef = Q_CURRENT_REF_OPENLOOP * HoldParm.RotorDirection; //控制方向
 
         // PI control for Q
-        PIParmQ.qInMeas = SVM.Lq;
+        PIParmQ.qInMeas = SVM.Iq;
         PIParmQ.qInRef = CtrlParm.IqRef;
         CalcPI(&PIParmQ);
         SVM.Vq = PIParmQ.qOut;
 
         // PI control for D
-        PIParmD.qInMeas = SVM.Ld;
+        PIParmD.qInMeas = SVM.Id;
         PIParmD.qInRef = CtrlParm.IdRef;
         CalcPI(&PIParmD);
         SVM.Vd = PIParmD.qOut;
@@ -152,7 +154,7 @@ void PI_Control(void)
         CtrlParm.IdRef = 0;
 
         // PI control for D
-        PIParmD.qInMeas = SVM.Ld;        // This is in Amps
+        PIParmD.qInMeas = SVM.Id;        // This is in Amps
         PIParmD.qInRef = CtrlParm.IdRef; // This is in Amps
         CalcPI(&PIParmD);
         SVM.Vd = PIParmD.qOut; // This is in %. If should be converted to volts, multiply with (DC/2)
@@ -172,7 +174,7 @@ void PI_Control(void)
         }
 
         // PI control for Q
-        PIParmQ.qInMeas = SVM.Lq;        // This is in Amps
+        PIParmQ.qInMeas = SVM.Iq;        // This is in Amps
         PIParmQ.qInRef = CtrlParm.IqRef; // This is in Amps
         CalcPI(&PIParmQ);
         SVM.Vq = PIParmQ.qOut; // This is in %. If should be converted to volts, multiply with (DC/2)

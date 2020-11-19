@@ -1,19 +1,18 @@
-#include "init.h"
-#include "halless.h"
+#include "opa.h"
 #include "pwm.h"
+#include "Hall.h"
+#include "init.h"
 #include "dmac.h"
 #include "common.h"
-#include "opa.h"
-/*******************************************************************************
- * Function implementation - global ('extern') and local ('static')
- ******************************************************************************/
+#include "halless.h"
 
-/**
- *******************************************************************************
- ** \brief OPA 通用OPA
- **
- ******************************************************************************/
-void OPA_GpMode_Test(void)
+/**************************************************************************************************
+ 函 数 名  : OPA_Init
+ 功能描述  : 通用运放初始化
+ 输入参数  : 无
+ 输出参数  : void
+**************************************************************************************************/
+void OPA_init(void)
 {
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
     Sysctrl_SetPeripheralGate(SysctrlPeripheralOpa, TRUE);
@@ -67,7 +66,7 @@ int fputc(int ch, FILE *f)
  输入参数  : 无
  输出参数  : void
 **************************************************************************************************/
-void Clk_Init(void)
+void Clk_init(void)
 {
     stc_sysctrl_clk_config_t stcClkConfig; // 配置时钟
     stc_sysctrl_pll_config_t stcPLLCfg;    // 配置PLL时钟
@@ -76,6 +75,8 @@ void Clk_Init(void)
     DDL_ZERO_STRUCT(stcPLLCfg);
     ///< 开启FLASH外设时钟
     Sysctrl_SetPeripheralGate(SysctrlPeripheralFlash, TRUE);
+    ///< 开启硬件除法外设时钟
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralDiv, TRUE);
     enFlashWait = FlashWaitCycle1; //读等待周期设置为1（当HCLK大于24MHz时必须至少为1）
     Flash_WaitCycle(enFlashWait);  // Flash 等待1个周期
 
@@ -103,13 +104,12 @@ void Clk_Init(void)
  输入参数  : 无
  输出参数  : void
 **************************************************************************************************/
-void LED_Init(void)
+void LED_init(void)
 {
     stc_gpio_config_t ledGpioCfg;
     DDL_ZERO_STRUCT(ledGpioCfg);
     ///< 打开GPIO外设时钟门控
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralDiv, TRUE);
     ///< 端口方向配置 -> 输出
     ledGpioCfg.enDir = GpioDirOut;
     ///< 端口驱动能力配置 -> 高驱动能力
@@ -132,7 +132,7 @@ void LED_Init(void)
  输入参数  : 无
  输出参数  : void
 **************************************************************************************************/
-void UART_Init(void)
+void UART_init(void)
 {
     uint16_t u16Scnt = 0;
     stc_gpio_config_t stcGpioCfg;
@@ -187,7 +187,13 @@ void UART_Init(void)
     Uart_ClrStatus(UARTCH0, UartRC);  //清接收请求
     Uart_EnableFunc(UARTCH0, UartRx); //使能收发
 }
-void DMA_Init(void)
+/**************************************************************************************************
+ 函 数 名  : DMA_Init
+ 功能描述  : ADC_DMA初始化
+ 输入参数  : 无
+ 输出参数  : void
+**************************************************************************************************/
+void DMA_init(void)
 {
     stc_dma_config_t stcDmaCfg;
     DDL_ZERO_STRUCT(stcDmaCfg);
@@ -212,12 +218,65 @@ void DMA_Init(void)
     Dma_EnableChannel(DmaCh0);
 }
 /**************************************************************************************************
+ 函 数 名  : Gpio_IRQHandler
+ 功能描述  : 外部中断函数
+ 输入参数  : 通道号
+ 输出参数  : void
+**************************************************************************************************/
+void Gpio_IRQHandler(uint8_t u8Param)
+{
+    Hall_Get();
+    Gpio_ClearIrq(GpioPortC, GpioPin13);
+    Gpio_ClearIrq(GpioPortD, GpioPin0);
+    Gpio_ClearIrq(GpioPortD, GpioPin1);
+}
+/**************************************************************************************************
+ 函 数 名  : Hall_Gpio_Init
+ 功能描述  : 霍尔初始化
+ 输入参数  : 无
+ 输出参数  : void
+**************************************************************************************************/
+void Hall_init(void)
+{
+    stc_gpio_config_t pstcGpioCfg;
+
+    ///< 打开GPIO外设时钟门控
+    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
+
+    ///< 端口方向配置->输入
+    pstcGpioCfg.enDir = GpioDirIn;
+    ///< 端口驱动能力配置->高驱动能力
+    pstcGpioCfg.enDrv = GpioDrvL;
+    ///< 端口上下拉配置->上拉
+    pstcGpioCfg.enPuPd = GpioPu;
+    ///< 端口开漏输出配置->开漏输出关闭
+    pstcGpioCfg.enOD = GpioOdDisable;
+    ///< 端口输入/输出值寄存器总线控制模式配置->AHB
+    pstcGpioCfg.enCtrlMode = GpioAHB;
+
+    ///< GPIO IO HALL初始化
+    Gpio_Init(GpioPortC, GpioPin13, &pstcGpioCfg);
+    Gpio_Init(GpioPortD, GpioPin0, &pstcGpioCfg);
+    Gpio_Init(GpioPortD, GpioPin1, &pstcGpioCfg);
+    Gpio_ClearIrq(GpioPortC, GpioPin13);                  ///< 打开并配置PD04为下降沿中断
+    Gpio_EnableIrq(GpioPortC, GpioPin13, GpioIrqRising);  ///< 使能端口PORTD系统中断
+    Gpio_EnableIrq(GpioPortC, GpioPin13, GpioIrqFalling); ///< 使能端口PORTD系统中断
+    Gpio_ClearIrq(GpioPortD, GpioPin0);                   ///< 打开并配置PD04为下降沿中断
+    Gpio_EnableIrq(GpioPortD, GpioPin0, GpioIrqFalling);  ///< 使能端口PORTD系统中断
+    Gpio_EnableIrq(GpioPortD, GpioPin0, GpioIrqRising);   ///< 使能端口PORTD系统中断
+    Gpio_ClearIrq(GpioPortD, GpioPin1);                   ///< 打开并配置PD04为下降沿中断
+    Gpio_EnableIrq(GpioPortD, GpioPin1, GpioIrqFalling);  ///< 使能端口PORTD系统中断
+    Gpio_EnableIrq(GpioPortC, GpioPin1, GpioIrqRising);   ///< 使能端口PORTD系统中断
+    EnableNvic(PORTD_IRQn, IrqLevel2, TRUE);
+    EnableNvic(PORTC_IRQn, IrqLevel2, TRUE);
+}
+/**************************************************************************************************
  函 数 名  : ADC_Init
  功能描述  : ADC初始化
  输入参数  : 无
  输出参数  : void
 **************************************************************************************************/
-void ADC_Init(void)
+void ADC_init(void)
 {
     uint8_t u8AdcSqrScanCnt;
     uint8_t u8AdcJqrScanCnt;
@@ -289,7 +348,7 @@ void ADC_Init(void)
  输入参数  : 无
  输出参数  : void
 **************************************************************************************************/
-void PWM_Init(void)
+void PWM_init(void)
 {
     uint16_t u16ArrValue;
     uint16_t u16CompareAValue;

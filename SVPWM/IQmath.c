@@ -115,6 +115,7 @@ uint32_t IQSqrt(uint32_t M)
     }
     return N;
 }
+// 硬件除法加速
 int32_t HDIV_div(int32_t Dividend, int16_t Divisor)
 {
     M0P_HDIV->SIGN_f.SIGN = 1;

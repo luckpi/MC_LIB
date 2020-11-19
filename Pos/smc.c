@@ -1,11 +1,11 @@
 #include "smc.h"
-#include "MotorConfig.h"
-#include "IQmath.h"
 #include "atan2.h"
+#include "IQmath.h"
+#include "MotorConfig.h"
 #define ONE_BY_SQRT3 0.5773502691
 uint16_t trans_counter = 0;
 int16_t Theta_error = 0;    // 开环强制角度和估算角度的误差,在闭环的过程中慢慢减去误差,每次步进0.05度。
-uint16_t PrevTheta = 0;      // 上一次角度值
+uint16_t PrevTheta = 0;     // 上一次角度值
 int16_t AccumTheta = 0;     // 累加每次的角度变化量
 uint16_t AccumThetaCnt = 0; // 用于计算电机速度的计数器.
 MOTOR_ESTIM_PARM_T motorParm;
@@ -28,7 +28,7 @@ void SMC_Init(SMC *s)
     motorParm.qRs = NORM_RS;
     if (((int32_t)motorParm.qRs << NORM_RS_SCALINGFACTOR) >= ((int32_t)motorParm.qLsDt << NORM_LSDTBASE_SCALINGFACTOR))
 
-        s->Fsmopos = Q15(0.0);
+        s->Fsmopos = 0;
     else
         s->Fsmopos = (0x7FFF - HDIV_div(((int32_t)motorParm.qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)), motorParm.qLsDt));
 
@@ -40,32 +40,47 @@ void SMC_Init(SMC *s)
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
     s->mdbi = HDIV_div(s->Kslide, s->MaxSMCError);
-    s->FiltOmCoef = (int16_t)((ENDSPEED_ELECTR * THETA_FILTER_CNST) >> 15);
-    s->MaxVoltage = (int16_t)((ADCSample.Voltage * Q15(ONE_BY_SQRT3)) >> 15);
+    s->FiltOmCoef = (int16_t)(_IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST));
+    // s->MaxVoltage = (int16_t)(_IQmpy(ADCSample.Voltage, 18918));//_IQ(0.57735026918963)
     return;
 }
 
 void CalcBEMF(int16_t *EMF, int16_t *EMFF, int16_t Z)
 {
     int16_t temp_int1, temp_int2;
-    temp_int1 = (int16_t)((smc.Kslf * Z) >> 15);
-    temp_int2 = (int16_t)((smc.Kslf * (*EMF)) >> 15);
+    temp_int1 = (int16_t)(_IQmpy(smc.Kslf, Z));
+    temp_int2 = (int16_t)(_IQmpy(smc.Kslf, (*EMF)));
     temp_int1 -= temp_int2;
     (*EMF) += temp_int1;
-    temp_int1 = (int16_t)((smc.Kslf * (*EMF)) >> 15);
-    temp_int2 = (int16_t)((smc.Kslf * (*EMFF)) >> 15);
+    temp_int1 = (int16_t)(_IQmpy(smc.Kslf, (*EMF)));
+    temp_int2 = (int16_t)(_IQmpy(smc.Kslf, (*EMFF)));
     temp_int1 -= temp_int2;
     (*EMFF) += temp_int1;
 }
+/*
+电流观测器：
+电机物理模型：Us = R * Is + L * d(Is)/dt + Es  
+电流电流模型：d(Is) / dt = (-R/L) * Is + 1/L * (Us - Es) 
+电流数学表达式：Is(n+1) = (1 - Ts * R / L) * Is(n) + Ts / L * (Us(n) - Es(n))
+F = (1 - Ts * R / L)，G = Ts / L (两个增益函数和电机特性有关)
+(Us:输入电压矢量，Is:电机电流矢量，R:绕组电感，L:绕组电感，Ts:控制周期，Es:反电动势矢量)
+
+输入参数：
+I   ：经过Clark变换后的实际电流
+U   ：Vbus / √3 * Valpha(Vbeta)  
+Ehat：估算的反电动势
+IHat：估算的电流
+CF  :估算增益
+*/
 void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
     int16_t temp_int1, temp_int2, temp_int3, I_Error;
-    temp_int1 = (int16_t)((smc.Gsmopos * U) >> 15);
-    temp_int2 = (int16_t)((smc.Gsmopos * EMF) >> 15);  //原来右移15不行，改23可以
-    temp_int3 = (int16_t)((smc.Gsmopos * (*Z)) >> 15); //原来右移15不行，改23可以
+    temp_int1 = (int16_t)(_IQmpy(smc.Gsmopos, U));
+    temp_int2 = (int16_t)(_IQmpy(smc.Gsmopos, EMF));
+    temp_int3 = (int16_t)(_IQmpy(smc.Gsmopos, (*Z)));
     temp_int1 -= temp_int2;
     temp_int1 -= temp_int3;
-    *EstI = temp_int1 + (int16_t)((smc.Fsmopos * (*EstI)) >> 15);
+    *EstI = temp_int1 + (int16_t)(_IQmpy(smc.Fsmopos, (*EstI)));
     I_Error = (*EstI) - I;
     if (Abs(I_Error) < smc.MaxSMCError)
     {
@@ -115,18 +130,18 @@ void SMC_Position_Estimation(SMC *s)
                                       SpeedLoopTime * 65535      
 
         ********************************************************/
-        s->Omega = (int16_t)((AccumTheta * SMO_SPEED_EST_MULTIPLIER) >> 15); // 电转速
+        s->Omega = (int16_t)(_IQmpy(AccumTheta, SMO_SPEED_EST_MULTIPLIER)); // 电转速
         AccumThetaCnt = 0;
         AccumTheta = 0;
     }
     trans_counter++;
     if (trans_counter == TRANSITION_STEPS)
         trans_counter = 0;
-    s->OmegaFltred = s->OmegaFltred + ((s->FiltOmCoef * (s->Omega - s->OmegaFltred)) >> 15);
-    s->Kslf = s->KslfFinal = (int16_t)((s->OmegaFltred * THETA_FILTER_CNST) >> 15);
+    s->OmegaFltred = s->OmegaFltred + (_IQmpy(s->FiltOmCoef, (s->Omega - s->OmegaFltred)));
+    s->Kslf = s->KslfFinal = (int16_t)(_IQmpy(s->OmegaFltred, THETA_FILTER_CNST));
     // 由于滤波器系数是动态的，因此我们需要确保最小
     // 因此我们将最低的运行速度定义为最低的滤波器系数
-    Kslf_min = (int16_t)((ENDSPEED_ELECTR * THETA_FILTER_CNST) >> 15);
+    Kslf_min = (int16_t)(_IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST));
     if (s->Kslf < Kslf_min)
     {
         s->Kslf = Kslf_min;

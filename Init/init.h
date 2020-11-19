@@ -10,7 +10,7 @@
 #define SYSCLK (48000000)    // 除PWM外的模块时钟
 
 #define PWM_FRE (16000) //PWM的频率
-#define PWM_FRE_SETATA ((PWMSYSCLK / PWM_FRE) >> 1)
+#define PWM_FRE_SETATA   (1500)                       //自动重装载值((PWMSYSCLK / PWM_FRE) >> 1)
 #define PWM_DUTYCYCLE_95 ((PWM_FRE_SETATA / 20) * 19) // PWM的占空比  95%
 #define PWM_DUTYCYCLE_75 ((PWM_FRE_SETATA / 4) * 3)   // PWM的占空比  75%
 #define PWM_DUTYCYCLE_50 (PWM_FRE_SETATA / 2)         // PWM的占空比  50%
@@ -71,11 +71,12 @@
         M0P_GPIO->PBADS_f.PB11 = 1; \
         M0P_GPIO->PBDIR_f.PB11 = 1; \
     }
-extern void LED_Init(void);
-extern void PWM_Init(void);
-extern void ADC_Init(void);
-extern void UART_Init(void);
-extern void Clk_Init(void);
-extern void DMA_Init(void);
-extern void OPA_GpMode_Test(void);
+extern void LED_init(void);
+extern void PWM_init(void);
+extern void ADC_init(void);
+extern void UART_init(void);
+extern void Clk_init(void);
+extern void DMA_init(void);
+extern void OPA_init(void);
+extern void Hall_init(void);
 #endif

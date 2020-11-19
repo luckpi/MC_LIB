@@ -5,6 +5,7 @@
 #include "adc.h"
 #include "IQmath.h"
 #include "svgen_dq.h"
+#include "smc.h"
 // #include "protect.h"
 // #include "cmp.h"
 // #include "timer.h"
@@ -31,15 +32,9 @@ static void MotorAhead(void)
 ******************************************************************************/
 static void MotorInit(void)
 {
-    // ALL_INT_DISEN; // 关闭所有中断
-    // PortOutput_Config(0, 1, 0, 1, 0, 1); // 打开下管充电
-    // PWMPortBrake(); //充电
-    delay1ms(10);
-    // PortOutput_Config(0, 0, 0, 0, 0, 0);
-    delay10us(10);
+    PortOutput_Config(6, 6, 6, 6, 6, 6);
     mcState = mcAlign;
 }
-
 /*****************************************************************************
  函 数 名  : MotorAlign
  功能描述  : 定位初始相位，开启ADC中断，准备进入强拖启动
@@ -48,15 +43,12 @@ static void MotorInit(void)
 *****************************************************************************/
 static void MotorAlign(void)
 {
-    HoldParm.PWMDutyCycle = PWM_START_DUTY;
-    //    PWMChangeDuty(HoldParm.PWMDutyCycle);
-
-    delay1ms(100);
-    delay10us(200);
-    // IPD(); // 定位需要根据电机调整
-    // SFRPAGE = 0x02; // 清除所有中断标识位
-    PortOutput_Config(6, 6, 6, 6, 6, 6);
-    mcState = mcDrag;
+    uint16_t LockTime = 4000;
+    if (HoldParm.MainDetectCnt > LockTime)
+    {
+        mcState = mcDrag;
+    }
+    return;
 }
 /*****************************************************************************
  函 数 名  : EnterRunInit
@@ -77,16 +69,20 @@ void EnterRunInit(void)
 void StartupDrag(void)
 {
     // static uint16_t ADC_CNT = 0;
-    // if (++ADC_CNT >= 50)
+    // if (++ADC_CNT >= 65535)
     // {
     //     ADC_CNT = 0;
-    SVM.Vd = 0;
-    SVM.Vq = -20000;
-    AngleSin_Cos.IQAngle += 60;
-    if (AngleSin_Cos.IQAngle > 65535)
-    {
-        AngleSin_Cos.IQAngle = 0;
-    }
+    smc.OpenLood = 1;
+    // }
+    // else if (!smc.OpenLood)
+    // {
+    // SVM.Id = 100;
+    // SVM.Iq = 200;
+    // }
+    AngleSin_Cos.IQAngle += 75;
+    // if (AngleSin_Cos.IQAngle > 65535)
+    // {
+    //     AngleSin_Cos.IQAngle = 0;
     // }
 }
 /*****************************************************************************

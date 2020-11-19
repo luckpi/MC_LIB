@@ -13,8 +13,8 @@ typedef struct
     int16_t Ibeta;  // Clark变换输出
     int16_t Sine;   // 正弦
     int16_t Cosine; // 余弦
-    int16_t Ld;     // Park d轴
-    int16_t Lq;     // Park q轴
+    int16_t Id;     // Park d轴
+    int16_t Iq;     // Park q轴
     int16_t Vd;     // PI输出
     int16_t Vq;     // PI输出
     int16_t Valpha; // Park逆变换输出

@@ -14,7 +14,7 @@
 #define IRP_PERCALC 16          // 每个速度计算的PWM回路 (SPEEDLOOPTIME / LOOPTIMEINSEC)
 #define TRANSITION_STEPS 4      // IRP_PERCALC / 4
 
-#define SMCGAIN 0.35       // Slide Mode Controller Gain (0.0 to 0.9999)
+#define SMCGAIN 0.85       // Slide Mode Controller Gain (0.0 to 0.9999)
 #define MAXLINEARSMC 0.005 // If measured current - estimated current   \
                            // is less than MAXLINEARSMC, the slide mode \
                            // Controller will have a linear behavior    \
@@ -33,32 +33,33 @@
 typedef struct
 {
     int16_t MaxVoltage;
-    int16_t Valpha;      //  静态α轴定子电压
-    int16_t Ealpha;      //  静态α轴反电动势
-    int16_t EalphaFinal; //  滤波后的EMF用于角度计算
-    int16_t Zalpha;      //  静态α轴滑膜校准因子
-    int16_t Gsmopos;     //  电机相关控制增益
-    int16_t EstIalpha;   //  估算的静态α轴定子电流
-    int16_t Fsmopos;     //  电机相关控制增益
-    int16_t Vbeta;       //  静态β轴定子电压
-    int16_t Ebeta;       //  静态的β轴反电动势
-    int16_t EbetaFinal;  //  滤波后的EMF用于角度计算
-    int16_t Zbeta;       //  静态β轴滑膜校准因子
-    int16_t EstIbeta;    //  估算的静态β轴定子电流
-    int16_t Ialpha;      //  静态α轴定子电流
-    int16_t IalphaError; //  静态α轴定子电流与估算电流误差
-    int16_t Kslide;      //  滑膜控制器增益
-    int16_t MaxSMCError; //  最大电流误差
-    int16_t Ibeta;       //  静态β轴定子电流
-    int16_t IbetaError;  //  静态β轴电流误差
-    int16_t Kslf;        //  滑膜滤波器增益
-    int16_t KslfFinal;   //  用于角度计算的BEMF滤波器
-    int16_t FiltOmCoef;  //  过滤系数，用于Omega过滤的calc
-    int16_t ThetaOffset; //  偏移量用于补偿转子角度
-    uint16_t Theta;      //  输出：补偿转子角
-    int16_t mdbi;        //  Kslide / MaxSMCError
-    int16_t Omega;       //  转子转速
-    int16_t OmegaFltred; //  转速PI的滤波转子转速
+    int16_t Valpha;       //  静态α轴定子电压
+    int16_t Ealpha;       //  静态α轴反电动势
+    int16_t EalphaFinal;  //  滤波后的EMF用于角度计算
+    int16_t Zalpha;       //  静态α轴滑膜校准因子
+    int16_t Gsmopos;      //  电机相关控制增益
+    int16_t EstIalpha;    //  估算的静态α轴定子电流
+    int16_t Fsmopos;      //  电机相关控制增益
+    int16_t Vbeta;        //  静态β轴定子电压
+    int16_t Ebeta;        //  静态的β轴反电动势
+    int16_t EbetaFinal;   //  滤波后的EMF用于角度计算
+    int16_t Zbeta;        //  静态β轴滑膜校准因子
+    int16_t EstIbeta;     //  估算的静态β轴定子电流
+    int16_t Ialpha;       //  静态α轴定子电流
+    int16_t IalphaError;  //  静态α轴定子电流与估算电流误差
+    int16_t Kslide;       //  滑膜控制器增益
+    int16_t MaxSMCError;  //  最大电流误差
+    int16_t Ibeta;        //  静态β轴定子电流
+    int16_t IbetaError;   //  静态β轴电流误差
+    int16_t Kslf;         //  滑膜滤波器增益
+    int16_t KslfFinal;    //  用于角度计算的BEMF滤波器
+    int16_t FiltOmCoef;   //  过滤系数，用于Omega过滤的calc
+    int16_t ThetaOffset;  //  偏移量用于补偿转子角度
+    uint16_t Theta;       //  输出：补偿转子角
+    int16_t mdbi;         //  Kslide / MaxSMCError
+    int16_t Omega;        //  转子转速
+    int16_t OmegaFltred;  //  转速PI的滤波转子转速
+    uint8_t OpenLood : 1; //  开环标识位
 } SMC;
 typedef SMC *SMC_handle;
 

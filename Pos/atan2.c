@@ -1,5 +1,6 @@
-#include "IQmath.h"
 #include "atan2.h"
+#include "IQmath.h"
+
 /* atan函数 */
 static int16_t Atan(int16_t tanVal)
 {
@@ -18,10 +19,10 @@ static int16_t Atan(int16_t tanVal)
     {
         z = tanVal;
     }
-    zz = (z * z) >> 15;
-    temp = (RL_A * zz) >> 15;
-    temp = (temp + RL_B) * zz >> 15;
-    temp = (temp + RL_C) * z >> 15;
+    zz = (int16_t)(_IQmpy(z, z));
+    temp = (int16_t)(_IQmpy(RL_A, zz));
+    temp = (int16_t)(_IQmpy((temp + RL_B), zz));
+    temp = (int16_t)(_IQmpy((temp + RL_C), z));
     return (temp);
 }
 /* atan2函数 */
@@ -56,7 +57,7 @@ int16_t Atan2(int16_t y, int16_t x)
     }
     else
     {
-        z = HDIV_div((x << 15) ,y);
+        z = HDIV_div((x << 15), y);
         tmp2 = Atan(z);
         if (y > 0)
         {

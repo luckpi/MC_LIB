@@ -3,7 +3,6 @@
 #include "svgen_dq.h"
 //α：Alpha β：Beta θ：Theta
 //  1/sqrt(3) = 0.57735026918963
-#define ONEbySQRT3 0.57735026918963 /* 1/sqrt(3) */
 /*
 Clark：
     ia + ib + ic = 0 ;
@@ -18,13 +17,13 @@ void Clark_Cala(void)
 }
 /*
 Park：
-    ld =  iAlpha * cos(θ) + iBeta * cos(θ)
+    ld =  iAlpha * cos(θ) + iBeta * sin(θ)
     lq = -iAlpha * sin(θ) + iBeta * cos(θ)
 */
 void Park_Cala(void)
 {
-    SVM.Ld = _IQmpy(SVM.Ialpha, SVM.Cosine) + _IQmpy(SVM.Ibeta, SVM.Sine);
-    SVM.Lq = _IQmpy(SVM.Ibeta, SVM.Cosine) - _IQmpy(SVM.Ialpha, SVM.Sine);
+    SVM.Id = _IQmpy(SVM.Ialpha, SVM.Cosine) + _IQmpy(SVM.Ibeta, SVM.Sine);
+    SVM.Iq = _IQmpy(SVM.Ibeta, SVM.Cosine) - _IQmpy(SVM.Ialpha, SVM.Sine);
 }
 /*
 InvPark：

@@ -20,9 +20,10 @@
 #define U270_360 0x0300
 typedef struct
 {
-    int32_t IQAngle; // Input:   alpha-axis
-    int32_t IQSin;   // Input:   beta-axis
-    int32_t IQCos;   // Output:  phase-a
+    uint16_t IQAngle; // Input:   alpha-axis
+    uint16_t IQSin;   // Input:   beta-axis
+    uint16_t IQCos;   // Output:  phase-a
+    uint16_t Angle_X;   // Output:  phase-a
 } IQSin_Cos, *p_IQSin_Cos;
 
 #define IQSin_Cos_DEFAULTS \

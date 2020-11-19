@@ -35,7 +35,7 @@ typedef enum
 typedef struct
 {
     uint8_t RotorDirection : 1; // 电机转动方向
-    uint8_t MainDetectCnt : 6;  // 主循环计数
+    uint16_t MainDetectCnt;     // 主循环计数
     uint16_t SpeedLoopCnt;      // 调整转速占空比的周期计数
     float PWMDutyCycle;         // PWM占空比
     uint16_t SpeedTime;         // 一个电周期时间
@@ -72,7 +72,6 @@ typedef struct
     uint8_t DutyCycleUse; // 占空比
     uint8_t Flag_Cap_Valid : 1;
 } PWMCatchPara_T;
-
 
 extern MotorState_T mcState;
 extern ErrorState_T error_code;

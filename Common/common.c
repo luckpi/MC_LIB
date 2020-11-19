@@ -64,8 +64,8 @@ void Common_Init(void)
     SVM.Ibeta = 0;  // Clark变换输出
     SVM.Sine = 0;   // 正弦
     SVM.Cosine = 0; // 余弦
-    SVM.Ld = 0;     // Park d轴
-    SVM.Lq = 0;     // Park q轴
+    SVM.Id = 0;     // Park d轴
+    SVM.Iq = 0;     // Park q轴
     SVM.Vd = 0;     // PI输出
     SVM.Vq = 0;     // PI输出
     SVM.Valpha = 0; // Park逆变换输出
@@ -92,6 +92,7 @@ void Common_Init(void)
     smc.Theta = 0;
     smc.Omega = 0;
     smc.MaxVoltage = 0;
+    smc.OpenLood=0;
     error_code = normal;
 
     //PID_Init

@@ -8,7 +8,11 @@
 #include "IQmath.h"
 #include "smc.h"
 #include "PI.h"
-
+/*Moving Average Filter based Current Offset Calculator Parameters */
+#define MOVING_AVG_WINDOW_SIZE 18 // moving average window sample size is 2^18
+#define CURRENT_OFFSET_MAX 2500   // current offset max limit
+#define CURRENT_OFFSET_MIN 1500   // current offset min limit
+#define CURRENT_OFFSET_INIT 2048  // // as the OPAMPs are biased at VDD/2, the estimate offset value is 2048 i.e. half of 4095 which is full scale value of a 12 bit ADC.
 /*****************************************************************************
  函 数 名  : PhaseCurrentSample
  功能描述  : 相电流采样
@@ -17,6 +21,9 @@
 *****************************************************************************/
 static void PhaseCurrentSample(void)
 {
+    // static uint32_t cumulative_sum_phaseA = (CURRENT_OFFSET_INIT << MOVING_AVG_WINDOW_SIZE);
+    // static uint32_t cumulative_sum_phaseB = (CURRENT_OFFSET_INIT << MOVING_AVG_WINDOW_SIZE);
+    // static int32_t moving_average_phaseA = 0, moving_average_phaseB = 0;
     volatile uint32_t *BaseJqrResultAddress = (volatile uint32_t *)&(M0P_ADC->JQRRESULT0);
     if (mcState == mcAhead)
     {
@@ -25,10 +32,37 @@ static void PhaseCurrentSample(void)
     }
     else
     {
-        //把电流转变成%比格式  //电流增益 Imax / 2048
-        SVM.Ia = (uint16_t)(-((*(BaseJqrResultAddress + 1)) - SVM.Ib_C) << 4);
-        SVM.Ib = (uint16_t)(-((*(BaseJqrResultAddress)) - SVM.Ia_C) << 4);
+        //把电流转变成%比格式 2048转32768 //最大力矩 = 参考电压/(采样电阻*ADC放大倍数)
+        SVM.Ia = (int16_t)(-((*(BaseJqrResultAddress + 1)) - SVM.Ib_C));
+        SVM.Ib = (int16_t)(-((*(BaseJqrResultAddress)) - SVM.Ia_C));
     }
+
+    // cumulative_sum_phaseA = cumulative_sum_phaseA + SVM.Ia - moving_average_phaseA;
+    // moving_average_phaseA = cumulative_sum_phaseA >> MOVING_AVG_WINDOW_SIZE;
+
+    // /*Bounding the offset value */
+    // if (moving_average_phaseA > CURRENT_OFFSET_MAX)
+    // {
+    //     moving_average_phaseA = CURRENT_OFFSET_MAX;
+    // }
+    // else if (moving_average_phaseA < CURRENT_OFFSET_MIN)
+    // {
+    //     moving_average_phaseA = CURRENT_OFFSET_MIN;
+    // }
+    // cumulative_sum_phaseB = cumulative_sum_phaseB + SVM.Ib - moving_average_phaseB;
+    // moving_average_phaseB = cumulative_sum_phaseB >> MOVING_AVG_WINDOW_SIZE;
+
+    // /*Bounding the offset value */
+    // if (moving_average_phaseB > CURRENT_OFFSET_MAX)
+    // {
+    //     moving_average_phaseB = CURRENT_OFFSET_MAX;
+    // }
+    // else if (moving_average_phaseB < CURRENT_OFFSET_MIN)
+    // {
+    //     moving_average_phaseB = CURRENT_OFFSET_MIN;
+    // }
+    // SVM.Ia = -((SVM.Ib - moving_average_phaseB) << 4); // Removing the offset
+    // SVM.Ib = -((SVM.Ia - moving_average_phaseA) << 4);
 }
 /*****************************************************************************
  函 数 名  : PhaseCurrentSample
@@ -77,6 +111,19 @@ void ADC_ISR(void)
         ADC_Calibrate();
         SMC_Init(&smc);
         AngleSin_Cos.IQAngle = 0;
+        // AngleSin_Cos.Angle_X = 60;
+        break;
+    case mcAlign:
+        HoldParm.MainDetectCnt++;
+        Clark_Cala();
+        Park_Cala();
+        PI_Control();
+        IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
+        SVM.Sine = AngleSin_Cos.IQSin;
+        SVM.Cosine = AngleSin_Cos.IQCos;
+        InvPark();
+        svgendq_calc();
+        PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
         break;
     case mcDrag:
         Clark_Cala();
@@ -86,20 +133,17 @@ void ADC_ISR(void)
         smc.Vbeta = SVM.Vbeta;
         SMC_Position_Estimation(&smc);
         StartupDrag();
+        Park_Cala();
+        PI_Control();
         IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
         SVM.Sine = AngleSin_Cos.IQSin;
         SVM.Cosine = AngleSin_Cos.IQCos;
-        // Park_Cala();
-        // PI_Control();
         InvPark();
         svgendq_calc();
         PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
         break;
-    // case mcRun:
-    //     HoldParm.SpeedLoopCnt++;
-    //     // ADCAnalogSample();
-    //     CheckZeroCrossing();
-    //     break;
+    case mcRun:
+        break;
     default:
         break;
     }
