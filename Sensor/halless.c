@@ -30,8 +30,8 @@ static void PhaseCurrentSample(void)
     else
     {
         //把电流转变成%比格式 2048转32768 //最大力矩 = 参考电压/(采样电阻*ADC放大倍数)
-        SVM.Ia = (int16_t)(-((*(BaseJqrResultAddress + 1)) - SVM.Ib_C));
-        SVM.Ib = (int16_t)(-((*(BaseJqrResultAddress)) - SVM.Ia_C));
+        SVM.Ia = (int16_t)(-(((*(BaseJqrResultAddress + 1)) - SVM.Ib_C) << 4));
+        SVM.Ib = (int16_t)(-(((*(BaseJqrResultAddress)) - SVM.Ia_C) << 4));
     }
 }
 /*****************************************************************************

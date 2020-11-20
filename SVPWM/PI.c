@@ -59,13 +59,13 @@ void PI_Parameters(void)
 }
 static void CalcPI(tPIParm *pParm)
 {
-    int16_t Err;
-    int16_t U;
-    int16_t Exc;
+    int32_t Err;
+    int32_t U;
+    int32_t Exc;
 
     Err = pParm->qInRef - pParm->qInMeas;
     pParm->qErr = Err;
-    U = pParm->qdSum + (int16_t)(_IQmpy(pParm->qKp, Err));
+    U = pParm->qdSum + (_IQmpy(pParm->qKp, Err << 7));
 
     if (U > pParm->qOutMax)
     {
@@ -81,7 +81,6 @@ static void CalcPI(tPIParm *pParm)
     }
 
     Exc = U - pParm->qOut;
-
     pParm->qdSum += (int16_t)(_IQmpy(pParm->qKi, Err)) - (int16_t)(_IQmpy(pParm->qKc, Exc));
 }
 void PI_Control(void)
