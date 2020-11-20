@@ -1,7 +1,11 @@
 #include "atan2.h"
 #include "IQmath.h"
-
-/* atan函数 */
+/*****************************************************************************
+ 函 数 名  : Atan
+ 功能描述  : 反正切
+ 输入参数  : α，β轴的商
+ 输出参数  : void
+*****************************************************************************/
 static int16_t Atan(int16_t tanVal)
 {
     int16_t z, zz, temp;
@@ -25,16 +29,21 @@ static int16_t Atan(int16_t tanVal)
     temp = (int16_t)(_IQmpy((temp + RL_C), z));
     return (temp);
 }
-/* atan2函数 */
+/*****************************************************************************
+ 函 数 名  : Atan2
+ 功能描述  : 反正切
+ 输入参数  : α，β轴估算反电动势
+ 输出参数  : 角度
+*****************************************************************************/
 int16_t Atan2(int16_t y, int16_t x)
 {
     int16_t tmp1, tmp2, z;
 
     tmp1 = Abs(y);
     tmp2 = Abs(x);
-    z = (tmp1 > tmp2) ? (tmp1) : (tmp2); /* Pick the max value from tmp1 and tmp2. */
+    z = (tmp1 > tmp2) ? (tmp1) : (tmp2); // 比较最大值
 
-    if (z < 1)
+    if (z < RL_EPSILON_F)
     {
         return 0;
     }

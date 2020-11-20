@@ -1,34 +1,32 @@
 #ifndef _PI_H
 #define _PI_H
 #include "common.h"
-#define PWM_FREQ 16000
-#define PWM_TS (float)(1.0 / PWM_FREQ)
-#define RL_WC_VELREF_FIL                  //    ((float)1.0)                                /* 速度参考滤波器的交叉频率 */
-#define RL_WCTS_VELREF 2                  //    (float)(RL_WC_VELREF_FIL * PWM_TS)          /* Wc*Ts */
-#define RL_1MINUS_WCTS_VELREF 32766       //    (float)(1.0 - RL_WCTS_VELREF)               /* 1 - Wc*Ts */
-#define MAX_ADC_COUNT 4095                //    (float)4095                                 /* 12-bit ADC */
-#define POT_ADC_COUNT_FW_SPEED_RATIO 1000 //    建议用角速度计算 / 4095
-#define Q_CURRENT_REF_OPENLOOP 629        //    ((float)0.4) 启动-电动机在电流控制模式下启动加速
-#define END_SPEED_RADS_PER_SEC_ELEC 1000  //    目前给的值都是瞎写的，电机转速转角度
+#define RL_WC_VELREF_FIL                     ((float)1.0)  /* 速度参考滤波器的交叉频率 */
+#define RL_WCTS_VELREF                       2      // (float)(RL_WC_VELREF_FIL * PWM_TS) /* Wc*Ts */
+#define RL_1MINUS_WCTS_VELREF                32766  // (float)(1.0 - RL_WCTS_VELREF) /* 1 - Wc*Ts */
+#define MAX_ADC_COUNT                        4095   // (float)4095   /* 12-bit ADC */
+#define POT_ADC_COUNT_FW_SPEED_RATIO         1000   // 建议用角速度计算 / 4095
+#define Q_CURRENT_REF_OPENLOOP               62     // ((float)0.4) 启动力矩
+#define END_SPEED_RADS_PER_SEC_ELEC          1000   // 目前给的值都是瞎写的，电机转速转角度
 /* PI controllers tuning values - */
 //******** D Control Loop Coefficients *******
-#define D_CURRCNTR_PTERM 655    //0.02
-#define D_CURRCNTR_ITERM 1     //(0.00005)
-#define D_CURRCNTR_CTERM 32767  //0.5
-#define D_CURRCNTR_OUTMAX 32767 //0.999
+#define D_CURRCNTR_PTERM                     655    //0.02
+#define D_CURRCNTR_ITERM                     0      //(0.00005)
+#define D_CURRCNTR_CTERM                     0      //0.5
+#define D_CURRCNTR_OUTMAX                    32767  //0.999
 
 //******** Q Control Loop Coefficients *******
-#define Q_CURRCNTR_PTERM 655    //0.02
-#define Q_CURRCNTR_ITERM 1     //(0.00005)
-#define Q_CURRCNTR_CTERM 32767  //0.5
-#define Q_CURRCNTR_OUTMAX 32767 // 0.999
+#define Q_CURRCNTR_PTERM                     0      //0.02
+#define Q_CURRCNTR_ITERM                     0      //(0.00005)
+#define Q_CURRCNTR_CTERM                     0      //0.5
+#define Q_CURRCNTR_OUTMAX                    32767  // 0.999
 
 //*** Velocity Control Loop Coefficients *****
-#define SPEEDCNTR_PTERM (0.005)
-#define SPEEDCNTR_ITERM (0.0000006)
-#define SPEEDCNTR_CTERM 0.5
-#define SPEEDCNTR_OUTMAX MAX_MOTOR_CURRENT
-#define SPEEDCNTR_OUTMAX MAX_MOTOR_CURRENT
+#define SPEEDCNTR_PTERM                      (0.005)
+#define SPEEDCNTR_ITERM                      (0.0000006)
+#define SPEEDCNTR_CTERM                      0.5
+#define SPEEDCNTR_OUTMAX                     MAX_MOTOR_CURRENT
+#define SPEEDCNTR_OUTMAX                     MAX_MOTOR_CURRENT
 typedef struct
 {
     int16_t qdSum;

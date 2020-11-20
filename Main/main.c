@@ -44,10 +44,10 @@ int main()
 		// printf("Ualpha=%d,Ubeta=%d\n", smc.Valpha, smc.Vbeta);
 		// printf("Ia=%d,Ib=%d\n", SVM.Ia, SVM.Ib);
 		// printf("Vq=%d,Vd=%d\n", SVM.Vq, SVM.Vd);
-		// printf("Iq=%d,Id=%d\n", SVM.Iq, SVM.Id);
+		printf("Iq=%d,Id=%d\n", SVM.Iq, SVM.Id);
 		// printf("Og=%d\n", smc.Omega);
 		// printf("Ealpha=%d,Ebeta=%d\n", smc.Ealpha, smc.Ebeta);
-		printf("ETheta=%d,Theta=%d\n", smc.Theta, AngleSin_Cos.IQAngle);
+		// printf("ETheta=%d,Theta=%d\n", smc.Theta, AngleSin_Cos.IQAngle);
 		// printf("Hall=%d\n", AngleSin_Cos.Angle_X);
 	}
 }

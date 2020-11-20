@@ -11,9 +11,8 @@ Clark：
 */
 void Clark_Cala(void)
 {
-    // SVM.Ic = 0 - (SVM.Ia + SVM.Ib);
     SVM.Ialpha = SVM.Ia;
-    SVM.Ibeta = _IQmpy((SVM.Ia + (SVM.Ib << 1)), 18918); // _IQ(0.57735026918963)
+    SVM.Ibeta = _IQmpy((SVM.Ia + _IQdiv2(SVM.Ib)), 18918); // _IQ(0.57735026918963)
 }
 /*
 Park：

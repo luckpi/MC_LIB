@@ -3,6 +3,7 @@
 #include "IQmath.h"
 #include "MotorConfig.h"
 #define ONE_BY_SQRT3 0.5773502691
+#define TWO_PI 6.283185307
 uint16_t trans_counter = 0;
 int16_t Theta_error = 0;    // 开环强制角度和估算角度的误差,在闭环的过程中慢慢减去误差,每次步进0.05度。
 uint16_t PrevTheta = 0;     // 上一次角度值
@@ -10,22 +11,30 @@ int16_t AccumTheta = 0;     // 累加每次的角度变化量
 uint16_t AccumThetaCnt = 0; // 用于计算电机速度的计数器.
 MOTOR_ESTIM_PARM_T motorParm;
 SMC smc = SMC_DEFAULTS;
-
+/*****************************************************************************
+ 函 数 名  : SMC_Init
+ 功能描述  : 滑膜控制器参数初始化
+ 输入参数  : 滑膜参数结构体地址
+ 输出参数  : void
+*****************************************************************************/
 void SMC_Init(SMC *s)
 {
+    // 电机参数归一化
+    motorParm.Vol_Const = MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 / 32768.0 * (1.0 - PWM_DTS / PWM_TS);
+    motorParm.Cur_Const = MAX_MOTOR_CURRENT / 32768.0;
+    motorParm.Omg_Const = TWO_PI / 60.0;
+    motorParm.qLsDtBase = (Q15(MOTOR_LS / motorParm.Vol_Const * motorParm.Cur_Const / PWM_TS)) >> 8;
+    motorParm.qLsDt = motorParm.qLsDtBase;
+    motorParm.qRs = (Q15(MOTOR_RS / motorParm.Vol_Const * motorParm.Cur_Const)) >> 1;
     //                R * Ts
     // Fsmopos = 1 - --------
     //                  L
-    //            Ts
-    // Gsmopos = ----
-    //            L
-    // Ts = 采样周期。 如果以PWM采样, Ts = 50 us
+    //             Ts
+    // Gsmopos = ------
+    //              L
+    // Ts = 采样周期。 如果以PWM采样, Ts = 62.5 us
     // R  = 相位电阻。 如果电机数据表未提供，用万用表测量相位电阻,除以二得到相位电阻
     // L  = 相位电感。 如果电机数据表未提供，用万用表测量相位电感,除以二得到相位电感
-
-    motorParm.qLsDtBase = NORM_LSDTBASE;
-    motorParm.qLsDt = motorParm.qLsDtBase;
-    motorParm.qRs = NORM_RS;
     if (((int32_t)motorParm.qRs << NORM_RS_SCALINGFACTOR) >= ((int32_t)motorParm.qLsDt << NORM_LSDTBASE_SCALINGFACTOR))
 
         s->Fsmopos = 0;
@@ -44,7 +53,12 @@ void SMC_Init(SMC *s)
     // s->MaxVoltage = (int16_t)(_IQmpy(ADCSample.Voltage, 18918));//_IQ(0.57735026918963)
     return;
 }
-
+/*****************************************************************************
+ 函 数 名  : CalcBEMF
+ 功能描述  : 估算反电动势滤波
+ 输入参数  : *EMF , *EMFF,  Z
+ 输出参数  : void
+*****************************************************************************/
 void CalcBEMF(int16_t *EMF, int16_t *EMFF, int16_t Z)
 {
     int16_t temp_int1, temp_int2;
@@ -59,18 +73,18 @@ void CalcBEMF(int16_t *EMF, int16_t *EMFF, int16_t Z)
 }
 /*
 电流观测器：
-电机物理模型：Us = R * Is + L * d(Is)/dt + Es  
-电流电流模型：d(Is) / dt = (-R/L) * Is + 1/L * (Us - Es) 
-电流数学表达式：Is(n+1) = (1 - Ts * R / L) * Is(n) + Ts / L * (Us(n) - Es(n))
+电机物理模型：Vs = R * Is + L * d(Is)/dt + Es  
+电流电流模型：d(Is) / dt = (-R/L) * Is + 1/L * (Vs - Es) 
+电流数学表达式：Is(n+1) = (1 - Ts * R / L) * Is(n) + Ts / L * (Vs(n) - Es(n))
 F = (1 - Ts * R / L)，G = Ts / L (两个增益函数和电机特性有关)
 (Us:输入电压矢量，Is:电机电流矢量，R:绕组电感，L:绕组电感，Ts:控制周期，Es:反电动势矢量)
 
 输入参数：
 I   ：经过Clark变换后的实际电流
 U   ：Vbus / √3 * Valpha(Vbeta)  
-Ehat：估算的反电动势
-IHat：估算的电流
-CF  :估算增益
+EMF： 估算的反电动势
+EstI：估算的电流
+z   : 校准因子
 */
 void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
@@ -96,7 +110,12 @@ void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
         (*Z) = -smc.Kslide;
     }
 }
-
+/*****************************************************************************
+ 函 数 名  : SMC_Position_Estimation
+ 功能描述  : 滑膜控制器，估算角度
+ 输入参数  : 滑膜参数结构体地址
+ 输出参数  : void
+*****************************************************************************/
 void SMC_Position_Estimation(SMC *s)
 {
     int16_t Kslf_min;

@@ -15,15 +15,12 @@
 #define CURRENT_OFFSET_INIT 2048  // // as the OPAMPs are biased at VDD/2, the estimate offset value is 2048 i.e. half of 4095 which is full scale value of a 12 bit ADC.
 /*****************************************************************************
  函 数 名  : PhaseCurrentSample
- 功能描述  : 相电流采样
+ 功能描述  : 采集Ia,Ib相电流
  输入参数  : 无
  输出参数  : void
 *****************************************************************************/
 static void PhaseCurrentSample(void)
 {
-    // static uint32_t cumulative_sum_phaseA = (CURRENT_OFFSET_INIT << MOVING_AVG_WINDOW_SIZE);
-    // static uint32_t cumulative_sum_phaseB = (CURRENT_OFFSET_INIT << MOVING_AVG_WINDOW_SIZE);
-    // static int32_t moving_average_phaseA = 0, moving_average_phaseB = 0;
     volatile uint32_t *BaseJqrResultAddress = (volatile uint32_t *)&(M0P_ADC->JQRRESULT0);
     if (mcState == mcAhead)
     {
@@ -36,33 +33,6 @@ static void PhaseCurrentSample(void)
         SVM.Ia = (int16_t)(-((*(BaseJqrResultAddress + 1)) - SVM.Ib_C));
         SVM.Ib = (int16_t)(-((*(BaseJqrResultAddress)) - SVM.Ia_C));
     }
-
-    // cumulative_sum_phaseA = cumulative_sum_phaseA + SVM.Ia - moving_average_phaseA;
-    // moving_average_phaseA = cumulative_sum_phaseA >> MOVING_AVG_WINDOW_SIZE;
-
-    // /*Bounding the offset value */
-    // if (moving_average_phaseA > CURRENT_OFFSET_MAX)
-    // {
-    //     moving_average_phaseA = CURRENT_OFFSET_MAX;
-    // }
-    // else if (moving_average_phaseA < CURRENT_OFFSET_MIN)
-    // {
-    //     moving_average_phaseA = CURRENT_OFFSET_MIN;
-    // }
-    // cumulative_sum_phaseB = cumulative_sum_phaseB + SVM.Ib - moving_average_phaseB;
-    // moving_average_phaseB = cumulative_sum_phaseB >> MOVING_AVG_WINDOW_SIZE;
-
-    // /*Bounding the offset value */
-    // if (moving_average_phaseB > CURRENT_OFFSET_MAX)
-    // {
-    //     moving_average_phaseB = CURRENT_OFFSET_MAX;
-    // }
-    // else if (moving_average_phaseB < CURRENT_OFFSET_MIN)
-    // {
-    //     moving_average_phaseB = CURRENT_OFFSET_MIN;
-    // }
-    // SVM.Ia = -((SVM.Ib - moving_average_phaseB) << 4); // Removing the offset
-    // SVM.Ib = -((SVM.Ia - moving_average_phaseA) << 4);
 }
 /*****************************************************************************
  函 数 名  : PhaseCurrentSample
@@ -109,7 +79,6 @@ void ADC_ISR(void)
     {
     case mcAhead:
         ADC_Calibrate();
-        SMC_Init(&smc);
         AngleSin_Cos.IQAngle = 0;
         // AngleSin_Cos.Angle_X = 60;
         break;

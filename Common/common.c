@@ -54,7 +54,7 @@ void Common_Init(void)
     CatchParm.PWMCnt = 0;
     CatchParm.DutyCycleUse = 0;
 
-    //SVM_init
+    //SVM_Init
     SVM.Ia = 0;     // 直接测量
     SVM.Ib = 0;     // 直接测量
     SVM.Ic = 0;     // 根据Ia + Ib + Ic =0可得
@@ -92,9 +92,9 @@ void Common_Init(void)
     smc.Theta = 0;
     smc.Omega = 0;
     smc.MaxVoltage = 0;
-    smc.OpenLood=0;
+    smc.OpenLood = 0;
     error_code = normal;
-
+    SMC_Init(&smc);
     //PID_Init
     PI_Parameters();
 }

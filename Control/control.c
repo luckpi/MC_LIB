@@ -76,8 +76,8 @@ void StartupDrag(void)
     // }
     // else if (!smc.OpenLood)
     // {
-    // SVM.Id = 100;
-    // SVM.Iq = 200;
+    // SVM.Vd = 0;
+    // SVM.Vq = 3000;
     // }
     AngleSin_Cos.IQAngle += 75;
     // if (AngleSin_Cos.IQAngle > 65535)
