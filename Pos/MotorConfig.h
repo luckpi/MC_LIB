@@ -15,7 +15,7 @@
 #define MOTOR_RS                    1       // 定子电阻 Ω
 #define MOTOR_LS                    0.00268 // 定子电感 H
 #define NOPOLESPAIRS                4       // 极对数
-
+#define MAX_VOLTAGE_VECTOR          32000    // 电压矢量最大值 Q15
 
 #define END_SPEED_RPM               500     // 开环结束切闭环速度
 #define NOMINAL_SPEED_RPM           2700    // 电机额定转速(RPM)

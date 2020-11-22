@@ -29,13 +29,13 @@ static void PhaseCurrentSample(void)
         SVM.Ia = (uint16_t)(*(BaseJqrResultAddress)) - SVM.Ia_C;
         SVM.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)) - SVM.Ib_C;
         SVM.Ic = -((int16_t)(HDIV_div((SVM.Ia + SVM.Ib), 3)));
-        SVM.Ia = (SVM.Ia + SVM.Ic) << 1;
-        SVM.Ib = (SVM.Ib + SVM.Ic) << 1;
+        SVM.Ia = (SVM.Ia + SVM.Ic) << 4;
+        SVM.Ib = (SVM.Ib + SVM.Ic) << 4;
     }
 }
 /*****************************************************************************
- 函 数 名  : PhaseCurrentSample
- 功能描述  : 相电流采样
+ 函 数 名  : ADC_Calibrate
+ 功能描述  : 校准相电流
  输入参数  : 无
  输出参数  : void
 *****************************************************************************/

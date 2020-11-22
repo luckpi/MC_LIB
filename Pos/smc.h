@@ -46,7 +46,7 @@ typedef struct
     int16_t mdbi;         //  Kslide / MaxSMCError
     int16_t Omega;        //  转子转速
     int16_t OmegaFltred;  //  转速PI的滤波转子转速
-} SMC, *SMC_handle;
+} SMC, *p_SMC;
 
 /* 电机归一化参数 */
 typedef struct
@@ -61,7 +61,7 @@ typedef struct
     // int16_t qInvKFi;
     // /* InvKfi constant - base speed (nominal) value */
     // int16_t qInvKFiBase;
-} MOTOR_ESTIM_PARM_T;
+} MOTOR_ESTIM,*p_MOTOR_ESTIM;
 
 #define SMC_DEFAULTS                                                                 \
     {                                                                                \
@@ -75,10 +75,10 @@ extern int16_t AccumTheta;
 extern int16_t Theta_error; 
 extern uint16_t AccumThetaCnt; 
 extern uint16_t trans_counter;
-extern MOTOR_ESTIM_PARM_T motorParm;
+extern MOTOR_ESTIM motorParm;
 
 
-extern void SMC_Init(SMC_handle);
-extern void SMC_Position_Estimation(SMC_handle);
+extern void SMC_Init(p_SMC,p_MOTOR_ESTIM);
+extern void SMC_Position_Estimation(p_SMC);
 
 #endif

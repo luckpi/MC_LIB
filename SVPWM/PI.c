@@ -6,8 +6,6 @@
 #include "MotorConfig.h"
 
 float VelRefRaw;
-float DoControl_Temp1, DoControl_Temp2;
-short potReading; // 读取到的ADC
 tCtrlParm CtrlParm;
 tPIParm PIParmQ;    /* Q轴电流PI控制器的参数 */
 tPIParm PIParmD;    /* D轴电流PI控制器的参数 */
@@ -85,6 +83,7 @@ static void CalcPI(tPIParm *pParm)
 }
 void PI_Control(void)
 {
+    volatile int16_t temp1;
     if (mcState == mcAlign || mcState == mcDrag) // 开环强拖
     {
         // OPENLOOP:  force rotating angle,Vd,Vq
@@ -133,7 +132,7 @@ void PI_Control(void)
         //     CtrlParm.IdRef = 0.0;
         // }
 
-        VelRefRaw = (float)(potReading * POT_ADC_COUNT_FW_SPEED_RATIO); //速度控制，值瞎给的
+        VelRefRaw = (float)(ADCSample.POT * POT_ADC_COUNT_FW_SPEED_RATIO); //速度控制，值瞎给的
         /* LPF */
         CtrlParm.VelRef = (RL_1MINUS_WCTS_VELREF * (CtrlParm.VelRef)) + (RL_WCTS_VELREF * (VelRefRaw));
 
@@ -153,18 +152,21 @@ void PI_Control(void)
         CtrlParm.IdRef = 0;
 
         // PI control for D
-        PIParmD.qInMeas = SVM.Id;        // This is in Amps
-        PIParmD.qInRef = CtrlParm.IdRef; // This is in Amps
+        PIParmD.qInMeas = SVM.Id;        // 单位A
+        PIParmD.qInRef = CtrlParm.IdRef; // 单位A
         CalcPI(&PIParmD);
-        SVM.Vd = PIParmD.qOut; // This is in %. If should be converted to volts, multiply with (DC/2)
+        SVM.Vd = PIParmD.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
 
-        // dynamic d-q adjustment
-        // with d component priority
-        // vq=sqrt (vs^2 - vd^2)
-        // limit vq maximum to the one resulting from the calculation above
-        // DoControl_Temp2 = PIParmD.qOut * PIParmD.qOut;
-        // DoControl_Temp1 = 0.98 - DoControl_Temp2;
-        // PIParmQ.qOutMax = IQSqrt(DoControl_Temp1);//要转Q30格式
+        /* 具有d分量优先级的动态d-q调整*/
+        // 向量限制
+        // Vd is 不限
+        // Vq is 限制，因此向量Vs小于最大值 95%.
+        // Vs = SQRT(Vd^2 + Vq^2) < 0.95
+        // Vq = SQRT(0.95^2 - Vd^2)
+        temp1 = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
+        temp1 = MAX_VOLTAGE_VECTOR - temp1;
+        PIParmQ.qOutMax = IQSqrt(temp1);
+        PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
         //Limit Q axis current
         if (CtrlParm.IqRef > CtrlParm.IqRefmax)

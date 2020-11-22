@@ -41,24 +41,15 @@ typedef struct
     uint16_t SpeedTime;     // 一个电周期时间
     uint16_t RPM;           // 实际转速
     uint16_t Set_RPM;       // 设定转速
-    uint16_t DragTime;      // 强拖时间
-    uint32_t SpeedTime_Sum; // 换相时间8次和
-    uint8_t SpeedTime_Cnt;  // 换相平均数计数
-    uint16_t SpeedTimeTemp; // 当前换相时间
     uint8_t Stall_Cnt;      // 堵住计数溢出次数
 } HoldControlPara_T;
 
 // ADC相关
 typedef struct
 {
-    uint8_t ChlState;       // 通道状态
-    uint16_t CurrentOffset; // 电流放大零点
-    uint32_t POT;           // 电位器
-    uint32_t Voltage;       // 电压采样值
-    uint16_t Current;       // 电流采样值
-    uint32_t Sum;           // 电流平均值和
-    uint8_t Num;            // 电流平均值计数
-    uint16_t Average;       // 电流平均值
+    int16_t POT;           // 电位器
+    int16_t Voltage;       // 电压采样值
+    int16_t Current;       // 电流采样值
     uint8_t OverVoltageCnt; // 过压次数
     uint8_t OverCurrentCnt; // 过流次数
 } ADCSamplePara_T;

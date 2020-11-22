@@ -36,20 +36,12 @@ void Common_Init(void)
     HoldParm.SpeedLoopCnt = 0;
     HoldParm.PWMDutyCycle = 0;
     HoldParm.SpeedTime = 0;
-    HoldParm.DragTime = 500;
     HoldParm.RPM = 0;
     HoldParm.Set_RPM = First_Gear;
-    HoldParm.SpeedTime_Cnt = 0;
-    HoldParm.SpeedTime_Sum = 0;
-    HoldParm.SpeedTimeTemp = 0;
     HoldParm.Stall_Cnt = 0;
-    ADCSample.Average = 0;
     ADCSample.Voltage = 0;
     ADCSample.OverCurrentCnt = 0;
     ADCSample.OverVoltageCnt = 0;
-    ADCSample.Sum = 0;
-    ADCSample.Num = 0;
-    ADCSample.ChlState = 0; // 电压电流检测
     CatchParm.Period = 0;
     CatchParm.Duty = 0;
     CatchParm.Flag_Cap_Valid = 0;
@@ -97,7 +89,8 @@ void Common_Init(void)
     MotorCfg.OpenLoopSpeed = 0;
     MotorCfg.OpenLoopSpeedEnd = END_SPEED * 65536; // 开环转度转换为角速度 1024是为了减弱加速度
     MotorCfg.OpenLoopSpeedAdd = MotorCfg.OpenLoopSpeedEnd / PWM_FREQ / 6;
-    SMC_Init(&smc);
+    
+    SMC_Init(&smc, &motorParm);
     //PID_Init
     PI_Parameters();
 }

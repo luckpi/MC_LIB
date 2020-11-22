@@ -7,22 +7,22 @@ int16_t Theta_error = 0;    // 开环角和估算角的误差
 uint16_t trans_counter = 0; // 减小开环角和估算角差距间隔
 uint16_t AccumThetaCnt = 0; // 用于计算电机角速度的频率计数器
 SMC smc = SMC_DEFAULTS;
-MOTOR_ESTIM_PARM_T motorParm;
+MOTOR_ESTIM motorParm;
 /*****************************************************************************
  函 数 名  : SMC_Init
  功能描述  : 滑膜控制器参数初始化
  输入参数  : 滑膜参数结构体地址
  输出参数  : void
 *****************************************************************************/
-void SMC_Init(SMC_handle s)
+void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 {
     // 电机参数归一化
-    motorParm.Vol_Const = MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 / 32768.0 * (1.0 - PWM_DTS / PWM_TS);
-    motorParm.Cur_Const = MAX_MOTOR_CURRENT / 32768.0;
-    motorParm.Omg_Const = TWO_PI / 60.0;
-    motorParm.qLsDtBase = (Q15(MOTOR_LS / motorParm.Vol_Const * motorParm.Cur_Const / PWM_TS)) >> 8;
-    motorParm.qLsDt = motorParm.qLsDtBase;
-    motorParm.qRs = (Q15(MOTOR_RS / motorParm.Vol_Const * motorParm.Cur_Const)) >> 1;
+    m->Vol_Const = MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 / 32768.0 * (1.0 - PWM_DTS / PWM_TS);
+    m->Cur_Const = MAX_MOTOR_CURRENT / 32768.0;
+    m->Omg_Const = TWO_PI / 60.0;
+    m->qLsDtBase = (Q15(MOTOR_LS / m->Vol_Const * m->Cur_Const / PWM_TS)) >> 8;
+    m->qLsDt = m->qLsDtBase;
+    m->qRs = (Q15(MOTOR_RS / m->Vol_Const * m->Cur_Const)) >> 1;
     //                R * Ts
     // Fsmopos = 1 - --------
     //                  L
@@ -32,16 +32,16 @@ void SMC_Init(SMC_handle s)
     // Ts = 采样周期。 如果以PWM采样, Ts = 62.5 us
     // R  = 相位电阻。 如果电机数据表未提供，用万用表测量相位电阻,除以二得到相位电阻
     // L  = 相位电感。 如果电机数据表未提供，用万用表测量相位电感,除以二得到相位电感
-    if (((int32_t)motorParm.qRs << NORM_RS_SCALINGFACTOR) >= ((int32_t)motorParm.qLsDt << NORM_LSDTBASE_SCALINGFACTOR))
+    if (((int32_t)m->qRs << NORM_RS_SCALINGFACTOR) >= ((int32_t)m->qLsDt << NORM_LSDTBASE_SCALINGFACTOR))
 
         s->Fsmopos = 0;
     else
-        s->Fsmopos = (0x7FFF - HDIV_div(((int32_t)motorParm.qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)), motorParm.qLsDt));
+        s->Fsmopos = (0x7FFF - HDIV_div(((int32_t)m->qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)), m->qLsDt));
 
-    if (((int32_t)motorParm.qLsDt << NORM_LSDTBASE_SCALINGFACTOR) < 32767)
+    if (((int32_t)m->qLsDt << NORM_LSDTBASE_SCALINGFACTOR) < 32767)
         s->Gsmopos = 0x7FFF;
     else
-        s->Gsmopos = HDIV_div(((int32_t)0x7FFF << (15 - NORM_LSDTBASE_SCALINGFACTOR)), motorParm.qLsDt);
+        s->Gsmopos = HDIV_div(((int32_t)0x7FFF << (15 - NORM_LSDTBASE_SCALINGFACTOR)), m->qLsDt);
 
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
@@ -56,17 +56,17 @@ void SMC_Init(SMC_handle s)
  输入参数  : *EMF , *EMFF,  Z
  输出参数  : void
 *****************************************************************************/
-static void CalcBEMF(int16_t *EMF, int16_t *EMFF, int16_t Z)
+static void CalcBEMF(p_SMC s, int16_t *EMF, int16_t *EMFF, int16_t Z)
 {
-    int16_t temp_int1, temp_int2;
-    temp_int1 = (int16_t)(_IQmpy(smc.Kslf, Z));
-    temp_int2 = (int16_t)(_IQmpy(smc.Kslf, (*EMF)));
-    temp_int1 -= temp_int2;
-    (*EMF) += temp_int1;
-    temp_int1 = (int16_t)(_IQmpy(smc.Kslf, (*EMF)));
-    temp_int2 = (int16_t)(_IQmpy(smc.Kslf, (*EMFF)));
-    temp_int1 -= temp_int2;
-    (*EMFF) += temp_int1;
+    int16_t temp1, temp2;
+    temp1 = (int16_t)(_IQmpy(s->Kslf, Z));
+    temp2 = (int16_t)(_IQmpy(s->Kslf, (*EMF)));
+    temp1 -= temp2;
+    (*EMF) += temp1;
+    temp1 = (int16_t)(_IQmpy(s->Kslf, (*EMF)));
+    temp2 = (int16_t)(_IQmpy(s->Kslf, (*EMFF)));
+    temp1 -= temp2;
+    (*EMFF) += temp1;
 }
 /*
 电流观测器：
@@ -83,28 +83,28 @@ EMF： 估算的反电动势
 EstI：估算的电流
 z   : 校准因子
 */
-static void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
+static void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
-    int16_t temp_int1, temp_int2, temp_int3, I_Error;
-    temp_int1 = (int16_t)(_IQmpy(smc.Gsmopos, U));
-    temp_int2 = (int16_t)(_IQmpy(smc.Gsmopos, EMF));
-    temp_int3 = (int16_t)(_IQmpy(smc.Gsmopos, (*Z)));
-    temp_int1 -= temp_int2;
-    temp_int1 -= temp_int3;
-    *EstI = temp_int1 + (int16_t)(_IQmpy(smc.Fsmopos, (*EstI)));
+    int16_t temp1, temp2, temp3, I_Error;
+    temp1 = (int16_t)(_IQmpy(s->Gsmopos, U));
+    temp2 = (int16_t)(_IQmpy(s->Gsmopos, EMF));
+    temp3 = (int16_t)(_IQmpy(s->Gsmopos, (*Z)));
+    temp1 -= temp2;
+    temp1 -= temp3;
+    *EstI = temp1 + (int16_t)(_IQmpy(s->Fsmopos, (*EstI)));
     I_Error = (*EstI) - I;
-    if (Abs(I_Error) < smc.MaxSMCError)
+    if (Abs(I_Error) < s->MaxSMCError)
     {
         // s->Zalpha = (s->Kslide * s->IalphaError) / s->MaxSMCError
-        (*Z) = (smc.mdbi * I_Error);
+        (*Z) = (s->mdbi * I_Error);
     }
     else if (I_Error > 0)
     {
-        (*Z) = smc.Kslide;
+        (*Z) = s->Kslide;
     }
     else
     {
-        (*Z) = -smc.Kslide;
+        (*Z) = -s->Kslide;
     }
 }
 /*****************************************************************************
@@ -113,15 +113,15 @@ static void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *
  输入参数  : 滑膜参数结构体地址
  输出参数  : void
 *****************************************************************************/
-void SMC_Position_Estimation(SMC_handle s)
+void SMC_Position_Estimation(p_SMC s)
 {
     int16_t Kslf_min;
-    CalcEstI(smc.Valpha, smc.Ialpha, smc.Ealpha, &smc.EstIalpha, &smc.Zalpha);
-    CalcEstI(smc.Vbeta, smc.Ibeta, smc.Ebeta, &smc.EstIbeta, &smc.Zbeta);
-    CalcBEMF(&smc.Ealpha, &smc.EalphaFinal, smc.Zalpha);
-    CalcBEMF(&smc.Ebeta, &smc.EbetaFinal, smc.Zbeta);
-    s->Theta = Atan2(s->EbetaFinal, smc.EalphaFinal); // 应该是反正切求出角度，测试使用强托角度
-    AccumTheta += s->Theta - PrevTheta;               // 可能有bug
+    CalcEstI(s, s->Valpha, s->Ialpha, s->Ealpha, &s->EstIalpha, &s->Zalpha);
+    CalcEstI(s, s->Vbeta, s->Ibeta, s->Ebeta, &s->EstIbeta, &s->Zbeta);
+    CalcBEMF(s, &s->Ealpha, &s->EalphaFinal, s->Zalpha);
+    CalcBEMF(s, &s->Ebeta, &s->EbetaFinal, s->Zbeta);
+    s->Theta = Atan2(s->EbetaFinal, s->EalphaFinal); // 应该是反正切求出角度，测试使用强托角度
+    AccumTheta += s->Theta - PrevTheta;              // 可能有bug
     PrevTheta = s->Theta;
     AccumThetaCnt++;
     if (AccumThetaCnt == IRP_PERCALC)
