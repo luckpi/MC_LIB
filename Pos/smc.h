@@ -21,7 +21,9 @@
 
 #define THETA_FILTER_CNST               7028            // Q15(0.104719 * PWM_TS * 32768.0) // 2*pi/60*Ts*32768
 
-
+ #define _0_05DEG 9	// The value for 0.05 degrees is converted
+					// to Q15 as follows:
+					// .05 * 32768 / 180 = 9.1, approx 9.   
 typedef struct
 {
     int16_t MaxVoltage;   //  最大矢量电压
@@ -47,7 +49,7 @@ typedef struct
     int16_t KslfFinal;    //  用于角度计算的BEMF滤波器
     int16_t FiltOmCoef;   //  过滤系数，用于Omega过滤的calc
     int16_t ThetaOffset;  //  偏移量用于补偿转子角度
-    uint16_t Theta;       //  输出：补偿转子角
+    int16_t Theta;       //  输出：补偿转子角
     int16_t mdbi;         //  Kslide / MaxSMCError
     int16_t Omega;        //  转子转速
     int16_t OmegaFltred;  //  转速PI的滤波转子转速
@@ -84,8 +86,9 @@ typedef struct
 
 
 extern uint16_t trans_counter;
-extern uint16_t PrevTheta; 
-extern int16_t AccumTheta; 
+extern int16_t PrevTheta;
+extern int16_t AccumTheta;
+extern int16_t Theta_error; 
 extern uint16_t AccumThetaCnt; 
 extern MOTOR_ESTIM_PARM_T motorParm;
 extern SMC smc;

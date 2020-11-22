@@ -1,9 +1,11 @@
 #include "common.h"
+#include "control.h"
 #include "pwm.h"
 #include "adc.h"
 #include "PI.h"
 #include "svgen_dq.h"
 #include "smc.h"
+#include "MotorConfig.h"
 MotorState_T mcState;
 ErrorState_T error_code;
 volatile HoldControlPara_T HoldParm;
@@ -94,6 +96,11 @@ void Common_Init(void)
     smc.MaxVoltage = 0;
     smc.OpenLood = 0;
     error_code = normal;
+
+    //Motor_CFG
+    MotorCfg.OpenLoopSpeed = 0;
+    MotorCfg.OpenLoopSpeedEnd = END_SPEED * 65536; // 开环转度转换为角速度 1024是为了减弱加速度
+    MotorCfg.OpenLoopSpeedAdd = MotorCfg.OpenLoopSpeedEnd / PWM_FREQ / 6;
     SMC_Init(&smc);
     //PID_Init
     PI_Parameters();

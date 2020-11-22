@@ -30,8 +30,11 @@ static void PhaseCurrentSample(void)
     else
     {
         //把电流转变成%比格式 2048转32768 //最大力矩 = 参考电压/(采样电阻*ADC放大倍数)
-        SVM.Ia = (int16_t)(-(((*(BaseJqrResultAddress + 1)) - SVM.Ib_C) << 4));
-        SVM.Ib = (int16_t)(-(((*(BaseJqrResultAddress)) - SVM.Ia_C) << 4));
+        SVM.Ia = (uint16_t)(*(BaseJqrResultAddress)) - SVM.Ia_C;
+        SVM.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)) - SVM.Ib_C;
+        SVM.Ic = -((int16_t)(HDIV_div((SVM.Ia + SVM.Ib), 3)));
+        SVM.Ia = (SVM.Ia + SVM.Ic) << 1;
+        SVM.Ib = (SVM.Ib + SVM.Ic) << 1;
     }
 }
 /*****************************************************************************
@@ -79,7 +82,7 @@ void ADC_ISR(void)
     {
     case mcAhead:
         ADC_Calibrate();
-        AngleSin_Cos.IQAngle = 0;
+        AngleSin_Cos.IQAngle = -32768;
         // AngleSin_Cos.Angle_X = 60;
         break;
     case mcAlign:
@@ -101,7 +104,7 @@ void ADC_ISR(void)
         smc.Valpha = SVM.Valpha; // 需要调整电压数据Q15格式
         smc.Vbeta = SVM.Vbeta;
         SMC_Position_Estimation(&smc);
-        StartupDrag();
+        CalculateParkAngle();
         Park_Cala();
         PI_Control();
         IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);

@@ -6,7 +6,7 @@
 #define RL_1MINUS_WCTS_VELREF                32766  // (float)(1.0 - RL_WCTS_VELREF) /* 1 - Wc*Ts */
 #define MAX_ADC_COUNT                        4095   // (float)4095   /* 12-bit ADC */
 #define POT_ADC_COUNT_FW_SPEED_RATIO         1000   // 建议用角速度计算 / 4095
-#define Q_CURRENT_REF_OPENLOOP               1091   // 启动力矩  I / 最大电流
+#define Q_CURRENT_REF_OPENLOOP               800   // 启动力矩  I / 最大电流
 #define END_SPEED_RADS_PER_SEC_ELEC          1000   // 目前给的值都是瞎写的，电机转速转角度
 /* PI controllers tuning values - */
 //******** D Control Loop Coefficients *******
@@ -16,9 +16,9 @@
 #define D_CURRCNTR_OUTMAX                    30000  //0.999
 
 //******** Q Control Loop Coefficients *******
-#define Q_CURRCNTR_PTERM                     1684      //0.02
-#define Q_CURRCNTR_ITERM                     0      //(0.00005)
-#define Q_CURRCNTR_CTERM                     0     //0.5
+#define Q_CURRCNTR_PTERM                      30000     //0.02KP=KP*2^NKo
+#define Q_CURRCNTR_ITERM                      0      //(0.00005)
+#define Q_CURRCNTR_CTERM                      0     //0.5
 #define Q_CURRCNTR_OUTMAX                    30000  // 0.999
 
 //*** Velocity Control Loop Coefficients *****
@@ -30,7 +30,7 @@
 typedef struct
 {
     int32_t qdSum;
-    int16_t qKp;
+    int32_t qKp;
     int16_t qKi;
     int16_t qKc;
     int16_t qOutMax;

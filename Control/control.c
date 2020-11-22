@@ -6,6 +6,8 @@
 #include "IQmath.h"
 #include "svgen_dq.h"
 #include "smc.h"
+#include "MotorConfig.h"
+MOTOR_CONFIG MotorCfg;
 // #include "protect.h"
 // #include "cmp.h"
 // #include "timer.h"
@@ -61,29 +63,33 @@ void EnterRunInit(void)
     mcState = mcRun;
 }
 /*****************************************************************************
- 函 数 名  : StartupDrag
+ 函 数 名  : CalculateParkAngle
  功能描述  : 启动，边强拖，边检测
  输入参数  : 无
  输出参数  : void
 *****************************************************************************/
-void StartupDrag(void)
+void CalculateParkAngle(void)
 {
-    // static uint16_t ADC_CNT = 0;
-    // if (++ADC_CNT >= 65535)
-    // {
-    //     ADC_CNT = 0;
-    smc.OpenLood = 1;
-    // }
-    // else if (!smc.OpenLood)
-    // {
-    // SVM.Vd = 0;
-    // SVM.Vq = 3000;
-    // }
-    AngleSin_Cos.IQAngle += 75;
-    // if (AngleSin_Cos.IQAngle > 65535)
-    // {
-    //     AngleSin_Cos.IQAngle = 0;
-    // }
+    if (mcState == mcDrag)
+    {
+        if (MotorCfg.OpenLoopSpeed < MotorCfg.OpenLoopSpeedEnd)
+            MotorCfg.OpenLoopSpeed += MotorCfg.OpenLoopSpeedAdd;
+        /* The angle set depends on startup ramp */
+        AngleSin_Cos.IQAngle += (int16_t)(MotorCfg.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * HoldParm.RotorDirection;
+        Theta_error = AngleSin_Cos.IQAngle - smc.Theta;
+    }
+    else if (mcState == mcRun)
+    {
+        AngleSin_Cos.IQAngle = smc.Theta + Theta_error;
+        /* Switched to closed loop */
+        if ((Abs(Theta_error) > _0_05DEG) && (trans_counter == 0)) // 慢慢减小开环强制角度和估算角度误差
+        {
+            if (Theta_error < 0)
+                Theta_error += _0_05DEG;
+            else
+                Theta_error -= _0_05DEG;
+        }
+    }
 }
 /*****************************************************************************
  函 数 名  : MotorRun

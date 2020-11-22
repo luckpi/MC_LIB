@@ -26,8 +26,14 @@
 // FG增益
 #define NORM_LSDTBASE_SCALINGFACTOR 8
 #define NORM_RS_SCALINGFACTOR       1
+#define ENDSPEED_ELECTR             (END_SPEED_RPM * NOPOLESPAIRS)
 
+
+/****************************** Open Lood Parameters ******************************/
 /* 开环结束切闭环速度转换为电气速度 */
-#define ENDSPEED_ELECTR             END_SPEED_RPM *NOPOLESPAIRS
-
+#define OPENLOOP_RAMPSPEED_INCREASERATE         10
+#define THETA_OPENLOOP_SCALER                   16  // 缩放加速度
+#define OPENLOOP_TIME                           6   // 开环时间 S
+/* End speed converted to fit the startup ramp */
+#define END_SPEED                               (ENDSPEED_ELECTR * PWM_TS * 65536 / 60.0) // 每个周期变化的角度 
 #endif

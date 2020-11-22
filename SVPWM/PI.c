@@ -65,7 +65,7 @@ static void CalcPI(tPIParm *pParm)
 
     Err = pParm->qInRef - pParm->qInMeas;
     pParm->qErr = Err;
-    U = pParm->qdSum + (_IQmpy(pParm->qKp, Err << 7));
+    U = pParm->qdSum + _IQmpy((pParm->qKp << 4), Err);
 
     if (U > pParm->qOutMax)
     {

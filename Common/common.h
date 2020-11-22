@@ -34,18 +34,18 @@ typedef enum
 // 电机运行方向、占空比等参数
 typedef struct
 {
-    uint8_t RotorDirection : 1; // 电机转动方向
-    uint16_t MainDetectCnt;     // 主循环计数
-    uint16_t SpeedLoopCnt;      // 调整转速占空比的周期计数
-    float PWMDutyCycle;         // PWM占空比
-    uint16_t SpeedTime;         // 一个电周期时间
-    uint16_t RPM;               // 实际转速
-    uint16_t Set_RPM;           // 设定转速
-    uint16_t DragTime;          // 强拖时间
-    uint32_t SpeedTime_Sum;     // 换相时间8次和
-    uint8_t SpeedTime_Cnt;      // 换相平均数计数
-    uint16_t SpeedTimeTemp;     // 当前换相时间
-    uint8_t Stall_Cnt;          // 堵住计数溢出次数
+    int8_t RotorDirection;  // 电机转动方向
+    uint16_t MainDetectCnt; // 主循环计数
+    uint16_t SpeedLoopCnt;  // 调整转速占空比的周期计数
+    float PWMDutyCycle;     // PWM占空比
+    uint16_t SpeedTime;     // 一个电周期时间
+    uint16_t RPM;           // 实际转速
+    uint16_t Set_RPM;       // 设定转速
+    uint16_t DragTime;      // 强拖时间
+    uint32_t SpeedTime_Sum; // 换相时间8次和
+    uint8_t SpeedTime_Cnt;  // 换相平均数计数
+    uint16_t SpeedTimeTemp; // 当前换相时间
+    uint8_t Stall_Cnt;      // 堵住计数溢出次数
 } HoldControlPara_T;
 
 // ADC相关

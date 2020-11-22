@@ -1,7 +1,6 @@
 #include "common.h"
 #include "IQmath.h"
 IQSin_Cos AngleSin_Cos = IQSin_Cos_DEFAULTS;
-IQAtan IQAtan_Pare = IQAtan_DEFAULTS;
 const int16_t IQSin_Cos_Table[256] = {
     0x0000, 0x00C9, 0x0192, 0x025B, 0x0324, 0x03ED, 0x04B6, 0x057F,
     0x0648, 0x0711, 0x07D9, 0x08A2, 0x096A, 0x0A33, 0x0AFB, 0x0BC4,

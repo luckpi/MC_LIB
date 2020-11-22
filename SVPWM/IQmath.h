@@ -18,37 +18,23 @@
 #define U90_180             0x0100
 #define U180_270            0x0200
 #define U270_360            0x0300
+
 typedef struct
 {
-    uint16_t IQAngle; // Input:   alpha-axis
-    uint16_t IQSin;   // Input:   beta-axis
-    uint16_t IQCos;   // Output:  phase-a
-    uint16_t Angle_X; // Output:  phase-a
+    int16_t IQAngle; // Input:   alpha-axis
+    int16_t IQSin;   // Input:   beta-axis
+    int16_t IQCos;   // Output:  phase-a
+    int16_t Angle_X;
 } IQSin_Cos, *p_IQSin_Cos;
 
 #define IQSin_Cos_DEFAULTS \
     {                      \
-        0, 0, 0            \
-    }
-typedef struct
-{
-    int32_t Alpha; // Input:   alpha-axis
-    int32_t Beta;  // Input:   beta-axis
-    int32_t IQTan; // Output:  phase-a
-    int32_t IQAngle;
-    int32_t JZIQAngle;
-} IQAtan, *p_IQAtan;
-
-#define IQAtan_DEFAULTS \
-    {                   \
-        0, 0, 0, 0, 0   \
+        0, 0, 0, 0         \
     }
 
-uint32_t IQSqrt(uint32_t M);
-void IQSin_Cos_Cale(p_IQSin_Cos pV);
-void IQAtan_Cale(p_IQAtan pV);
-int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min);
 extern IQSin_Cos AngleSin_Cos;
-extern IQAtan IQAtan_Pare;
+extern uint32_t IQSqrt(uint32_t M);
+extern void IQSin_Cos_Cale(p_IQSin_Cos pV);
+extern int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min);
 extern int32_t HDIV_div(int32_t Dividend, int16_t Divisor);
 #endif

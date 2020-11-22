@@ -6,7 +6,7 @@ SVGENDQ SVM = SVGENDQ_DEFAULTS;
 void svgendq_calc(void)
 {
     int32_t Va, Vb, Vc, t1, t2;
-    uint32_t Sector = 0;
+    uint8_t Sector = 0;
     /*
     InvClark：
     Vr1  = Vbeta
