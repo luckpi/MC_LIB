@@ -10,8 +10,8 @@
 #define PWM_TS                      0.0000625
 
 /****************************** Motor Parameters ******************************/
-#define MAX_MOTOR_VOLTAGE           24      // 最大电压 V
-#define MAX_MOTOR_CURRENT           15      // 最大电流 A
+#define MAX_MOTOR_VOLTAGE           12      // 最大电压 V
+#define MAX_MOTOR_CURRENT           20      // 最大电流 A
 #define MOTOR_RS                    1       // 定子电阻 Ω
 #define MOTOR_LS                    0.00268 // 定子电感 H
 #define NOPOLESPAIRS                4       // 极对数

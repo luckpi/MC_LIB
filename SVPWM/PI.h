@@ -16,7 +16,7 @@
 #define D_CURRCNTR_OUTMAX                    30000  //0.999
 
 //******** Q Control Loop Coefficients *******
-#define Q_CURRCNTR_PTERM                      15000     //0.02KP=KP*2^NKo
+#define Q_CURRCNTR_PTERM                      30000     //0.02KP=KP*2^NKo
 #define Q_CURRCNTR_ITERM                      0      //(0.00005)
 #define Q_CURRCNTR_CTERM                      0     //0.5
 #define Q_CURRCNTR_OUTMAX                    30000  // 0.999
