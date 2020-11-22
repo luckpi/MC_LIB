@@ -8,11 +8,7 @@
 #include "IQmath.h"
 #include "smc.h"
 #include "PI.h"
-/*Moving Average Filter based Current Offset Calculator Parameters */
-#define MOVING_AVG_WINDOW_SIZE 18 // moving average window sample size is 2^18
-#define CURRENT_OFFSET_MAX 2500   // current offset max limit
-#define CURRENT_OFFSET_MIN 1500   // current offset min limit
-#define CURRENT_OFFSET_INIT 2048  // // as the OPAMPs are biased at VDD/2, the estimate offset value is 2048 i.e. half of 4095 which is full scale value of a 12 bit ADC.
+
 /*****************************************************************************
  函 数 名  : PhaseCurrentSample
  功能描述  : 采集Ia,Ib相电流
@@ -60,15 +56,6 @@ static void ADC_Calibrate(void)
     }
 }
 /*****************************************************************************
- 函 数 名  : ADCAnalogSample
- 功能描述  : 采样，电流、电压
- 输入参数  : 无
- 输出参数  : void
-*****************************************************************************/
-// static void ADCAnalogSample(void)
-// {
-// }
-/*****************************************************************************
  函 数 名  : ADC_ISR
  功能描述  : ADC中断
  输入参数  : 无
@@ -87,31 +74,31 @@ void ADC_ISR(void)
         break;
     case mcAlign:
         HoldParm.MainDetectCnt++;
-        Clark_Cala();
-        Park_Cala();
+        Clark_Cala(&SVM);
+        Park_Cala(&SVM);
         PI_Control();
-        IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
+        IQSin_Cos_Cale(&AngleSin_Cos);
         SVM.Sine = AngleSin_Cos.IQSin;
         SVM.Cosine = AngleSin_Cos.IQCos;
-        InvPark();
-        svgendq_calc();
+        InvPark(&SVM);
+        svgendq_calc(&SVM);
         PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
         break;
     case mcDrag:
-        Clark_Cala();
+        Clark_Cala(&SVM);
         smc.Ialpha = SVM.Ialpha; // 需要调整电流数据Q15格式
         smc.Ibeta = SVM.Ibeta;
         smc.Valpha = SVM.Valpha; // 需要调整电压数据Q15格式
         smc.Vbeta = SVM.Vbeta;
         SMC_Position_Estimation(&smc);
         CalculateParkAngle();
-        Park_Cala();
+        Park_Cala(&SVM);
         PI_Control();
-        IQSin_Cos_Cale((p_IQSin_Cos)&AngleSin_Cos);
+        IQSin_Cos_Cale(&AngleSin_Cos);
         SVM.Sine = AngleSin_Cos.IQSin;
         SVM.Cosine = AngleSin_Cos.IQCos;
-        InvPark();
-        svgendq_calc();
+        InvPark(&SVM);
+        svgendq_calc(&SVM);
         PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
         break;
     case mcRun:

@@ -1,20 +1,12 @@
-#include "control.h"
+#include "smc.h"
 #include "pwm.h"
 #include "init.h"
-#include "halless.h"
-#include "adc.h"
 #include "IQmath.h"
+#include "halless.h"
+#include "control.h"
 #include "svgen_dq.h"
-#include "smc.h"
 #include "MotorConfig.h"
 MOTOR_CONFIG MotorCfg;
-// #include "protect.h"
-// #include "cmp.h"
-// #include "timer.h"
-// #include "uart.h"
-// #include "debug.h"
-// #include "ipd.h"
-// #include "pid.h"
 /******************************************************************************
  函 数 名  : MotorAhead
  功能描述  : 开始启动
@@ -24,7 +16,6 @@ MOTOR_CONFIG MotorCfg;
 static void MotorAhead(void)
 {
     Adc_EnableIrq(); // 使能Adc中断 放在强拖之前开
-    // Fault_InitOverUnderVoltage(); // 过压保护
 }
 /******************************************************************************
  函 数 名  : MotorInit
@@ -74,14 +65,12 @@ void CalculateParkAngle(void)
     {
         if (MotorCfg.OpenLoopSpeed < MotorCfg.OpenLoopSpeedEnd)
             MotorCfg.OpenLoopSpeed += MotorCfg.OpenLoopSpeedAdd;
-        /* The angle set depends on startup ramp */
         AngleSin_Cos.IQAngle += (int16_t)(MotorCfg.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * HoldParm.RotorDirection;
         Theta_error = AngleSin_Cos.IQAngle - smc.Theta;
     }
     else if (mcState == mcRun)
     {
         AngleSin_Cos.IQAngle = smc.Theta + Theta_error;
-        /* Switched to closed loop */
         if ((Abs(Theta_error) > _0_05DEG) && (trans_counter == 0)) // 慢慢减小开环强制角度和估算角度误差
         {
             if (Theta_error < 0)

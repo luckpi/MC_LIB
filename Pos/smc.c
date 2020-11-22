@@ -1,23 +1,20 @@
 #include "smc.h"
-#include "atan2.h"
-#include "IQmath.h"
-#include "MotorConfig.h"
 #define ONE_BY_SQRT3 0.5773502691
 #define TWO_PI 6.283185307
-uint16_t trans_counter = 0;
-int16_t PrevTheta = 0;     // 上一次角度值
-int16_t AccumTheta = 0;     // 累加每次的角度变化量
-uint16_t AccumThetaCnt = 0; // 用于计算电机速度的计数器.
-int16_t Theta_error = 0;    // 开环强制角度和估算角度的误差,在闭环的过程中慢慢减去误差,每次步进0.05度。
-MOTOR_ESTIM_PARM_T motorParm;
+int16_t PrevTheta = 0;      // 上一次角度值
+int16_t AccumTheta = 0;     // 累加角度变化量
+int16_t Theta_error = 0;    // 开环角和估算角的误差
+uint16_t trans_counter = 0; // 减小开环角和估算角差距间隔
+uint16_t AccumThetaCnt = 0; // 用于计算电机角速度的频率计数器
 SMC smc = SMC_DEFAULTS;
+MOTOR_ESTIM_PARM_T motorParm;
 /*****************************************************************************
  函 数 名  : SMC_Init
  功能描述  : 滑膜控制器参数初始化
  输入参数  : 滑膜参数结构体地址
  输出参数  : void
 *****************************************************************************/
-void SMC_Init(SMC *s)
+void SMC_Init(SMC_handle s)
 {
     // 电机参数归一化
     motorParm.Vol_Const = MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 / 32768.0 * (1.0 - PWM_DTS / PWM_TS);
@@ -50,7 +47,7 @@ void SMC_Init(SMC *s)
     s->MaxSMCError = Q15(MAXLINEARSMC);
     s->mdbi = HDIV_div(s->Kslide, s->MaxSMCError);
     s->FiltOmCoef = (int16_t)(_IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST));
-    // s->MaxVoltage = (int16_t)(_IQmpy(ADCSample.Voltage, 18918));//_IQ(0.57735026918963)
+    // s->MaxVoltage = (int16_t)(_IQmpy(ADCSample.Voltage, 18918));//_IQ(0.57735026918963) 最大矢量电压
     return;
 }
 /*****************************************************************************
@@ -59,7 +56,7 @@ void SMC_Init(SMC *s)
  输入参数  : *EMF , *EMFF,  Z
  输出参数  : void
 *****************************************************************************/
-void CalcBEMF(int16_t *EMF, int16_t *EMFF, int16_t Z)
+static void CalcBEMF(int16_t *EMF, int16_t *EMFF, int16_t Z)
 {
     int16_t temp_int1, temp_int2;
     temp_int1 = (int16_t)(_IQmpy(smc.Kslf, Z));
@@ -86,7 +83,7 @@ EMF： 估算的反电动势
 EstI：估算的电流
 z   : 校准因子
 */
-void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
+static void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
     int16_t temp_int1, temp_int2, temp_int3, I_Error;
     temp_int1 = (int16_t)(_IQmpy(smc.Gsmopos, U));
@@ -116,7 +113,7 @@ void CalcEstI(int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
  输入参数  : 滑膜参数结构体地址
  输出参数  : void
 *****************************************************************************/
-void SMC_Position_Estimation(SMC *s)
+void SMC_Position_Estimation(SMC_handle s)
 {
     int16_t Kslf_min;
     CalcEstI(smc.Valpha, smc.Ialpha, smc.Ealpha, &smc.EstIalpha, &smc.Zalpha);

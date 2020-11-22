@@ -88,13 +88,9 @@ void Common_Init(void)
     smc.Zbeta = 0;
     smc.EstIbeta = 0;
     smc.Ialpha = 0;
-    smc.IalphaError = 0;
     smc.Ibeta = 0;
-    smc.IbetaError = 0;
     smc.Theta = 0;
     smc.Omega = 0;
-    smc.MaxVoltage = 0;
-    smc.OpenLood = 0;
     error_code = normal;
 
     //Motor_CFG

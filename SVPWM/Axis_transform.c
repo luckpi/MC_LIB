@@ -9,28 +9,28 @@ Clark：
     iAlpha = ia ;
     iBeta = (ia + 2 * ib) / √3;
 */
-void Clark_Cala(void)
+void Clark_Cala(p_SVGENDQ s)
 {
-    SVM.Ialpha = SVM.Ia;
-    SVM.Ibeta = _IQmpy((SVM.Ia + _IQdiv2(SVM.Ib)), 18918); // _IQ(0.57735026918963)
+    s->Ialpha = s->Ia;
+    s->Ibeta = _IQmpy((s->Ia + _IQdiv2(s->Ib)), 18918); // _IQ(0.57735026918963)
 }
 /*
 Park：
     ld =  iAlpha * cos(θ) + iBeta * sin(θ)
     lq = -iAlpha * sin(θ) + iBeta * cos(θ)
 */
-void Park_Cala(void)
+void Park_Cala(p_SVGENDQ s)
 {
-    SVM.Id = _IQmpy(SVM.Ialpha, SVM.Cosine) + _IQmpy(SVM.Ibeta, SVM.Sine);
-    SVM.Iq = _IQmpy(SVM.Ibeta, SVM.Cosine) - _IQmpy(SVM.Ialpha, SVM.Sine);
+    s->Id = _IQmpy(s->Ialpha, s->Cosine) + _IQmpy(s->Ibeta, s->Sine);
+    s->Iq = _IQmpy(s->Ibeta, s->Cosine) - _IQmpy(s->Ialpha, s->Sine);
 }
 /*
 InvPark：
     Valpha = vd * cos(θ) - vq * sin(θ)
     Vbeta  = vd * sin(θ) + vq * cos(θ)
 */
-void InvPark(void)
+void InvPark(p_SVGENDQ s)
 {
-    SVM.Valpha = _IQmpy(SVM.Vd, SVM.Cosine) - _IQmpy(SVM.Vq, SVM.Sine);
-    SVM.Vbeta = _IQmpy(SVM.Vd, SVM.Sine) + _IQmpy(SVM.Vq, SVM.Cosine);
+    s->Valpha = _IQmpy(s->Vd, s->Cosine) - _IQmpy(s->Vq, s->Sine);
+    s->Vbeta = _IQmpy(s->Vd, s->Sine) + _IQmpy(s->Vq, s->Cosine);
 }

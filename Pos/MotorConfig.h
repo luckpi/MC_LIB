@@ -6,7 +6,6 @@
 #define PWM_FREQ                    16000
 /* 死区时间 */
 #define PWM_DTS                     0.0000002
-
 /* PWM周期 (1 / PWM_FREQ) */
 #define PWM_TS                      0.0000625
 
@@ -30,10 +29,8 @@
 
 
 /****************************** Open Lood Parameters ******************************/
-/* 开环结束切闭环速度转换为电气速度 */
-#define OPENLOOP_RAMPSPEED_INCREASERATE         10
 #define THETA_OPENLOOP_SCALER                   16  // 缩放加速度
 #define OPENLOOP_TIME                           6   // 开环时间 S
-/* End speed converted to fit the startup ramp */
+/* 开环结束切闭环速度转换为电气速度 */
 #define END_SPEED                               (ENDSPEED_ELECTR * PWM_TS * 65536 / 60.0) // 每个周期变化的角度 
 #endif
