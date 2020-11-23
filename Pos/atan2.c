@@ -49,7 +49,7 @@ int16_t Atan2(int16_t y, int16_t x)
     }
     if (tmp2 >= tmp1)
     {
-        z = HDIV_div((y << 15), x);
+        z = _IQdiv(y, x);
         tmp2 = Atan(z);
         if (x > 0)
         {
@@ -66,7 +66,7 @@ int16_t Atan2(int16_t y, int16_t x)
     }
     else
     {
-        z = HDIV_div((x << 15), y);
+        z = _IQdiv(x, y);
         tmp2 = Atan(z);
         if (y > 0)
         {

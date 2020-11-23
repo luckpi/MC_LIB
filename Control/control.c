@@ -25,7 +25,7 @@ static void MotorAhead(void)
 ******************************************************************************/
 static void MotorInit(void)
 {
-    PortOutput_Config(6, 6, 6, 6, 6, 6);
+    PortOutput_Config(7, 7, 7, 7, 7, 7);
     mcState = mcAlign;
 }
 /*****************************************************************************

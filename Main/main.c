@@ -17,7 +17,7 @@ int main()
 	OPA_init();
 	ADC_init();
 	UART_init();
-	Hall_init();
+	// Hall_init();
 	PowerupParaInit();
 	Common_Init(); // 变量初始化
 	delay1ms(200);
@@ -45,11 +45,11 @@ int main()
 		// printf("Ualpha=%d,Ubeta=%d\n", smc.Valpha, smc.Vbeta);
 		// printf("Ia=%d,Ib=%d,Ic=%d\n", SVM.Ia, SVM.Ib, SVM.Ic);
 		// printf("Vq=%d,Vd=%d\n", SVM.Vq, SVM.Vd);
-		printf("Iq=%d\n", SVM.Iq);
+		// printf("Iq=%d\n", SVM.Iq);
 		// printf("Id=%d\n", SVM.Id);
 		// printf("Og=%d\n", smc.Omega);
 		// printf("Ealpha=%d,Ebeta=%d\n", smc.Ealpha, smc.Ebeta);
-		// printf("ETheta=%d,Theta=%d\n", smc.Theta, AngleSin_Cos.IQAngle);
+		printf("ETheta=%d,Theta=%d\n", smc.Theta, AngleSin_Cos.IQAngle);
 		// printf("ERROR=%d\n", Theta_error);
 	}
 }

@@ -3,6 +3,9 @@
 #include "svgen_dq.h"
 //α：Alpha β：Beta θ：Theta
 //  1/sqrt(3) = 0.57735026918963
+
+// 电流需要在下管导通中间时刻采集！！！！！！！！！
+
 /*
 Clark：
     ia + ib + ic = 0 ;

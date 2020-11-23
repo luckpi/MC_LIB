@@ -45,7 +45,7 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
-    s->mdbi = HDIV_div(s->Kslide, s->MaxSMCError);
+    s->mdbi = _IQdiv(s->Kslide, s->MaxSMCError);
     s->FiltOmCoef = (int16_t)(_IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST));
     // s->MaxVoltage = (int16_t)(_IQmpy(ADCSample.Voltage, 18918));//_IQ(0.57735026918963) 最大矢量电压
     return;
@@ -96,7 +96,7 @@ static void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, 
     if (Abs(I_Error) < s->MaxSMCError)
     {
         // s->Zalpha = (s->Kslide * s->IalphaError) / s->MaxSMCError
-        (*Z) = (s->mdbi * I_Error);
+        (*Z) = _IQmpy(s->mdbi, I_Error);
     }
     else if (I_Error > 0)
     {

@@ -409,12 +409,12 @@ void PWM_init(void)
     Tim3_M23_CCR_Set(Tim3CCR1A, u16CompareAValue);
     Tim3_M23_CCR_Set(Tim3CCR2A, u16CompareAValue);
 
-    stcTim3PortCmpCfg.enCHxACmpCtrl = Tim3PWMMode1;      //OCREFA输出控制OCMA:PWM模式1
+    stcTim3PortCmpCfg.enCHxACmpCtrl = Tim3PWMMode2;      //OCREFA输出控制OCMA:PWM模式2
     stcTim3PortCmpCfg.enCHxAPolarity = Tim3PortPositive; //正常输出
     stcTim3PortCmpCfg.bCHxACmpBufEn = TRUE;              //A通道缓存控制
     stcTim3PortCmpCfg.enCHxACmpIntSel = Tim3CmpIntNone;  //A通道比较控制:无
 
-    stcTim3PortCmpCfg.enCHxBCmpCtrl = Tim3PWMMode1;      //OCREFB输出控制OCMB:PWM模式1(PWM互补模式下也要设置，避免强制输出)
+    stcTim3PortCmpCfg.enCHxBCmpCtrl = Tim3PWMMode2;      //OCREFB输出控制OCMB:PWM模式2(PWM互补模式下也要设置，避免强制输出)
     stcTim3PortCmpCfg.enCHxBPolarity = Tim3PortPositive; //正常输出
     // stcTim3PortCmpCfg.bCHxBCmpBufEn = TRUE;              //B通道缓存控制
     stcTim3PortCmpCfg.enCHxBCmpIntSel = Tim3CmpIntNone; //B通道比较控制:无
@@ -422,10 +422,7 @@ void PWM_init(void)
     Tim3_M23_PortOutput_Config(Tim3CH0, &stcTim3PortCmpCfg); //比较输出端口配置
     Tim3_M23_PortOutput_Config(Tim3CH1, &stcTim3PortCmpCfg); //比较输出端口配置
     Tim3_M23_PortOutput_Config(Tim3CH2, &stcTim3PortCmpCfg); //比较输出端口配置
-
-    Tim3_M23_CCR_Set(Tim3CCR0A, 0); //设置比较值A,(PWM互补模式下只需要设置比较值A)
-    Tim3_M23_CCR_Set(Tim3CCR1A, 0);
-    Tim3_M23_CCR_Set(Tim3CCR2A, 0);
+    PortOutput_Config(0, 0, 0, 0, 0, 0); // 默认关掉PWM
 
     stcTim3TrigAdc.bEnTrigADC = TRUE;         //使能ADC触发全局控制
     stcTim3TrigAdc.bEnUevTrigADC = TRUE;      //Uev更新触发ADC
