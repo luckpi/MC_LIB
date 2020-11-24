@@ -1,6 +1,5 @@
 #include "smc.h"
-#define ONE_BY_SQRT3 0.5773502691
-#define TWO_PI 6.283185307
+
 int16_t PrevTheta = 0;      // 上一次角度值
 int16_t AccumTheta = 0;     // 累加角度变化量
 int16_t Theta_error = 0;    // 开环角和估算角的误差
@@ -8,6 +7,7 @@ uint16_t trans_counter = 0; // 减小开环角和估算角差距间隔
 uint16_t AccumThetaCnt = 0; // 用于计算电机角速度的频率计数器
 SMC smc = SMC_DEFAULTS;
 MOTOR_ESTIM motorParm;
+
 /*****************************************************************************
  函 数 名  : SMC_Init
  功能描述  : 滑膜控制器参数初始化
@@ -46,28 +46,43 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
     s->mdbi = _IQdiv(s->Kslide, s->MaxSMCError);
-    s->FiltOmCoef = (int16_t)(_IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST));
+    s->FiltOmCoef = (_IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST));
+    s->Kslf_min = (_IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST));
     // s->MaxVoltage = (int16_t)(_IQmpy(ADCSample.Voltage, 18918));//_IQ(0.57735026918963) 最大矢量电压
     return;
 }
+
+/*****************************************************************************
+ 函 数 名  : LPF_Filter
+ 功能描述  : 自适应滤波器
+ 输入参数  : Kslf ,I, O
+ 输出参数  : void
+*****************************************************************************/
+inline static void LPF_Filter(int16_t Kslf, int16_t I, int16_t *O)
+{
+    // Kslf ：滑动模式控制器低通滤波器的增益     eRPS：电机的电气转速，单位为 RPS
+    // Kslf = PWM_Ts * 2pi * eRPS
+    // Out = Out + (Kslf * (In - Out))
+    (*O) += (_IQmpy(Kslf, I)) - (_IQmpy(Kslf, (*O)));
+}
+
 /*****************************************************************************
  函 数 名  : CalcBEMF
  功能描述  : 估算反电动势滤波
  输入参数  : *EMF , *EMFF,  Z
  输出参数  : void
 *****************************************************************************/
-static void CalcBEMF(p_SMC s, int16_t *EMF, int16_t *EMFF, int16_t Z)
+inline static void CalcBEMF(p_SMC s)
 {
-    int16_t temp1, temp2;
-    temp1 = (int16_t)(_IQmpy(s->Kslf, Z));
-    temp2 = (int16_t)(_IQmpy(s->Kslf, (*EMF)));
-    temp1 -= temp2;
-    (*EMF) += temp1;
-    temp1 = (int16_t)(_IQmpy(s->Kslf, (*EMF)));
-    temp2 = (int16_t)(_IQmpy(s->Kslf, (*EMFF)));
-    temp1 -= temp2;
-    (*EMFF) += temp1;
+    // α轴反电动势
+    LPF_Filter(s->Kslf, s->Zalpha, &s->Ealpha);      // 滤波用来计算下一个估算电流
+    LPF_Filter(s->Kslf, s->Ealpha, &s->EalphaFinal); // 滤波用来计算估算角
+
+    // β轴反电动势
+    LPF_Filter(s->Kslf, s->Zbeta, &s->Ebeta);      // 滤波用来计算下一个估算电流
+    LPF_Filter(s->Kslf, s->Ebeta, &s->EbetaFinal); // 滤波用来计算估算角
 }
+
 /*
 电流观测器：
 电机物理模型：Vs = R * Is + L * d(Is)/dt + Es  
@@ -83,30 +98,26 @@ EMF： 估算的反电动势
 EstI：估算的电流
 z   : 校准因子
 */
-static void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
+inline static void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
-    int16_t temp1, temp2, temp3, I_Error;
-    temp1 = (int16_t)(_IQmpy(s->Gsmopos, U));
-    temp2 = (int16_t)(_IQmpy(s->Gsmopos, EMF));
-    temp3 = (int16_t)(_IQmpy(s->Gsmopos, (*Z)));
-    temp1 -= temp2;
-    temp1 -= temp3;
-    *EstI = temp1 + (int16_t)(_IQmpy(s->Fsmopos, (*EstI)));
-    I_Error = (*EstI) - I;
-    if (Abs(I_Error) < s->MaxSMCError)
+    int16_t I_Error;
+    *EstI = (_IQmpy(s->Fsmopos, (*EstI))) + (_IQmpy(s->Gsmopos, (U - EMF - (*Z))));
+    I_Error = *EstI - I;
+    if (I_Error > s->MaxSMCError)
     {
-        // s->Zalpha = (s->Kslide * s->IalphaError) / s->MaxSMCError
-        (*Z) = _IQmpy(s->mdbi, I_Error);
+        *Z = s->Kslide;
     }
-    else if (I_Error > 0)
+    else if (I_Error < -s->MaxSMCError)
     {
-        (*Z) = s->Kslide;
+        *Z = -s->Kslide;
     }
     else
     {
-        (*Z) = -s->Kslide;
+        // s->Zalpha = (s->Kslide * s->IalphaError) / s->MaxSMCError
+        *Z = _IQmpy(s->mdbi, I_Error);
     }
 }
+
 /*****************************************************************************
  函 数 名  : SMC_Position_Estimation
  功能描述  : 滑膜控制器，估算角度
@@ -115,16 +126,13 @@ static void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, 
 *****************************************************************************/
 void SMC_Position_Estimation(p_SMC s)
 {
-    int16_t Kslf_min;
     CalcEstI(s, s->Valpha, s->Ialpha, s->Ealpha, &s->EstIalpha, &s->Zalpha);
     CalcEstI(s, s->Vbeta, s->Ibeta, s->Ebeta, &s->EstIbeta, &s->Zbeta);
-    CalcBEMF(s, &s->Ealpha, &s->EalphaFinal, s->Zalpha);
-    CalcBEMF(s, &s->Ebeta, &s->EbetaFinal, s->Zbeta);
+    CalcBEMF(s);
     s->Theta = Atan2(s->EbetaFinal, s->EalphaFinal); // 应该是反正切求出角度，测试使用强托角度
     AccumTheta += s->Theta - PrevTheta;              // 可能有bug
     PrevTheta = s->Theta;
-    AccumThetaCnt++;
-    if (AccumThetaCnt == IRP_PERCALC)
+    if (++AccumThetaCnt == IRP_PERCALC)
     {
         /*******************************************************
           
@@ -146,21 +154,19 @@ void SMC_Position_Estimation(p_SMC s)
                                       SpeedLoopTime * 65535      
 
         ********************************************************/
-        s->Omega = (int16_t)(_IQmpy(AccumTheta, SMO_SPEED_EST_MULTIPLIER)); // 电转速
+        s->Omega = (_IQmpy(AccumTheta, SMO_SPEED_EST_MULTIPLIER)); // 电转速
         AccumThetaCnt = 0;
         AccumTheta = 0;
     }
-    trans_counter++;
-    if (trans_counter == TRANSITION_STEPS)
+    if (++trans_counter == TRANSITION_STEPS)
         trans_counter = 0;
     s->OmegaFltred = s->OmegaFltred + (_IQmpy(s->FiltOmCoef, (s->Omega - s->OmegaFltred)));
-    s->Kslf = s->KslfFinal = (int16_t)(_IQmpy(s->OmegaFltred, THETA_FILTER_CNST));
+    s->Kslf = s->KslfFinal = (_IQmpy(s->OmegaFltred, THETA_FILTER_CNST));
     // 由于滤波器系数是动态的，因此我们需要确保最小
     // 因此我们将最低的运行速度定义为最低的滤波器系数
-    Kslf_min = (int16_t)(_IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST));
-    if (s->Kslf < Kslf_min)
+    if (s->Kslf < s->Kslf_min)
     {
-        s->Kslf = Kslf_min;
+        s->Kslf = s->Kslf_min;
         s->KslfFinal = s->Kslf;
     }
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
