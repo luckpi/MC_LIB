@@ -11,7 +11,7 @@
 #define _IQ10mpy(A, B)      (int32_t)((A * B) >> 10)
 #define _IQdiv2(A)          (int32_t)((A) >> 1)
 #define _IQmpy2(A)          (int32_t)(A << 1)
-#define _IQdiv(A, B)        (HDIV_div((A << 15), B))
+#define _IQdiv(A, B)        (HDIV_div((A << 15), B)) // 使用硬件除法器
 
 #define SIN_RAD             0x0300
 #define U0_90               0x0000
@@ -21,9 +21,9 @@
 
 typedef struct
 {
-    int16_t IQAngle; // Input:   alpha-axis
-    int16_t IQSin;   // Input:   beta-axis
-    int16_t IQCos;   // Output:  phase-a
+    int16_t IQAngle;
+    int16_t IQSin;
+    int16_t IQCos;
     int16_t Angle_X;
 } IQSin_Cos, *p_IQSin_Cos;
 
