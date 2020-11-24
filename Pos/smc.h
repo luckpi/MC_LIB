@@ -51,9 +51,9 @@ typedef struct
 /* 电机归一化参数 */
 typedef struct
 {
-    int16_t qRs;
-    int16_t qLsDt;     // Ls / dt
-    int16_t qLsDtBase; // Ls / dt
+    int32_t qRs;
+    int32_t qLsDt;     // Ls / dt
+    int32_t qLsDtBase; // Ls / dt
     float Vol_Const;
     float Cur_Const;
     float Omg_Const;
