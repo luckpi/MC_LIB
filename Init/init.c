@@ -22,6 +22,7 @@ void OPA_init(void)
     OP2_INP();
     OP2_INN();
     OP2_OUT();
+    // OPA1
     M0P_OPA->CR1_f.BIASSEL = 1;
     M0P_OPA->CR1_f.MODE = 1;
     M0P_OPA->CR1_f.NEGSEL = 3;
@@ -31,7 +32,7 @@ void OPA_init(void)
     M0P_OPA->CR1_f.RESINMUX = 0;
     M0P_OPA->CR1_f.RESSEL = 0;
     M0P_OPA->CR1_f.UBUFSEL = 0;
-
+    // OPA2
     M0P_OPA->CR2_f.BIASSEL = 1;
     M0P_OPA->CR2_f.MODE = 1;
     M0P_OPA->CR2_f.NEGSEL = 3;
@@ -75,6 +76,7 @@ void Clk_init(void)
     DDL_ZERO_STRUCT(stcPLLCfg);
     ///< 开启FLASH外设时钟
     Sysctrl_SetPeripheralGate(SysctrlPeripheralFlash, TRUE);
+
     ///< 开启硬件除法外设时钟
     Sysctrl_SetPeripheralGate(SysctrlPeripheralDiv, TRUE);
     enFlashWait = FlashWaitCycle1; //读等待周期设置为1（当HCLK大于24MHz时必须至少为1）
@@ -200,7 +202,7 @@ void DMA_init(void)
     Sysctrl_SetPeripheralGate(SysctrlPeripheralDma, TRUE);
     stcDmaCfg.enMode = DmaBlock;
     stcDmaCfg.u16BlockSize = 2;
-    stcDmaCfg.u16TransferCnt = 1; //Block模式，一次传输数据大小为 1,传输三次
+    stcDmaCfg.u16TransferCnt = 1; //Block模式，一次传输数据大小为 1,传输2次
     stcDmaCfg.enTransferWidth = Dma32Bit;
     stcDmaCfg.enSrcAddrMode = AddressIncrease;
     stcDmaCfg.enDstAddrMode = AddressIncrease;
@@ -334,7 +336,7 @@ void ADC_init(void)
     stcAdcIrqCalbaks.pfnAdcJQRIrq = ADC_ISR;
     Adc_ConfigIrq(&stcAdcIrq, &stcAdcIrqCalbaks); //中断函数入口配置
 
-    u8AdcJqrScanCnt = 3; //转换次数3次(3-1已在库函数内计算)
+    u8AdcJqrScanCnt = 2; //转换次数3次(3-1已在库函数内计算)
 
     Adc_ConfigJqrMode(&stcAdcCfg, u8AdcJqrScanCnt, FALSE); //配置插队扫描转换模式
 
@@ -404,11 +406,9 @@ void PWM_init(void)
     u16ArrValue = PWM_FRE_SETATA;
     Tim3_M23_ARRSet(u16ArrValue, TRUE); //设置重载值,并使能缓存
 
-    u16CompareAValue = 0;
-    Tim3_M23_CCR_Set(Tim3CCR0A, u16CompareAValue); //设置比较值A,(PWM互补模式下只需要设置比较值A)
-    Tim3_M23_CCR_Set(Tim3CCR1A, u16CompareAValue);
-    Tim3_M23_CCR_Set(Tim3CCR2A, u16CompareAValue);
-
+    u16CompareAValue = PWM_FRE_SETATA;
+    PWMChangeDuty(u16CompareAValue, u16CompareAValue, u16CompareAValue); // 下管全开
+ 
     stcTim3PortCmpCfg.enCHxACmpCtrl = Tim3PWMMode2;      //OCREFA输出控制OCMA:PWM模式2
     stcTim3PortCmpCfg.enCHxAPolarity = Tim3PortPositive; //正常输出
     stcTim3PortCmpCfg.bCHxACmpBufEn = TRUE;              //A通道缓存控制
@@ -422,6 +422,7 @@ void PWM_init(void)
     Tim3_M23_PortOutput_Config(Tim3CH0, &stcTim3PortCmpCfg); //比较输出端口配置
     Tim3_M23_PortOutput_Config(Tim3CH1, &stcTim3PortCmpCfg); //比较输出端口配置
     Tim3_M23_PortOutput_Config(Tim3CH2, &stcTim3PortCmpCfg); //比较输出端口配置
+
     PortOutput_Config(0, 0, 0, 0, 0, 0); // 默认关掉PWM
 
     stcTim3TrigAdc.bEnTrigADC = TRUE;         //使能ADC触发全局控制
