@@ -25,7 +25,10 @@ void PortOutput_Config(uint8_t U1, uint8_t U2, uint8_t V1, uint8_t V2, uint8_t W
 *****************************************************************************/
 void PWMChangeDuty(uint16_t Ta, uint16_t Tb, uint16_t Tc)
 {
-    Tim3_M23_CCR_Set(Tim3CCR0A, PWM_FRE_SETATA - (_IQmpy(Tc, PWM_FRE_SETATA))); //设置比较值A,(PWM互补模式下只需要设置比较值A)
-    Tim3_M23_CCR_Set(Tim3CCR1A, PWM_FRE_SETATA - (_IQmpy(Tb, PWM_FRE_SETATA)));
-    Tim3_M23_CCR_Set(Tim3CCR2A, PWM_FRE_SETATA - (_IQmpy(Ta, PWM_FRE_SETATA)));
+    M0P_TIM3_MODE23->CCR0A_f.CCR0A = (uint16_t)_IQmpy(Tc, PWM_FRE_SETATA); // 设置比较值A,(PWM互补模式下只需要设置比较值A)
+    M0P_TIM3_MODE23->CCR1A_f.CCR1A = (uint16_t)_IQmpy(Tb, PWM_FRE_SETATA);
+    M0P_TIM3_MODE23->CCR2A_f.CCR2A = (uint16_t)_IQmpy(Ta, PWM_FRE_SETATA);
+    // Tim3_M23_CCR_Set(Tim3CCR0A, (_IQmpy(Tc, PWM_FRE_SETATA)));
+    // Tim3_M23_CCR_Set(Tim3CCR1A, (_IQmpy(Tb, PWM_FRE_SETATA)));
+    // Tim3_M23_CCR_Set(Tim3CCR2A, (_IQmpy(Ta, PWM_FRE_SETATA)));
 }
