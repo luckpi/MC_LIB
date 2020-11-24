@@ -21,11 +21,11 @@
 #define NOMINAL_SPEED_RPM           2700    // 电机额定转速(RPM)
 #define MAXIMUM_SPEED_RPM           5300    // 电动机的最大转速(RPM)
 #define FW_NOMINAL_SPEED_RPM        2700
+#define ENDSPEED_ELECTR             (END_SPEED_RPM * NOPOLESPAIRS)
 
 // FG增益
 #define NORM_LSDTBASE_SCALINGFACTOR 8
 #define NORM_RS_SCALINGFACTOR       1
-#define ENDSPEED_ELECTR             (END_SPEED_RPM * NOPOLESPAIRS)
 
 
 /****************************** Open Lood Parameters ******************************/
