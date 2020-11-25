@@ -79,7 +79,7 @@ void ADC_ISR(void)
         SVM.Cosine = AngleSin_Cos.IQCos;
         InvPark(&SVM);
         svgendq_calc(&SVM);
-        PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
+        PWMChangeDuty(&SVM);
         break;
     case mcDrag:
         Clark_Cala(&SVM);
@@ -96,7 +96,7 @@ void ADC_ISR(void)
         SVM.Cosine = AngleSin_Cos.IQCos;
         InvPark(&SVM);
         svgendq_calc(&SVM);
-        PWMChangeDuty((uint16_t)SVM.Ta, (uint16_t)SVM.Tb, (uint16_t)SVM.Tc);
+        PWMChangeDuty(&SVM);
         break;
     case mcRun:
         break;
