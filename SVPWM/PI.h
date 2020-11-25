@@ -2,6 +2,7 @@
 #define _PI_H
 #include "common.h"
 #define RL_WC_VELREF_FIL                     ((float)1.0)  /* 速度参考滤波器的交叉频率 */
+#define Q_MAX                                30000
 #define RL_WCTS_VELREF                       2      // (float)(RL_WC_VELREF_FIL * PWM_TS) /* Wc*Ts */
 #define RL_1MINUS_WCTS_VELREF                32766  // (float)(1.0 - RL_WCTS_VELREF) /* 1 - Wc*Ts */
 #define MAX_ADC_COUNT                        4095   // (float)4095   /* 12-bit ADC */

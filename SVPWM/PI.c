@@ -12,16 +12,17 @@ tPIParm PIParmQ;    /* Q轴电流PI控制器的参数 */
 tPIParm PIParmD;    /* D轴电流PI控制器的参数 */
 tPIParm PIParmQref; /* 速度PI控制器的参数 */
 
-// *****************************************************************************
-// *****************************************************************************
-// Section: MC PI Controller Routines
-// *****************************************************************************
-// *****************************************************************************
 static void InitPI(tPIParm *pParm)
 {
     pParm->qdSum = 0;
     pParm->qOut = 0;
 }
+/*****************************************************************************
+ 函 数 名  : PI_Parameters
+ 功能描述  : 初始化PI参数
+ 输入参数  : 无
+ 输出参数  : void
+*****************************************************************************/
 void PI_Parameters(void)
 {
 
@@ -56,6 +57,12 @@ void PI_Parameters(void)
 
     return;
 }
+/*****************************************************************************
+ 函 数 名  : CalcPI
+ 功能描述  : PI计算
+ 输入参数  : 无
+ 输出参数  : void
+*****************************************************************************/
 static void CalcPI(tPIParm *pParm)
 {
     int32_t Err;
@@ -82,6 +89,12 @@ static void CalcPI(tPIParm *pParm)
     Exc = U - pParm->qOut;
     pParm->qdSum += (int16_t)(_IQmpy(pParm->qKi, Err)) - (int16_t)(_IQmpy(pParm->qKc, Exc));
 }
+/*****************************************************************************
+ 函 数 名  : PI_Control
+ 功能描述  : PI控制器
+ 输入参数  : 无
+ 输出参数  : void
+*****************************************************************************/
 void PI_Control(void)
 {
     volatile int16_t temp1;
@@ -90,7 +103,6 @@ void PI_Control(void)
         // q当前参考等于vel参考
         // 而d当前参考等于0
         // 要获得最大启动扭矩，请将q电流设置为最大可接受值
-        // 值代表最大峰值
 
         CtrlParm.IqRef = Q_CURRENT_REF_OPENLOOP * HoldParm.RotorDirection; //控制方向
 
@@ -112,13 +124,11 @@ void PI_Control(void)
         // VelRefRaw = (float)(ADCSample.POT * POT_ADC_COUNT_FW_SPEED_RATIO); //速度控制，值瞎给的
         // /* LPF */
         // CtrlParm.VelRef = (RL_1MINUS_WCTS_VELREF * (CtrlParm.VelRef)) + (RL_WCTS_VELREF * (VelRefRaw));
-
-        if (CtrlParm.VelRef < END_SPEED_RADS_PER_SEC_ELEC)
+        CtrlParm.VelRef = (ADCSample.POT * POT_ADC_COUNT_FW_SPEED_RATIO) << 11;
+        if (CtrlParm.VelRef < MotorCfg.OpenLoopSpeedEnd)
         {
             CtrlParm.VelRef = END_SPEED_RADS_PER_SEC_ELEC;
         }
-
-        CtrlParm.IqRefmax = Q_MAX;
 
         // 执行速度控制循环
         PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
@@ -129,8 +139,8 @@ void PI_Control(void)
         CtrlParm.IdRef = 0;
 
         // PI control for D
-        PIParmD.qInMeas = SVM.Id;        // 单位A
-        PIParmD.qInRef = CtrlParm.IdRef; // 单位A
+        PIParmD.qInMeas = SVM.Id;
+        PIParmD.qInRef = CtrlParm.IdRef;
         CalcPI(&PIParmD);
         SVM.Vd = PIParmD.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
 
@@ -145,6 +155,8 @@ void PI_Control(void)
         PIParmQ.qOutMax = IQSqrt(temp1 << 15);
         PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
+        CtrlParm.IqRefmax = Q_MAX;
+
         //Limit Q axis current
         if (CtrlParm.IqRef > CtrlParm.IqRefmax)
         {
@@ -152,9 +164,9 @@ void PI_Control(void)
         }
 
         // PI control for Q
-        PIParmQ.qInMeas = SVM.Iq;        // This is in Amps
-        PIParmQ.qInRef = CtrlParm.IqRef; // This is in Amps
+        PIParmQ.qInMeas = SVM.Iq;
+        PIParmQ.qInRef = CtrlParm.IqRef;
         CalcPI(&PIParmQ);
-        SVM.Vq = PIParmQ.qOut; // This is in %. If should be converted to volts, multiply with (DC/2)
-    }                          /* end of Closed Loop Vector Control */
+        SVM.Vq = PIParmQ.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
+    }
 }
