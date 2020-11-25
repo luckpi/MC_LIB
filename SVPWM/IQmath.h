@@ -11,7 +11,7 @@
 #define _IQ10mpy(A, B)      (int32_t)((A * B) >> 10)
 #define _IQdiv2(A)          (int32_t)((A) >> 1)
 #define _IQmpy2(A)          (int32_t)(A << 1)
-#define _IQdiv(A, B)        (HDIV_div((A << 15), B)) // 使用硬件除法器
+#define _IQdiv(A, B)        (HDIV((A << 15), B)) // 使用硬件除法器
 
 #define SIN_RAD             0x0300
 #define U0_90               0x0000
@@ -36,5 +36,5 @@ extern IQSin_Cos AngleSin_Cos;
 extern uint32_t IQSqrt(uint32_t M);
 extern void IQSin_Cos_Cale(p_IQSin_Cos pV);
 extern int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min);
-extern int32_t HDIV_div(int32_t Dividend, int16_t Divisor);
+extern int32_t HDIV(int32_t Dividend, int16_t Divisor);
 #endif

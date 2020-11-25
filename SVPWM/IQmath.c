@@ -1,6 +1,7 @@
 #include "common.h"
 #include "IQmath.h"
 IQSin_Cos AngleSin_Cos = IQSin_Cos_DEFAULTS;
+// SINCOS 0-90°表
 const int16_t IQSin_Cos_Table[256] = {
     0x0000, 0x00C9, 0x0192, 0x025B, 0x0324, 0x03ED, 0x04B6, 0x057F,
     0x0648, 0x0711, 0x07D9, 0x08A2, 0x096A, 0x0A33, 0x0AFB, 0x0BC4,
@@ -35,13 +36,19 @@ const int16_t IQSin_Cos_Table[256] = {
     0x7F61, 0x7F74, 0x7F86, 0x7F97, 0x7FA6, 0x7FB4, 0x7FC1, 0x7FCD,
     0x7FD8, 0x7FE1, 0x7FE9, 0x7FF0, 0x7FF5, 0x7FF9, 0x7FFD, 0x7FFE};
 
+/*****************************************************************************
+ 函 数 名  : IQSin_Cos_Cale
+ 功能描述  : SIN COS查表法计算
+ 输入参数  : 角度
+ 输出参数  : void
+*****************************************************************************/
 void IQSin_Cos_Cale(p_IQSin_Cos pV)
 {
     uint16_t hindex;
     hindex = (uint16_t)pV->IQAngle; // -32768--32767 +32768 = 0--65535
     hindex >>= 6;                   // 65536 / 64 = 1024 / 4 = 90° = 256  0x01-0xFF  0X100  0X1FF  0X200 0X2FF    0X300  0X3FF
 
-    switch (hindex & SIN_RAD) //  0X300  &   0x0000 -ff    0x0100  1ff   0X200    2ff   0x0300   3ff
+    switch (hindex & SIN_RAD) //  0X300  &  0x0XXX  获取象限
     {
     case U0_90:
         pV->IQSin = IQSin_Cos_Table[(uint8_t)(hindex)]; // 0---255  ==0---32766
@@ -66,7 +73,12 @@ void IQSin_Cos_Cale(p_IQSin_Cos pV)
         break;
     }
 }
-
+/*****************************************************************************
+ 函 数 名  : IQsat
+ 功能描述  : 输出限幅
+ 输入参数  : 比较值，最大值，最小值
+ 输出参数  : void
+*****************************************************************************/
 int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min)
 {
     int32_t Uout;
@@ -79,16 +91,18 @@ int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min)
 
     return Uout;
 }
-
+/*****************************************************************************
+ 函 数 名  : IQSqrt
+ 功能描述  : Q15开方，需要先左移15位
+ 输入参数  : 被开方数
+ 输出参数  : void
+*****************************************************************************/
 uint32_t IQSqrt(uint32_t M)
 {
-    uint32_t N, i, tmp, ttp;
+    uint32_t N = 0, i, tmp, ttp;
     if (M == 0)
         return 0;
-    N = 0;
-
     tmp = (M >> 30);
-
     M <<= 2;
     if (tmp > 1)
     {
@@ -98,13 +112,9 @@ uint32_t IQSqrt(uint32_t M)
     for (i = 15; i > 0; i--)
     {
         N <<= 1;
-
         tmp <<= 2;
         tmp += (M >> 30);
-
-        ttp = N;
-        ttp = (ttp << 1) + 1;
-
+        ttp = (N << 1) + 1;
         M <<= 2;
         if (tmp >= ttp)
         {
@@ -114,13 +124,18 @@ uint32_t IQSqrt(uint32_t M)
     }
     return N;
 }
-// 硬件除法加速
-int32_t HDIV_div(int32_t Dividend, int16_t Divisor)
+/*****************************************************************************
+ 函 数 名  : HDIV
+ 功能描述  : 硬件除法器，需硬件支持
+ 输入参数  : 被除数,  除数
+ 输出参数  : void
+*****************************************************************************/
+int32_t HDIV(int32_t Dividend, int16_t Divisor)
 {
-    M0P_HDIV->SIGN_f.SIGN = 1;
-    (M0P_HDIV->DIVIDEND) = Dividend;
-    (M0P_HDIV->DIVISOR) = Divisor;
-    while (M0P_HDIV->STAT_f.END != TRUE)
+    M0P_HDIV->SIGN_f.SIGN = 1;           // 有无符号除法 1：有符号 0：无符号
+    (M0P_HDIV->DIVIDEND) = Dividend;     // 被除数
+    (M0P_HDIV->DIVISOR) = Divisor;       // 除数
+    while (M0P_HDIV->STAT_f.END != TRUE) // 等待除法运算结束
         ;
     //M0P_HDIV->QUOTIENT_f.QUOTIENT;   //商
     //M0P_HDIV->REMAINDER_f.REMAINDER; //余数
