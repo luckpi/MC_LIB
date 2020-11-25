@@ -3,6 +3,12 @@
 #include "common.h"
 #include "pwm.h"
 SVGENDQ SVM = SVGENDQ_DEFAULTS;
+/*****************************************************************************
+ 函 数 名  : svgendq_calc
+ 功能描述  : SVPWM计算
+ 输入参数  : SVM结构体地址
+ 输出参数  : void
+*****************************************************************************/
 void svgendq_calc(p_SVGENDQ s)
 {
     int32_t Va, Vb, Vc, t1, t2;

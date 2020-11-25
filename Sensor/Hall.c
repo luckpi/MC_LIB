@@ -4,7 +4,6 @@
 uint16_t Hall_Get(void)
 {
     uint8_t U, V, W, UVW;
-    // static uint16_t Theat = 0;
     W = Gpio_GetInputIO(GpioPortC, GpioPin13);
     V = Gpio_GetInputIO(GpioPortD, GpioPin0);
     U = Gpio_GetInputIO(GpioPortD, GpioPin1);
@@ -13,7 +12,7 @@ uint16_t Hall_Get(void)
     HoldParm.SpeedLoopCnt = 0;
     // if (UVW == 1)
     // {
-    //     Theat = 0;
+
     // }
     // else if (UVW == 3)
     // {

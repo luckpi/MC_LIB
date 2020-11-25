@@ -64,7 +64,10 @@ void CalculateParkAngle(void)
     if (mcState == mcDrag)
     {
         if (MotorCfg.OpenLoopSpeed < MotorCfg.OpenLoopSpeedEnd)
+        {
             MotorCfg.OpenLoopSpeed += MotorCfg.OpenLoopSpeedAdd;
+            // mcState = mcRun;
+        }
         AngleSin_Cos.IQAngle += (int16_t)(MotorCfg.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * HoldParm.RotorDirection;
         Theta_error = AngleSin_Cos.IQAngle - smc.Theta;
     }
