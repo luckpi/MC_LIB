@@ -353,7 +353,6 @@ void ADC_init(void)
 void PWM_init(void)
 {
     uint16_t u16ArrValue;
-    uint16_t u16CompareAValue;
     uint16_t u16CntValue;
     uint8_t u8ValidPeriod;
 
@@ -406,8 +405,7 @@ void PWM_init(void)
     u16ArrValue = PWM_FRE_SETATA;
     Tim3_M23_ARRSet(u16ArrValue, TRUE); //设置重载值,并使能缓存
 
-    u16CompareAValue = PWM_FRE_SETATA;
-    PWMChangeDuty(u16CompareAValue, u16CompareAValue, u16CompareAValue); // 下管全开
+    PWMChangeDuty(&SVM); // 下管全开
  
     stcTim3PortCmpCfg.enCHxACmpCtrl = Tim3PWMMode2;      //OCREFA输出控制OCMA:PWM模式2
     stcTim3PortCmpCfg.enCHxAPolarity = Tim3PortPositive; //正常输出
