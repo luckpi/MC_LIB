@@ -2,10 +2,11 @@
 #include "smc.h"
 #include "atan2.h"
 #include "IQmath.h"
+#include "control.h"
 #include "svgen_dq.h"
 #include "MotorConfig.h"
 
-float VelRefRaw;
+// float VelRefRaw;
 tCtrlParm CtrlParm;
 tPIParm PIParmQ;    /* Q轴电流PI控制器的参数 */
 tPIParm PIParmD;    /* D轴电流PI控制器的参数 */
@@ -86,21 +87,6 @@ void PI_Control(void)
     volatile int16_t temp1;
     if (mcState == mcAlign || mcState == mcDrag) // 开环强拖
     {
-        // OPENLOOP:  force rotating angle,Vd,Vq
-        // if (mcState == mcDrag) //开环结束
-        // {
-        //     // just changed to openloop
-        //     MC_APP_MC_CONTROL.bit.ChangeMode = 0;
-        //     // synchronize angles
-
-        //     // VqRef & VdRef not used
-        //     CtrlParm.IqRef = 0;
-        //     CtrlParm.IdRef = 0;
-
-        //     // reinit vars for initial speed ramp
-        //     Startup_Lock_Count = 0;
-        //     Startup_Ramp_Angle_Rads_Per_Sec = 0;
-        // }
         // q当前参考等于vel参考
         // 而d当前参考等于0
         // 要获得最大启动扭矩，请将q电流设置为最大可接受值
@@ -122,26 +108,17 @@ void PI_Control(void)
     }
     else if (mcState == mcRun) // 闭环
     {
-        // if (MC_APP_MC_CONTROL.bit.ChangeMode) //切换模式
-        // {
-        //     // just changed from openloop
-        //     MC_APP_MC_CONTROL.bit.ChangeMode = 0;
-        //     PIParmQref.qdSum = CtrlParm.IqRef;
-        //     CtrlParm.VelRef = END_SPEED_RADS_PER_SEC_ELEC;
-        //     PIParmD.qInRef = 0.0;
-        //     CtrlParm.IdRef = 0.0;
-        // }
 
-        VelRefRaw = (float)(ADCSample.POT * POT_ADC_COUNT_FW_SPEED_RATIO); //速度控制，值瞎给的
-        /* LPF */
-        CtrlParm.VelRef = (RL_1MINUS_WCTS_VELREF * (CtrlParm.VelRef)) + (RL_WCTS_VELREF * (VelRefRaw));
+        // VelRefRaw = (float)(ADCSample.POT * POT_ADC_COUNT_FW_SPEED_RATIO); //速度控制，值瞎给的
+        // /* LPF */
+        // CtrlParm.VelRef = (RL_1MINUS_WCTS_VELREF * (CtrlParm.VelRef)) + (RL_WCTS_VELREF * (VelRefRaw));
 
         if (CtrlParm.VelRef < END_SPEED_RADS_PER_SEC_ELEC)
         {
             CtrlParm.VelRef = END_SPEED_RADS_PER_SEC_ELEC;
         }
 
-        CtrlParm.IqRefmax = MAX_MOTOR_CURRENT;
+        CtrlParm.IqRefmax = Q_MAX;
 
         // 执行速度控制循环
         PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
@@ -165,7 +142,7 @@ void PI_Control(void)
         // Vq = SQRT(0.95^2 - Vd^2)
         temp1 = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
         temp1 = MAX_VOLTAGE_VECTOR - temp1;
-        PIParmQ.qOutMax = IQSqrt(temp1);
+        PIParmQ.qOutMax = IQSqrt(temp1 << 15);
         PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
         //Limit Q axis current
