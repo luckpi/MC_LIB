@@ -81,7 +81,8 @@ void ADC_ISR(void)
         svgendq_calc(&SVM);
         PWMChangeDuty(&SVM);
         break;
-    case mcDrag:
+    case mcDrag:; // 强托阶段
+    case mcRun:
         Clark_Cala(&SVM);
         smc.Ialpha = SVM.Ialpha; // 需要调整电流数据Q15格式
         smc.Ibeta = SVM.Ibeta;
@@ -97,9 +98,6 @@ void ADC_ISR(void)
         InvPark(&SVM);
         svgendq_calc(&SVM);
         PWMChangeDuty(&SVM);
-        break;
-    case mcRun:
-        break;
     default:
         break;
     }
