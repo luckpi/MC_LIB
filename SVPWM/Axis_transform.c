@@ -15,7 +15,7 @@ Clark：
 void Clark_Cala(p_SVGENDQ s)
 {
     s->Ialpha = s->Ia;
-    s->Ibeta = _IQmpy((s->Ia + _IQdiv2(s->Ib)), 18918); // _IQ(0.57735026918963)
+    s->Ibeta = _IQmpy((s->Ia + _IQmpy2(s->Ib)), 18918); // _IQ(0.57735026918963)
 }
 /*
 Park：
