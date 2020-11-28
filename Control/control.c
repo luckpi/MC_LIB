@@ -1,3 +1,4 @@
+#include "PI.h"
 #include "smc.h"
 #include "pwm.h"
 #include "init.h"
@@ -66,14 +67,20 @@ void CalculateParkAngle(void)
         if (MotorCfg.OpenLoopSpeed < MotorCfg.OpenLoopSpeedEnd)
         {
             MotorCfg.OpenLoopSpeed += MotorCfg.OpenLoopSpeedAdd;
-            // mcState = mcRun;
+        }
+        else
+        {
+            PIParmQref.qdSum = CtrlParm.IqRef;
+            CtrlParm.VelRef = MotorCfg.OpenLoopSpeedEnd;
+            PIParmD.qInRef = 0.0;
+            CtrlParm.IdRef = 0.0;
+            mcState = mcRun;
         }
         AngleSin_Cos.IQAngle += (int16_t)(MotorCfg.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * HoldParm.RotorDirection;
         Theta_error = AngleSin_Cos.IQAngle - smc.Theta;
     }
     else if (mcState == mcRun)
     {
-        AngleSin_Cos.IQAngle = smc.Theta + Theta_error;
         if ((Abs(Theta_error) > _0_05DEG) && (trans_counter == 0)) // 慢慢减小开环强制角度和估算角度误差
         {
             if (Theta_error < 0)
@@ -81,6 +88,7 @@ void CalculateParkAngle(void)
             else
                 Theta_error -= _0_05DEG;
         }
+        AngleSin_Cos.IQAngle = smc.Theta + Theta_error;
     }
 }
 /*****************************************************************************
