@@ -321,11 +321,11 @@ void ADC_init(void)
 
     u8AdcSqrScanCnt = 2; //转换次数2次(3-1已在库函数内计算)
 
-    Adc_ConfigDmaTrig(DmaSqr);
+    Adc_ConfigDmaTrig(DmaSqr);                             // DMA传输
     Adc_ConfigSqrMode(&stcAdcCfg, u8AdcSqrScanCnt, FALSE); // 配置扫描扫描转换模式
     Adc_SQR_Start();                                       // 顺序扫描开始
 
-    // 配置插队扫描转换通道,采样顺序CH0 --> CH1 --> CH2 --> CH3
+    // 配置插队扫描转换通道,采样顺序CH0 --> CH1
     Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH6); // IU
     Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH5); // IV
     EnableNvic(ADC_IRQn, IrqLevel1, TRUE);          //Adc开中断
@@ -406,7 +406,7 @@ void PWM_init(void)
     Tim3_M23_ARRSet(u16ArrValue, TRUE); //设置重载值,并使能缓存
 
     PWMChangeDuty(&SVM); // 下管全开
- 
+
     stcTim3PortCmpCfg.enCHxACmpCtrl = Tim3PWMMode2;      //OCREFA输出控制OCMA:PWM模式2
     stcTim3PortCmpCfg.enCHxAPolarity = Tim3PortPositive; //正常输出
     stcTim3PortCmpCfg.bCHxACmpBufEn = TRUE;              //A通道缓存控制
