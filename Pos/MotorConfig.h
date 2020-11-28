@@ -13,7 +13,7 @@
 #define MAX_MOTOR_VOLTAGE           12          // 最大电压 V
 #define MAX_MOTOR_CURRENT           6.25        // 最大电流 A  = ADC最大采样值 / (运放倍数 x 采样电阻大小)
 #define MOTOR_RS                    1           // 定子电阻 Ω
-#define MOTOR_LS                    0.00268     // 定子电感 H
+#define MOTOR_LS                    0.00168     // 定子电感 H
 #define NOPOLESPAIRS                4           // 极对数
 #define MAX_VOLTAGE_VECTOR          27000       // 电压矢量最大值 Q15
 
