@@ -34,7 +34,6 @@ void Common_Init(void)
 {
     HoldParm.MainDetectCnt = 0;
     HoldParm.SpeedLoopCnt = 0;
-    HoldParm.PWMDutyCycle = 0;
     HoldParm.SpeedTime = 0;
     HoldParm.RPM = 0;
     HoldParm.Set_RPM = First_Gear;

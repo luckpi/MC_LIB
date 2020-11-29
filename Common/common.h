@@ -24,7 +24,7 @@ typedef enum
 {
     normal = 0,   // 运行正常
     overcurrent,  // adc过流保护
-    cmp_isr,      //cmp过流保护
+    cmp_isr,      // cmp过流保护
     overvoltage,  // 过压
     undervoltage, // 欠压
     hallerror,    // 霍尔错误
@@ -37,7 +37,6 @@ typedef struct
     int8_t RotorDirection;  // 电机转动方向
     uint16_t MainDetectCnt; // 主循环计数
     uint16_t SpeedLoopCnt;  // 调整转速占空比的周期计数
-    float PWMDutyCycle;     // PWM占空比
     uint16_t SpeedTime;     // 一个电周期时间
     uint16_t RPM;           // 实际转速
     uint16_t Set_RPM;       // 设定转速
