@@ -19,9 +19,9 @@ typedef struct
     int16_t Vq;     // PI输出
     int16_t Valpha; // Park逆变换输出
     int16_t Vbeta;  // Park逆变换输出
-    int16_t Ta;     // SVP输出
-    int16_t Tb;     // SVP输出
-    int16_t Tc;     // SVP输出
+    int32_t Ta;     // SVP输出
+    int32_t Tb;     // SVP输出
+    int32_t Tc;     // SVP输出
 } SVGENDQ, *p_SVGENDQ;
 #define SVGENDQ_DEFAULTS                                     \
     {                                                        \

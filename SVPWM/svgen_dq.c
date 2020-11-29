@@ -20,8 +20,8 @@ void svgendq_calc(p_SVGENDQ s)
     Vr3  = (-Vbeta - √3 * Valpha)/2
     */
     Va = s->Vbeta;
-    Vb = (-_IQdiv2(s->Vbeta)) + _IQmpy(28077, s->Valpha); // sqrt(3)/2   _IQ(0.866)
-    Vc = (-_IQdiv2(s->Vbeta)) - _IQmpy(28077, s->Valpha); // sqrt(3)/2   _IQ(0.866)
+    Vb = (-_IQdiv2(s->Vbeta)) + _IQmpy(28377, s->Valpha); // sqrt(3)/2   _IQ(0.866)
+    Vc = (-_IQdiv2(s->Vbeta)) - _IQmpy(28377, s->Valpha); // sqrt(3)/2   _IQ(0.866)
     // 扇区确定
     if (Va > 0)
         Sector |= 0x01;
@@ -38,49 +38,49 @@ void svgendq_calc(p_SVGENDQ s)
     // }
     if (Sector == 1) // 60-120
     {
-        t1 = -Vb;
-        t2 = -Vc;
-        s->Tc = _IQdiv2(32767 - t1 - t2);
+        t1 = -_IQmpy(Vb, PWM_FRE_SETATA);
+        t2 = -_IQmpy(Vc, PWM_FRE_SETATA);
+        s->Tc = _IQdiv2(PWM_FRE_SETATA - t1 - t2);
         s->Ta = s->Tc + t2;
         s->Tb = s->Ta + t1;
     }
     else if (Sector == 2) // 300-360
     {
-        t1 = -Vc;
-        t2 = -Va;
-        s->Tb = _IQdiv2(32767 - t1 - t2);
+        t1 = -_IQmpy(Vc, PWM_FRE_SETATA);
+        t2 = -_IQmpy(Va, PWM_FRE_SETATA);
+        s->Tb = _IQdiv2(PWM_FRE_SETATA - t1 - t2);
         s->Tc = s->Tb + t2;
         s->Ta = s->Tc + t1;
     }
     else if (Sector == 3) // 0-60
     {
-        t1 = Vb;
-        t2 = Va;
-        s->Tc = _IQdiv2(32767 - t1 - t2);
+        t1 = _IQmpy(Vb, PWM_FRE_SETATA);
+        t2 = _IQmpy(Va, PWM_FRE_SETATA);
+        s->Tc = _IQdiv2(PWM_FRE_SETATA - t1 - t2);
         s->Tb = s->Tc + t2;
         s->Ta = s->Tb + t1;
     }
     else if (Sector == 4) // 180-240
     {
-        t1 = -Va;
-        t2 = -Vb;
-        s->Ta = _IQdiv2(32767 - t1 - t2);
+        t1 = -_IQmpy(Va, PWM_FRE_SETATA);
+        t2 = -_IQmpy(Vb, PWM_FRE_SETATA);
+        s->Ta = _IQdiv2(PWM_FRE_SETATA - t1 - t2);
         s->Tb = s->Ta + t2;
         s->Tc = s->Tb + t1;
     }
     else if (Sector == 5) // 120-180
     {
-        t1 = Va;
-        t2 = Vc;
-        s->Ta = _IQdiv2(32767 - t1 - t2);
+        t1 = _IQmpy(Va, PWM_FRE_SETATA);
+        t2 = _IQmpy(Vc, PWM_FRE_SETATA);
+        s->Ta = _IQdiv2(PWM_FRE_SETATA - t1 - t2);
         s->Tc = s->Ta + t2;
         s->Tb = s->Tc + t1;
     }
     else if (Sector == 6) // 240-300
     {
-        t1 = Vc;
-        t2 = Vb;
-        s->Tb = _IQdiv2(32767 - t1 - t2);
+        t1 = _IQmpy(Vc, PWM_FRE_SETATA);
+        t2 = _IQmpy(Vb, PWM_FRE_SETATA);
+        s->Tb = _IQdiv2(PWM_FRE_SETATA - t1 - t2);
         s->Ta = s->Tb + t2;
         s->Tc = s->Ta + t1;
     }
