@@ -58,7 +58,7 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
  输入参数  : Kslf ,I, O
  输出参数  : void
 *****************************************************************************/
-inline static void LPF_Filter(int16_t Kslf, int16_t I, int16_t *O)
+void LPF_Filter(int16_t Kslf, int16_t I, int16_t *O)
 {
     // Kslf ：滑动模式控制器低通滤波器的增益     eRPS：电机的电气转速，单位为 RPS
     // Kslf = PWM_Ts * 2pi * eRPS
@@ -72,7 +72,7 @@ inline static void LPF_Filter(int16_t Kslf, int16_t I, int16_t *O)
  输入参数  : *EMF , *EMFF,  Z
  输出参数  : void
 *****************************************************************************/
-inline static void CalcBEMF(p_SMC s)
+void CalcBEMF(p_SMC s)
 {
     // α轴反电动势
     LPF_Filter(s->Kslf, s->Zalpha, &s->Ealpha);      // 滤波用来计算下一个估算电流
@@ -93,15 +93,15 @@ F = (1 - Ts * R / L)，G = Ts / L (两个增益函数和电机特性有关)
 
 输入参数：
 I   ：经过Clark变换后的实际电流
-U   ：Vbus / √3 * Valpha(Vbeta)  
+U   ：Vbus / √3 * Valpha(Vbeta)  这里是百分比
 EMF： 估算的反电动势
 EstI：估算的电流
 z   : 校准因子
 */
-inline static void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
+void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
     int16_t I_Error;
-    *EstI = (_IQmpy(s->Fsmopos, (*EstI))) + (_IQmpy(s->Gsmopos, (U - EMF - (*Z))));
+    *EstI = _IQmpy(s->Fsmopos, (*EstI)) + _IQmpy(s->Gsmopos, (U - EMF - (*Z)));
     I_Error = *EstI - I;
     if (I_Error > s->MaxSMCError)
     {
