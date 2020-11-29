@@ -336,7 +336,7 @@ void ADC_init(void)
     stcAdcIrqCalbaks.pfnAdcJQRIrq = ADC_ISR;
     Adc_ConfigIrq(&stcAdcIrq, &stcAdcIrqCalbaks); //中断函数入口配置
 
-    u8AdcJqrScanCnt = 2; //转换次数3次(3-1已在库函数内计算)
+    u8AdcJqrScanCnt = 2; //转换次数2次
 
     Adc_ConfigJqrMode(&stcAdcCfg, u8AdcJqrScanCnt, FALSE); //配置插队扫描转换模式
 
