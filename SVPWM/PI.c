@@ -124,10 +124,10 @@ void PI_Control(void)
         // VelRefRaw = (float)(ADCSample.POT * POT_ADC_COUNT_FW_SPEED_RATIO); //速度控制，值瞎给的
         // /* LPF */
         // CtrlParm.VelRef = (RL_1MINUS_WCTS_VELREF * (CtrlParm.VelRef)) + (RL_WCTS_VELREF * (VelRefRaw));
-        CtrlParm.VelRef = (ADCSample.POT * POT_ADC_COUNT_FW_SPEED_RATIO) << 11;
+        // CtrlParm.VelRef = (ADCSample.POT * POT_ADC_COUNT_FW_SPEED_RATIO) << 11;
         if (CtrlParm.VelRef < MotorCfg.OpenLoopSpeedEnd)
         {
-            CtrlParm.VelRef = END_SPEED_RADS_PER_SEC_ELEC;
+            CtrlParm.VelRef = MotorCfg.OpenLoopSpeedEnd;
         }
 
         // 执行速度控制循环
@@ -150,10 +150,10 @@ void PI_Control(void)
         // Vq is 限制，因此向量Vs小于最大值 95%.
         // Vs = SQRT(Vd^2 + Vq^2) < 0.95
         // Vq = SQRT(0.95^2 - Vd^2)
-        temp1 = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
-        temp1 = MAX_VOLTAGE_VECTOR - temp1;
-        PIParmQ.qOutMax = IQSqrt(temp1 << 15);
-        PIParmQ.qOutMin = -PIParmQ.qOutMax;
+        // temp1 = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
+        // temp1 = MAX_VOLTAGE_VECTOR - temp1;
+        // PIParmQ.qOutMax = IQSqrt(temp1 << 15);
+        // PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
         CtrlParm.IqRefmax = Q_MAX;
 

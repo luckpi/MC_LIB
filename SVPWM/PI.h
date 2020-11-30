@@ -2,32 +2,31 @@
 #define _PI_H
 #include "common.h"
 #define RL_WC_VELREF_FIL                     ((float)1.0)  /* 速度参考滤波器的交叉频率 */
-#define Q_MAX                                30000
+#define Q_MAX                                27000
 #define RL_WCTS_VELREF                       2      // (float)(RL_WC_VELREF_FIL * PWM_TS) /* Wc*Ts */
 #define RL_1MINUS_WCTS_VELREF                32766  // (float)(1.0 - RL_WCTS_VELREF) /* 1 - Wc*Ts */
 #define MAX_ADC_COUNT                        4095   // (float)4095   /* 12-bit ADC */
 #define POT_ADC_COUNT_FW_SPEED_RATIO         1000   // 建议用角速度计算 / 4095
-#define Q_CURRENT_REF_OPENLOOP               800   // 启动力矩  I / 最大电流
-#define END_SPEED_RADS_PER_SEC_ELEC          1000   // 目前给的值都是瞎写的，电机转速转角度
+#define Q_CURRENT_REF_OPENLOOP               1200   // 启动力矩  I / 最大电流
 /* PI controllers tuning values - */
 //******** D Control Loop Coefficients *******
-#define D_CURRCNTR_PTERM                     0    //0.02
-#define D_CURRCNTR_ITERM                     0      //(0.00005)
-#define D_CURRCNTR_CTERM                     0      //0.5
-#define D_CURRCNTR_OUTMAX                    30000  //0.999
+#define D_CURRCNTR_PTERM                     34000    //0.02
+#define D_CURRCNTR_ITERM                     5      //(0.00005)
+#define D_CURRCNTR_CTERM                     5      //0.5
+#define D_CURRCNTR_OUTMAX                    27000  //0.999
 
 //******** Q Control Loop Coefficients *******
-#define Q_CURRCNTR_PTERM                      30000     //0.02KP=KP*2^NKo
-#define Q_CURRCNTR_ITERM                      0      //(0.00005)
-#define Q_CURRCNTR_CTERM                      0     //0.5
-#define Q_CURRCNTR_OUTMAX                    30000  // 0.999
+#define Q_CURRCNTR_PTERM                     34000     //0.02KP=KP*2^NKo
+#define Q_CURRCNTR_ITERM                     5      //(0.00005)
+#define Q_CURRCNTR_CTERM                     5     //0.5
+#define Q_CURRCNTR_OUTMAX                    27000  // 0.999
 
 //*** Velocity Control Loop Coefficients *****
-#define SPEEDCNTR_PTERM                      0
+#define SPEEDCNTR_PTERM                      55
 #define SPEEDCNTR_ITERM                      0
 #define SPEEDCNTR_CTERM                      0
-#define SPEEDCNTR_OUTMAX                     MAX_MOTOR_CURRENT
-#define SPEEDCNTR_OUTMAX                     MAX_MOTOR_CURRENT
+#define SPEEDCNTR_OUTMAX                     27000
+
 typedef struct
 {
     int32_t qdSum;
