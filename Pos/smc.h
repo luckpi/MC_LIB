@@ -45,7 +45,6 @@ typedef struct
     int16_t mdbi;        //  Kslide / MaxSMCError
     int16_t Kslf;        //  滑膜滤波器增益
     int16_t Kslf_min;    //  滑膜滤波器最小增益
-    int16_t KslfFinal;   //  用于角度计算的BEMF滤波器
     int16_t FiltOmCoef;  //  过滤系数，用于Omega过滤的calc
     int16_t ThetaOffset; //  偏移量用于补偿转子角度
     int16_t Theta;       //  转子补偿角

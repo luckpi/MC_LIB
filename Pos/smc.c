@@ -48,6 +48,7 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     s->mdbi = _IQdiv(s->Kslide, s->MaxSMCError);
     s->Kslf_min = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->FiltOmCoef = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
+    s->ThetaOffset = CONSTANT_PHASE_SHIFT;
     // s->MaxVoltage = (int16_t)(_IQmpy(ADCSample.Voltage, 18918));//_IQ(0.57735026918963) 最大矢量电压
     return;
 }
@@ -161,15 +162,13 @@ void SMC_Position_Estimation(p_SMC s)
     if (++trans_counter == TRANSITION_STEPS)
         trans_counter = 0;
     s->OmegaFltred += _IQmpy(s->FiltOmCoef, (s->Omega - s->OmegaFltred));
-    s->Kslf = s->KslfFinal = (_IQmpy(s->OmegaFltred, THETA_FILTER_CNST));
+    s->Kslf = (_IQmpy(s->OmegaFltred, THETA_FILTER_CNST));
     // 由于滤波器系数是动态的，因此我们需要确保最小
     // 因此我们将最低的运行速度定义为最低的滤波器系数
     if (s->Kslf < s->Kslf_min)
     {
         s->Kslf = s->Kslf_min;
-        s->KslfFinal = s->Kslf;
     }
-    s->ThetaOffset = CONSTANT_PHASE_SHIFT;
     s->Theta = s->Theta + s->ThetaOffset;
     return;
 }
