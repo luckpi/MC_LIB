@@ -87,8 +87,8 @@ void Common_Init(void)
     //Motor_CFG
     MotorCfg.OpenLoopSpeed = 0;
     MotorCfg.OpenLoopSpeedEnd = END_SPEED * 65536; // 开环转度转换为角速度 1024是为了减弱加速度
-    MotorCfg.OpenLoopSpeedAdd = MotorCfg.OpenLoopSpeedEnd / PWM_FREQ / 6;
-    
+    MotorCfg.OpenLoopSpeedAdd = MotorCfg.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME;
+
     SMC_Init(&smc, &motorParm);
     //PID_Init
     PI_Parameters();
