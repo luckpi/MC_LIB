@@ -8,8 +8,8 @@
 #define ONE_BY_SQRT3                            0.5773502691    // 1 / √3
 #define TWO_PI                                  6.283185307     // 2pi
 
-#define THETA_AT_ALL_SPEED                      90             // 延迟角度  (0 ~ 360) 正转90 反转270
-#define THETA_ALL                               -16384           // (uint16_t)(THETA_AT_ALL_SPEED / 180.0 * 32768.0)
+#define THETA_AT_ALL_SPEED                      90              // 延迟角度  (0 ~ 360) 正转270 反转90
+#define THETA_ALL                               -16384          // (uint16_t)(THETA_AT_ALL_SPEED / 180.0 * 32768.0)
 #define CONSTANT_PHASE_SHIFT                    THETA_ALL
 #define _0_05DEG                                9               // 闭环减小开环强制角和估算角误差，每次步进0.05°
 
@@ -18,8 +18,8 @@
 #define SPEEDLOOPTIME                           0.001   // 调速周期 (1.0 / SPEEDLOOPFREQ)
 #define IRP_PERCALC                             16      // 每个速度计算的PWM回路 (SPEEDLOOPTIME / PWM_TS)
 #define TRANSITION_STEPS                        4       // IRP_PERCALC / 4
-#define SMCGAIN                                 0.8    // 滑模控制器增益 (0.0 to 0.9999)
-#define MAXLINEARSMC                            0.005   // 滑膜最大误差值域 (0.0 to 0.9999)
+#define SMCGAIN                                 0.8     // 滑模控制器增益 (0.0 to 0.9999)
+#define MAXLINEARSMC                            0.002   // 滑膜最大误差值域 (0.0 to 0.9999)
 #define SMO_SPEED_EST_MULTIPLIER                30000   // Q15(0.9155273)
 #define THETA_FILTER_CNST                       7028    // Q15(0.104719 * PWM_TS * 32768.0) // 2 * pi / 60 * Ts * 32768
 typedef struct
