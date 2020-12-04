@@ -70,14 +70,12 @@ void CalculateParkAngle(void)
         }
         else
         {
-            PIParmQref.qdSum = CtrlParm.IqRef;
-            CtrlParm.VelRef = MotorCfg.OpenLoopSpeedEnd;
-            PIParmD.qInRef = 0.0;
-            CtrlParm.IdRef = 0.0;
+            Theta_error = AngleSin_Cos.IQAngle - smc.Theta;
+            PIParmQref.qdSum = CtrlParm.IqRef >> 3;
+            CtrlParm.VelRef = MotorCfg.OmegaMin;
             mcState = mcRun;
         }
         AngleSin_Cos.IQAngle += (int16_t)(MotorCfg.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * HoldParm.RotorDirection;
-        Theta_error = AngleSin_Cos.IQAngle - smc.Theta;
     }
     else if (mcState == mcRun)
     {
