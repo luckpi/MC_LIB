@@ -248,9 +248,9 @@ void Hall_init(void)
     ///< 端口方向配置->输入
     pstcGpioCfg.enDir = GpioDirIn;
     ///< 端口驱动能力配置->高驱动能力
-    pstcGpioCfg.enDrv = GpioDrvL;
+    pstcGpioCfg.enDrv = GpioDrvH;
     ///< 端口上下拉配置->上拉
-    pstcGpioCfg.enPuPd = GpioPu;
+    pstcGpioCfg.enPuPd = GpioNoPuPd;
     ///< 端口开漏输出配置->开漏输出关闭
     pstcGpioCfg.enOD = GpioOdDisable;
     ///< 端口输入/输出值寄存器总线控制模式配置->AHB
@@ -262,13 +262,10 @@ void Hall_init(void)
     Gpio_Init(GpioPortD, GpioPin1, &pstcGpioCfg);
     Gpio_ClearIrq(GpioPortC, GpioPin13);                  ///< 打开并配置PD04为下降沿中断
     Gpio_EnableIrq(GpioPortC, GpioPin13, GpioIrqRising);  ///< 使能端口PORTD系统中断
-    Gpio_EnableIrq(GpioPortC, GpioPin13, GpioIrqFalling); ///< 使能端口PORTD系统中断
     Gpio_ClearIrq(GpioPortD, GpioPin0);                   ///< 打开并配置PD04为下降沿中断
-    Gpio_EnableIrq(GpioPortD, GpioPin0, GpioIrqFalling);  ///< 使能端口PORTD系统中断
     Gpio_EnableIrq(GpioPortD, GpioPin0, GpioIrqRising);   ///< 使能端口PORTD系统中断
     Gpio_ClearIrq(GpioPortD, GpioPin1);                   ///< 打开并配置PD04为下降沿中断
-    Gpio_EnableIrq(GpioPortD, GpioPin1, GpioIrqFalling);  ///< 使能端口PORTD系统中断
-    Gpio_EnableIrq(GpioPortC, GpioPin1, GpioIrqRising);   ///< 使能端口PORTD系统中断
+    Gpio_EnableIrq(GpioPortD, GpioPin1, GpioIrqRising);   ///< 使能端口PORTD系统中断
     EnableNvic(PORTD_IRQn, IrqLevel2, TRUE);
     EnableNvic(PORTC_IRQn, IrqLevel2, TRUE);
 }
