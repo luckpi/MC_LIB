@@ -59,12 +59,12 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
  输入参数  : Kslf ,I, O
  输出参数  : void
 *****************************************************************************/
-void LPF_Filter(int16_t Kslf, int16_t I, int16_t *O)
+void LPF_Filter(int16_t Kslf, int16_t In, int16_t *Out)
 {
     // Kslf ：滑动模式控制器低通滤波器的增益     eRPS：电机的电气转速，单位为 RPS
     // Kslf = PWM_Ts * 2pi * eRPS
     // Out = Out + (Kslf * (In - Out))
-    (*O) += (_IQmpy(Kslf, I)) - (_IQmpy(Kslf, (*O)));
+    (*Out) += _IQmpy(Kslf, (In - (*Out)));
 }
 
 /*****************************************************************************
@@ -162,13 +162,13 @@ void SMC_Position_Estimation(p_SMC s)
     if (++trans_counter == TRANSITION_STEPS)
         trans_counter = 0;
     s->OmegaFltred += _IQmpy(s->FiltOmCoef, (s->Omega - s->OmegaFltred));
-    s->Kslf = (_IQmpy(s->OmegaFltred, THETA_FILTER_CNST));
+    s->Kslf = _IQmpy(s->OmegaFltred, THETA_FILTER_CNST);
     // 由于滤波器系数是动态的，因此我们需要确保最小
     // 因此我们将最低的运行速度定义为最低的滤波器系数
     if (s->Kslf < s->Kslf_min)
     {
         s->Kslf = s->Kslf_min;
     }
-    s->Theta = s->Theta + s->ThetaOffset;
+    s->Theta += s->ThetaOffset;
     return;
 }
