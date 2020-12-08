@@ -14,37 +14,18 @@
 **************************************************************************************************/
 void OPA_init(void)
 {
+    stc_opa_gain_config_t strGain;
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
     Sysctrl_SetPeripheralGate(SysctrlPeripheralOpa, TRUE);
+    DDL_ZERO_STRUCT(strGain);
+    strGain.enInGain = Gain15; //反向增益 PGA = 15
     OP1_INP();
     OP1_INN();
-    OP1_OUT();
     OP2_INP();
     OP2_INN();
-    OP2_OUT();
-    // OPA1
-    M0P_OPA->CR1_f.BIASSEL = 1;
-    M0P_OPA->CR1_f.MODE = 1;
-    M0P_OPA->CR1_f.NEGSEL = 3;
-    M0P_OPA->CR1_f.POEN = 0;
-    M0P_OPA->CR1_f.PGAGAIN = 5;
-    M0P_OPA->CR1_f.POSSEL = 3;
-    M0P_OPA->CR1_f.RESINMUX = 0;
-    M0P_OPA->CR1_f.RESSEL = 0;
-    M0P_OPA->CR1_f.UBUFSEL = 0;
-    // OPA2
-    M0P_OPA->CR2_f.BIASSEL = 1;
-    M0P_OPA->CR2_f.MODE = 1;
-    M0P_OPA->CR2_f.NEGSEL = 3;
-    M0P_OPA->CR2_f.POEN = 0;
-    M0P_OPA->CR2_f.PGAGAIN = 5;
-    M0P_OPA->CR2_f.POSSEL = 3;
-    M0P_OPA->CR2_f.RESINMUX = 0;
-    M0P_OPA->CR2_f.RESSEL = 0;
-    M0P_OPA->CR2_f.UBUFSEL = 0;
-    M0P_OPA->CR0_f.EN = 1;
-    M0P_OPA->CR1_f.EN = 1;
-    M0P_OPA->CR2_f.EN = 1;
+    OPA_Init();
+    OPA_Operate(OPA1, OpaOppositeMode, &strGain); //反向增益
+    OPA_Operate(OPA2, OpaOppositeMode, &strGain); //反向增益
 }
 /**************************************************************************************************
  函 数 名  : fputc
@@ -260,12 +241,12 @@ void Hall_init(void)
     Gpio_Init(GpioPortC, GpioPin13, &pstcGpioCfg);
     Gpio_Init(GpioPortD, GpioPin0, &pstcGpioCfg);
     Gpio_Init(GpioPortD, GpioPin1, &pstcGpioCfg);
-    Gpio_ClearIrq(GpioPortC, GpioPin13);                  ///< 打开并配置PD04为下降沿中断
-    Gpio_EnableIrq(GpioPortC, GpioPin13, GpioIrqRising);  ///< 使能端口PORTD系统中断
-    Gpio_ClearIrq(GpioPortD, GpioPin0);                   ///< 打开并配置PD04为下降沿中断
-    Gpio_EnableIrq(GpioPortD, GpioPin0, GpioIrqRising);   ///< 使能端口PORTD系统中断
-    Gpio_ClearIrq(GpioPortD, GpioPin1);                   ///< 打开并配置PD04为下降沿中断
-    Gpio_EnableIrq(GpioPortD, GpioPin1, GpioIrqRising);   ///< 使能端口PORTD系统中断
+    Gpio_ClearIrq(GpioPortC, GpioPin13);                 ///< 打开并配置PD04为下降沿中断
+    Gpio_EnableIrq(GpioPortC, GpioPin13, GpioIrqRising); ///< 使能端口PORTD系统中断
+    Gpio_ClearIrq(GpioPortD, GpioPin0);                  ///< 打开并配置PD04为下降沿中断
+    Gpio_EnableIrq(GpioPortD, GpioPin0, GpioIrqRising);  ///< 使能端口PORTD系统中断
+    Gpio_ClearIrq(GpioPortD, GpioPin1);                  ///< 打开并配置PD04为下降沿中断
+    Gpio_EnableIrq(GpioPortD, GpioPin1, GpioIrqRising);  ///< 使能端口PORTD系统中断
     EnableNvic(PORTD_IRQn, IrqLevel2, TRUE);
     EnableNvic(PORTC_IRQn, IrqLevel2, TRUE);
 }
@@ -292,8 +273,6 @@ void ADC_init(void)
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
 
     Gpio_SetAnalogMode(GpioPortA, GpioPin3);  //PA02 POT
-    Gpio_SetAnalogMode(GpioPortA, GpioPin5);  //PA05 IU
-    Gpio_SetAnalogMode(GpioPortA, GpioPin6);  //PA02 IV
     Gpio_SetAnalogMode(GpioPortB, GpioPin15); //PB15 VOLTAGE
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralAdcBgr, TRUE);
@@ -323,9 +302,9 @@ void ADC_init(void)
     Adc_SQR_Start();                                       // 顺序扫描开始
 
     // 配置插队扫描转换通道,采样顺序CH0 --> CH1
-    Adc_ConfigJqrChannel(JQRCH0MUX, AdcExInputCH6); // IU
-    Adc_ConfigJqrChannel(JQRCH1MUX, AdcExInputCH5); // IV
-    EnableNvic(ADC_IRQn, IrqLevel1, TRUE);          //Adc开中断
+    Adc_ConfigJqrChannel(JQRCH0MUX, AdcOPA2Input); // IU
+    Adc_ConfigJqrChannel(JQRCH1MUX, AdcOPA1Input); // IV
+    EnableNvic(ADC_IRQn, IrqLevel1, TRUE);         //Adc开中断
 
     // Adc_EnableIrq(); // 使能Adc中断 放在强拖之前开
 
