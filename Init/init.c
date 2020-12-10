@@ -87,27 +87,30 @@ void Clk_init(void)
  输入参数  : 无
  输出参数  : void
 **************************************************************************************************/
-void LED_init(void)
+void GPIO_init(void)
 {
-    stc_gpio_config_t ledGpioCfg;
-    DDL_ZERO_STRUCT(ledGpioCfg);
+    stc_gpio_config_t GpioCfg;
+    DDL_ZERO_STRUCT(GpioCfg);
     ///< 打开GPIO外设时钟门控
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
     ///< 端口方向配置 -> 输出
-    ledGpioCfg.enDir = GpioDirOut;
+    GpioCfg.enDir = GpioDirOut;
     ///< 端口驱动能力配置 -> 高驱动能力
-    ledGpioCfg.enDrv = GpioDrvH;
+    GpioCfg.enDrv = GpioDrvH;
     ///< 端口上下拉配置 -> 无上下拉;
-    ledGpioCfg.enPuPd = GpioNoPuPd;
+    GpioCfg.enPuPd = GpioNoPuPd;
     ///< 端口开漏输出配置->开漏输出关闭
-    ledGpioCfg.enOD = GpioOdDisable;
+    GpioCfg.enOD = GpioOdDisable;
     ///< 端口输入/输出值寄存器总线控制模式配置->AHB
-    ledGpioCfg.enCtrlMode = GpioAHB;
+    GpioCfg.enCtrlMode = GpioAHB;
     ///< GPIO IO PC13初始化（LED）
-    Gpio_Init(GpioPortB, GpioPin5, &ledGpioCfg);
+    Gpio_Init(GpioPortB, GpioPin5, &GpioCfg); // LED
+    Gpio_Init(GpioPortB, GpioPin7, &GpioCfg); // LED
     Gpio_WriteOutputIO(GpioPortB, GpioPin5, FALSE);
-    Gpio_Init(GpioPortB, GpioPin7, &ledGpioCfg);
     Gpio_WriteOutputIO(GpioPortB, GpioPin7, FALSE);
+    GpioCfg.enDir = GpioDirIn;
+    Gpio_Init(GpioPortC, GpioPin13, &GpioCfg); // KEY0
+    Gpio_Init(GpioPortC, GpioPin14, &GpioCfg); // KEY1
 }
 /**************************************************************************************************
  函 数 名  : Uart_Init
@@ -201,19 +204,6 @@ void DMA_init(void)
     Dma_EnableChannel(DmaCh0);
 }
 /**************************************************************************************************
- 函 数 名  : Gpio_IRQHandler
- 功能描述  : 外部中断函数
- 输入参数  : 通道号
- 输出参数  : void
-**************************************************************************************************/
-void Gpio_IRQHandler(uint8_t u8Param)
-{
-    Hall_Get();
-    Gpio_ClearIrq(GpioPortC, GpioPin13);
-    Gpio_ClearIrq(GpioPortD, GpioPin0);
-    Gpio_ClearIrq(GpioPortD, GpioPin1);
-}
-/**************************************************************************************************
  函 数 名  : Hall_Gpio_Init
  功能描述  : 霍尔初始化
  输入参数  : 无
@@ -238,17 +228,9 @@ void Hall_init(void)
     pstcGpioCfg.enCtrlMode = GpioAHB;
 
     ///< GPIO IO HALL初始化
-    Gpio_Init(GpioPortC, GpioPin13, &pstcGpioCfg);
-    Gpio_Init(GpioPortD, GpioPin0, &pstcGpioCfg);
-    Gpio_Init(GpioPortD, GpioPin1, &pstcGpioCfg);
-    Gpio_ClearIrq(GpioPortC, GpioPin13);                 ///< 打开并配置PD04为下降沿中断
-    Gpio_EnableIrq(GpioPortC, GpioPin13, GpioIrqRising); ///< 使能端口PORTD系统中断
-    Gpio_ClearIrq(GpioPortD, GpioPin0);                  ///< 打开并配置PD04为下降沿中断
-    Gpio_EnableIrq(GpioPortD, GpioPin0, GpioIrqRising);  ///< 使能端口PORTD系统中断
-    Gpio_ClearIrq(GpioPortD, GpioPin1);                  ///< 打开并配置PD04为下降沿中断
-    Gpio_EnableIrq(GpioPortD, GpioPin1, GpioIrqRising);  ///< 使能端口PORTD系统中断
-    EnableNvic(PORTD_IRQn, IrqLevel2, TRUE);
-    EnableNvic(PORTC_IRQn, IrqLevel2, TRUE);
+    Gpio_Init(GpioPortA, GpioPin1, &pstcGpioCfg); // U
+    Gpio_Init(GpioPortA, GpioPin0, &pstcGpioCfg); // V
+    Gpio_Init(GpioPortD, GpioPin0, &pstcGpioCfg); // W
 }
 /**************************************************************************************************
  函 数 名  : ADC_Init
@@ -272,7 +254,7 @@ void ADC_init(void)
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
 
-    Gpio_SetAnalogMode(GpioPortA, GpioPin3);  //PA02 POT
+    Gpio_SetAnalogMode(GpioPortA, GpioPin2);  //PA02 POT
     Gpio_SetAnalogMode(GpioPortB, GpioPin15); //PB15 VOLTAGE
 
     Sysctrl_SetPeripheralGate(SysctrlPeripheralAdcBgr, TRUE);
@@ -291,8 +273,8 @@ void ADC_init(void)
 
     Adc_Init(&stcAdcCfg); //Adc初始化
 
-    // 配置顺序扫描转换通道,采样顺序CH0 --> CH1 --> CH2 --> CH3
-    Adc_ConfigSqrChannel(CH0MUX, AdcExInputCH3);  // 电位器
+    // 配置顺序扫描转换通道,采样顺序CH0 --> CH1
+    Adc_ConfigSqrChannel(CH0MUX, AdcExInputCH2);  // 电位器
     Adc_ConfigSqrChannel(CH1MUX, AdcExInputCH22); // 电压
 
     u8AdcSqrScanCnt = 2; //转换次数2次(3-1已在库函数内计算)
@@ -302,8 +284,8 @@ void ADC_init(void)
     Adc_SQR_Start();                                       // 顺序扫描开始
 
     // 配置插队扫描转换通道,采样顺序CH0 --> CH1
-    Adc_ConfigJqrChannel(JQRCH0MUX, AdcOPA2Input); // IU
-    Adc_ConfigJqrChannel(JQRCH1MUX, AdcOPA1Input); // IV
+    Adc_ConfigJqrChannel(JQRCH0MUX, AdcOPA1Input); // IU
+    Adc_ConfigJqrChannel(JQRCH1MUX, AdcOPA2Input); // IV
     EnableNvic(ADC_IRQn, IrqLevel1, TRUE);         //Adc开中断
 
     // Adc_EnableIrq(); // 使能Adc中断 放在强拖之前开
