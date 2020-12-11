@@ -54,7 +54,7 @@
         M0P_GPIO->PBADS_f.PB11 = 1; \
         M0P_GPIO->PBDIR_f.PB11 = 1; \
     }
-extern void LED_init(void);
+extern void GPIO_init(void);
 extern void PWM_init(void);
 extern void ADC_init(void);
 extern void UART_init(void);
@@ -62,4 +62,5 @@ extern void Clk_init(void);
 extern void DMA_init(void);
 extern void OPA_init(void);
 extern void Hall_init(void);
+
 #endif

@@ -11,7 +11,7 @@
 int main()
 {
 	Clk_init();
-	LED_init();
+	GPIO_init();
 	PWM_init();
 	DMA_init();
 	OPA_init();
@@ -49,9 +49,9 @@ int main()
 		// printf("Id=%d\n", SVM.Id);
 		// printf("Og=%d\n", smc.Omega);
 		// printf("Ealpha=%d,Ebeta=%d\n", smc.Ealpha, smc.Ebeta);
-		// printf("ETheta=%d,Theta=%d\n", smc.Theta, AngleSin_Cos.IQAngle);
+		printf("ETheta=%d,Theta=%d\n", smc.Theta, AngleSin_Cos.IQAngle);
 		// printf("ERROR=%d\n", Theta_error);
 		// printf("Fsmopos=%d\n", smc.Fsmopos);
-		printf("Og=%d\n", SVM.Tb);
+		// printf("Og=%d\n", SVM.Tb);
 	}
 }
