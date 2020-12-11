@@ -9,7 +9,7 @@
 #define TWO_PI                                  6.283185307     // 2pi
 
 #define THETA_AT_ALL_SPEED                      90              // 延迟角度  (0 ~ 360) 正转270 反转90
-#define THETA_ALL                               -16384         // (uint16_t)(THETA_AT_ALL_SPEED / 180.0 * 32768.0)
+#define THETA_ALL                               16384         // (uint16_t)(THETA_AT_ALL_SPEED / 180.0 * 32768.0)
 #define CONSTANT_PHASE_SHIFT                    THETA_ALL
 #define _0_05DEG                                9               // 闭环减小开环强制角和估算角误差，每次步进0.05°
 
@@ -83,5 +83,6 @@ extern MOTOR_ESTIM motorParm;
 
 extern void SMC_Init(p_SMC, p_MOTOR_ESTIM);
 extern void SMC_Position_Estimation(p_SMC);
+extern int16_t CORDIC_Atan(int16_t alfa_est, int16_t beta_est);
 
 #endif
