@@ -8,8 +8,8 @@
 #define ONE_BY_SQRT3                            0.5773502691    // 1 / √3
 #define TWO_PI                                  6.283185307     // 2pi
 
-#define THETA_AT_ALL_SPEED                      90              // 延迟角度  (0 ~ 360) 正转270 反转90
-#define THETA_ALL                               16384         // (uint16_t)(THETA_AT_ALL_SPEED / 180.0 * 32768.0)
+#define THETA_AT_ALL_SPEED                      90              // 延迟角度  (0 ~ 360)
+#define THETA_ALL                               16384           // (uint16_t)(THETA_AT_ALL_SPEED / 180.0 * 32768.0)
 #define CONSTANT_PHASE_SHIFT                    THETA_ALL
 #define _0_05DEG                                9               // 闭环减小开环强制角和估算角误差，每次步进0.05°
 
