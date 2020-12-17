@@ -1,6 +1,5 @@
 #include "PI.h"
 #include "smc.h"
-#include "atan2.h"
 #include "IQmath.h"
 #include "control.h"
 #include "svgen_dq.h"

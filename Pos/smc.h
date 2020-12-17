@@ -1,6 +1,5 @@
 #ifndef _SMC_H
 #define _SMC_H
-#include "atan2.h"
 #include "common.h"
 #include "IQmath.h"
 #include "MotorConfig.h"
