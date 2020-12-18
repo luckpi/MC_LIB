@@ -71,7 +71,7 @@ void CalculateParkAngle(void)
         else
         {
             Theta_error = AngleSin_Cos.IQAngle - smc.Theta;
-            PIParmQref.qdSum = CtrlParm.IqRef;
+            PIParmQref.qdSum = CtrlParm.IqRef >> 3;
             CtrlParm.VelRef = MotorCfg.OmegaMin;
             PIParmD.qInRef = 0;
             CtrlParm.IdRef = 0;

@@ -17,7 +17,7 @@
 #define NOPOLESPAIRS                2           // 极对数
 #define MAX_VOLTAGE_VECTOR          27000       // 电压矢量最大值 Q15
 
-#define END_SPEED_RPM               500         // 开环结束切闭环速度
+#define END_SPEED_RPM               800         // 开环结束切闭环速度
 #define NOMINAL_SPEED_RPM           2700        // 电机额定转速(RPM)
 #define MAXIMUM_SPEED_RPM           5300        // 电动机的最大转速(RPM)
 #define FW_NOMINAL_SPEED_RPM        2700
