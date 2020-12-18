@@ -162,7 +162,7 @@ void SMC_Position_Estimation(p_SMC s)
     if (++trans_counter == TRANSITION_STEPS)
         trans_counter = 0;
     s->OmegaFltred += _IQmpy(s->FiltOmCoef, (s->Omega - s->OmegaFltred));
-    s->Kslf = _IQmpy(s->OmegaFltred, THETA_FILTER_CNST);
+    s->Kslf = _IQmpy(s->OmegaFltred, THETA_FILTER_CNST) * HoldParm.RotorDirection;
     // 由于滤波器系数是动态的，因此我们需要确保最小
     // 因此我们将最低的运行速度定义为最低的滤波器系数
     if (s->Kslf < s->Kslf_min)
