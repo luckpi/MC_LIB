@@ -36,16 +36,16 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 
         s->Fsmopos = 0;
     else
-        s->Fsmopos = (0x7FFF - HDIV(((int32_t)m->qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)), m->qLsDt));
+        s->Fsmopos = (0x7FFF - (((int32_t)m->qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)) / m->qLsDt));
 
     if (((int32_t)m->qLsDt << NORM_LSDTBASE_SCALINGFACTOR) < 32767)
         s->Gsmopos = 0x7FFF;
     else
-        s->Gsmopos = HDIV(((int32_t)0x7FFF << (15 - NORM_LSDTBASE_SCALINGFACTOR)), m->qLsDt);
+        s->Gsmopos = ((int32_t)0x7FFF << (15 - NORM_LSDTBASE_SCALINGFACTOR)) / m->qLsDt;
 
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
-    s->mdbi = _IQdiv(s->Kslide, s->MaxSMCError);
+    s->mdbi = s->Kslide / s->MaxSMCError;
     s->Kslf_min = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->FiltOmCoef = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
