@@ -121,7 +121,7 @@ void PI_Control(void)
     {
         if (AccumThetaCnt == 0)
         {
-            VelRefRaw = ((ADCSample.POT - 1968) * CtrlParm.OmegaMax) >> 11; //速度控制，值瞎给的
+            VelRefRaw = (((ADCSample.POT - 1968) * CtrlParm.OmegaMax) >> 11) * HoldParm.RotorDirection; //速度控制，值瞎给的
             // VelRefRaw = CtrlParm.OmegaMin;
             // 执行速度控制循环
             if (VelRefRaw < CtrlParm.OmegaMin)
@@ -148,8 +148,8 @@ void PI_Control(void)
                     CtrlParm.VelRef = VelRefRaw;
                 }
             }
-            PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
-            PIParmQref.qInRef = CtrlParm.VelRef * HoldParm.RotorDirection; // 电机参考速度和方向
+            PIParmQref.qInMeas = smc.OmegaFltred; // 反馈速度
+            PIParmQref.qInRef = CtrlParm.VelRef;  // 电机参考速度和方向
             CalcPI(&PIParmQref);
             CtrlParm.IqRef = PIParmQref.qOut;
         }
