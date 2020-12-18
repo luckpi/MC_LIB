@@ -2,7 +2,7 @@
 #define _PI_H
 #include "common.h"
 #define Q_MAX                                27000  // Q轴闭环最大电流
-#define Q_CURRENT_REF_OPENLOOP               600   // 启动力矩  I / 最大电流
+#define Q_CURRENT_REF_OPENLOOP               700   // 启动力矩  I / 最大电流
 /* PI controllers tuning values - */
 //******** D Control Loop Coefficients *******
 #define D_CURRCNTR_PTERM                     0.05
