@@ -38,7 +38,7 @@ void PI_Parameters(void)
     PIParmQ.qKi = Q15(Q_CURRCNTR_ITERM);
     PIParmQ.qKc = Q15(Q_CURRCNTR_CTERM);
     PIParmQ.qOutMax = Q15(Q_CURRCNTR_OUTMAX);
-    PIParmQ.qOutMin = -PIParmQref.qOutMax;
+    PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
     InitPI(&PIParmQ);
 
