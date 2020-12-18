@@ -8,7 +8,6 @@ uint16_t Hall_Get(void)
     V = Gpio_GetInputIO(GpioPortD, GpioPin0);
     U = Gpio_GetInputIO(GpioPortD, GpioPin1);
     UVW = ((U << 2) | (V << 1) | W);
-    AngleSin_Cos.Angle_X = HoldParm.SpeedLoopCnt;
     HoldParm.SpeedLoopCnt = 0;
     // if (UVW == 1)
     // {
