@@ -121,16 +121,16 @@ void PI_Control(void)
     {
         if (AccumThetaCnt == 0)
         {
-            VelRefRaw = ((ADCSample.POT - 1968) * MotorCfg.OmegaMax) >> 11; //速度控制，值瞎给的
-            // VelRefRaw = MotorCfg.OmegaMin;
+            VelRefRaw = ((ADCSample.POT - 1968) * CtrlParm.OmegaMax) >> 11; //速度控制，值瞎给的
+            // VelRefRaw = CtrlParm.OmegaMin;
             // 执行速度控制循环
-            if (VelRefRaw < MotorCfg.OmegaMin)
+            if (VelRefRaw < CtrlParm.OmegaMin)
             {
-                VelRefRaw = MotorCfg.OmegaMin;
+                VelRefRaw = CtrlParm.OmegaMin;
             }
-            else if (VelRefRaw > MotorCfg.OmegaMax)
+            else if (VelRefRaw > CtrlParm.OmegaMax)
             {
-                VelRefRaw = MotorCfg.OmegaMax;
+                VelRefRaw = CtrlParm.OmegaMax;
             }
             temp2 = CtrlParm.VelRef - VelRefRaw;
             if (temp2 < 0)

@@ -7,7 +7,6 @@
 #include "control.h"
 #include "svgen_dq.h"
 #include "MotorConfig.h"
-MOTOR_CONFIG MotorCfg;
 /******************************************************************************
  函 数 名  : MotorAhead
  功能描述  : 开始启动
@@ -64,20 +63,20 @@ void CalculateParkAngle(void)
 {
     if (mcState == mcDrag)
     {
-        if (MotorCfg.OpenLoopSpeed < MotorCfg.OpenLoopSpeedEnd)
+        if (CtrlParm.OpenLoopSpeed < CtrlParm.OpenLoopSpeedEnd)
         {
-            MotorCfg.OpenLoopSpeed += MotorCfg.OpenLoopSpeedAdd;
+            CtrlParm.OpenLoopSpeed += CtrlParm.OpenLoopSpeedAdd;
         }
         else
         {
             Theta_error = AngleSin_Cos.IQAngle - smc.Theta;
             PIParmQref.qdSum = CtrlParm.IqRef >> 3;
-            CtrlParm.VelRef = MotorCfg.OmegaMin;
+            CtrlParm.VelRef = CtrlParm.OmegaMin;
             PIParmD.qInRef = 0;
             CtrlParm.IdRef = 0;
             mcState = mcRun;
         }
-        AngleSin_Cos.IQAngle += (int16_t)(MotorCfg.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * HoldParm.RotorDirection;
+        AngleSin_Cos.IQAngle += (int16_t)(CtrlParm.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * HoldParm.RotorDirection;
     }
     else if (mcState == mcRun)
     {

@@ -22,6 +22,7 @@
 #define SPEEDCNTR_CTERM                      0.9999
 #define SPEEDCNTR_OUTMAX                     0.5
 #define SPEEDREFRAMP                         2
+
 typedef struct
 {
     int32_t qdSum;
@@ -35,8 +36,17 @@ typedef struct
     int16_t qOut;
     int16_t qErr;
 } tPIParm;
+
 typedef struct
 {
+    // 开环控制
+    int32_t OpenLoopSpeed;    // 开环速度
+    int32_t OpenLoopSpeedEnd; // 开环结束速度
+    int16_t OpenLoopSpeedAdd; // 开环速度增量
+    int16_t OmegaMin;         // 最小转速
+    int16_t OmegaMax;         // 最大转速
+
+    // 闭环控制
     int16_t VelRef;   // 参考速度
     int16_t IdRef;    // Vd磁通参考值
     int16_t IqRef;    // Vq转矩参考值
@@ -46,10 +56,12 @@ typedef struct
     int16_t IdRefPI;  // 弱场Idref PI输出
     int16_t IqRefmax; // 最大Q轴电流
 } tCtrlParm;
+
 extern tCtrlParm CtrlParm;
 extern tPIParm PIParmQ;    /* Q轴电流PI控制器的参数 */
 extern tPIParm PIParmD;    /* D轴电流PI控制器的参数 */
 extern tPIParm PIParmQref; /* 速度PI控制器的参数 */
 extern void PI_Parameters(void);
 extern void PI_Control(void);
+
 #endif

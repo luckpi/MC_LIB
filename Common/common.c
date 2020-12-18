@@ -85,11 +85,11 @@ void Common_Init(void)
     error_code = normal;
 
     //Motor_CFG
-    MotorCfg.OpenLoopSpeed = 0;
-    MotorCfg.OpenLoopSpeedEnd = END_SPEED * 65536; // 开环转度转换为角速度 1024是为了减弱加速度
-    MotorCfg.OpenLoopSpeedAdd = MotorCfg.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME;
-    MotorCfg.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS * PWM_TS * 65536 / 60.0 * IRP_PERCALC;
-    MotorCfg.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS * PWM_TS * 65536 / 60.0 * IRP_PERCALC;
+    CtrlParm.OpenLoopSpeed = 0;
+    CtrlParm.OpenLoopSpeedEnd = END_SPEED * 65536; // 开环转度转换为角速度
+    CtrlParm.OpenLoopSpeedAdd = CtrlParm.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME;
+    CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS * PWM_TS * 65536 / 60.0 * IRP_PERCALC;
+    CtrlParm.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS * PWM_TS * 65536 / 60.0 * IRP_PERCALC;
 
     SMC_Init(&smc, &motorParm);
     //PID_Init
