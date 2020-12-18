@@ -130,8 +130,7 @@ void SMC_Position_Estimation(p_SMC s)
     CalcEstI(s, s->Valpha, s->Ialpha, s->Ealpha, &s->EstIalpha, &s->Zalpha);
     CalcEstI(s, s->Vbeta, s->Ibeta, s->Ebeta, &s->EstIbeta, &s->Zbeta);
     CalcBEMF(s);
-    // s->Theta = Atan2(s->EbetaFinal, s->EalphaFinal); // 应该是反正切求出角度，测试使用强托角度
-    s->Theta = CORDIC_Atan(-s->EalphaFinal, s->EbetaFinal); // 应该是反正切求出角度，测试使用强托角度
+    s->Theta = CORDIC_Atan(s->EbetaFinal, -s->EalphaFinal); // 应该是反正切求出角度，测试使用强托角度
     AccumTheta += s->Theta - PrevTheta;                     // 可能有bug
     PrevTheta = s->Theta;
     if (++AccumThetaCnt == IRP_PERCALC)
