@@ -1,6 +1,6 @@
 # Motor_Control
 
-## FOC处于测试阶段，后续会添加BLDC
+## FOC处于测试阶段，目前测试反转功能
 
 单片机: 基于HC32-F030J8TA(ARM Cortex-M0+内核) </br>
 开发平台：Keil5</br>
