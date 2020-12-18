@@ -110,16 +110,6 @@ void ADC_ISR(void)
         break;
     case mcAlign:
         HoldParm.MainDetectCnt++;
-        Clark_Cala(&SVM);
-        Park_Cala(&SVM);
-        PI_Control();
-        IQSin_Cos_Cale(&AngleSin_Cos);
-        SVM.Sine = AngleSin_Cos.IQSin;
-        SVM.Cosine = AngleSin_Cos.IQCos;
-        InvPark(&SVM);
-        svgendq_calc(&SVM);
-        PWMChangeDuty(&SVM);
-        break;
     case mcDrag:; // 强托阶段
     case mcRun:
         Clark_Cala(&SVM);
@@ -137,6 +127,7 @@ void ADC_ISR(void)
         InvPark(&SVM);
         svgendq_calc(&SVM);
         PWMChangeDuty(&SVM);
+        break;
     default:
         break;
     }
