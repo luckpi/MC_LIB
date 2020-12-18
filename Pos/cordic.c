@@ -27,14 +27,14 @@ int16_t CORDIC_Atan(int16_t x, int16_t y)
     {
         if (y < 0)
         {
-            /* 象限III，相加90度即可移至象限IV */
+            /* 象限三，相加90度即可移至象限四 */
             hAngle = 16384;
             wXi = -(y >> 1);
             wYi = x >> 1;
         }
         else
         {
-            /* 象限II，减去90度即可移至象限I */
+            /* 象限二，减去90度即可移至象限一 */
             hAngle = -16384;
             wXi = y >> 1;
             wYi = -(x >> 1);
@@ -42,7 +42,7 @@ int16_t CORDIC_Atan(int16_t x, int16_t y)
     }
     else
     {
-        /* 象限I或IV */
+        /* 象限一或四 */
         hAngle = 0;
         wXi = x >> 1;
         wYi = y >> 1;
@@ -54,7 +54,7 @@ int16_t CORDIC_Atan(int16_t x, int16_t y)
     //     /* 开始逐次逼近过程 */
     //     if (wYi < 0)
     //     {
-    //         /* 向量在IV象限中 */
+    //         /* 向量在第四象限中 */
     //         hAngle += atandiv[i];
     //         wXi -= wYi >> i;
     //         wYi += wXold >> i;
@@ -67,137 +67,137 @@ int16_t CORDIC_Atan(int16_t x, int16_t y)
     //         wYi -= wXold >> i;
     //     }
     // }
-    /*begin the successive approximation process*/
-    /*iteration0*/
+    /* 开始逐次逼近过程 */
+    /* 迭代0 */
     if (wYi < 0)
     {
-        /*vector is in Quadrant IV*/
+        /* 向量在第四象限中 */
         hAngle += ATAN1DIV1;
         wXi = wXi - wYi;
         wYi = wXold + wYi;
     }
     else
     {
-        /*vector is in Quadrant I*/
+        /* 向量在第一象限中 */
         hAngle -= ATAN1DIV1;
         wXi = wXi + wYi;
         wYi = -wXold + wYi;
     }
     wXold = wXi;
 
-    /*iteration1*/
+    /* 迭代1 */
     if (wYi < 0)
     {
-        /*vector is in Quadrant IV*/
+        /* 向量在第四象限中 */
         hAngle += ATAN1DIV2;
         wXi -= wYi >> 1;
         wYi += wXold >> 1;
     }
     else
     {
-        /*vector is in Quadrant I*/
+        /* 向量在第一象限中 */
         hAngle -= ATAN1DIV2;
         wXi += wYi >> 1;
         wYi -= wXold >> 1;
     }
     wXold = wXi;
 
-    /*iteration2*/
+    /* 迭代2 */
     if (wYi < 0)
     {
-        /*vector is in Quadrant IV*/
+        /* 向量在第四象限中 */
         hAngle += ATAN1DIV4;
         wXi -= wYi >> 2;
         wYi += wXold >> 2;
     }
     else
     {
-        /*vector is in Quadrant I*/
+        /* 向量在第一象限中 */
         hAngle -= ATAN1DIV4;
         wXi += wYi >> 2;
         wYi -= wXold >> 2;
     }
     wXold = wXi;
 
-    /*iteration3*/
+    /* 迭代3 */
     if (wYi < 0)
     {
-        /*vector is in Quadrant IV*/
+        /* 向量在第四象限中 */
         hAngle += ATAN1DIV8;
         wXi -= wYi >> 3;
         wYi += wXold >> 3;
     }
     else
     {
-        /*vector is in Quadrant I*/
+        /* 向量在第一象限中 */
         hAngle -= ATAN1DIV8;
         wXi += wYi >> 3;
         wYi -= wXold >> 3;
     }
     wXold = wXi;
 
-    /*iteration4*/
+    /* 迭代4 */
     if (wYi < 0)
     {
-        /*vector is in Quadrant IV*/
+        /* 向量在第四象限中 */
         hAngle += ATAN1DIV16;
         wXi -= wYi >> 4;
         wYi += wXold >> 4;
     }
     else
     {
-        /*vector is in Quadrant I*/
+        /* 向量在第一象限中 */
         hAngle -= ATAN1DIV16;
         wXi += wYi >> 4;
         wYi -= wXold >> 4;
     }
     wXold = wXi;
 
-    /*iteration5*/
+    /* 迭代5 */
     if (wYi < 0)
     {
-        /*vector is in Quadrant IV*/
+        /* 向量在第四象限中 */
         hAngle += ATAN1DIV32;
         wXi -= wYi >> 5;
         wYi += wXold >> 5;
     }
     else
     {
-        /*vector is in Quadrant I*/
+        /* 向量在第一象限中 */
         hAngle -= ATAN1DIV32;
         wXi += wYi >> 5;
         wYi -= wXold >> 5;
     }
     wXold = wXi;
 
-    /*iteration6*/
+    /* 迭代6 */
     if (wYi < 0)
     {
-        /*vector is in Quadrant IV*/
+        /* 向量在第四象限中 */
         hAngle += ATAN1DIV64;
         wXi -= wYi >> 6;
         wYi += wXold >> 6;
     }
     else
     {
-        /*vector is in Quadrant I*/
+        /* 向量在第一象限中 */
         hAngle -= ATAN1DIV64;
         wXi += wYi >> 6;
         wYi -= wXold >> 6;
     }
     wXold = wXi;
 
-    /*iteration7*/
+    /* 迭代7 */
     if (wYi < 0)
     {
-        /*vector is in Quadrant IV*/
+        /* 向量在第四象限中 */
         hAngle += ATAN1DIV128;
         wXi -= wYi >> 7;
         wYi += wXold >> 7;
     }
     else
     {
-        /*vector is in Quadrant I*/
+        /* 向量在第一象限中 */
         hAngle -= ATAN1DIV128;
         wXi += wYi >> 7;
         wYi -= wXold >> 7;

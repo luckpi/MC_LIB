@@ -47,7 +47,7 @@ void Common_Init(void)
     CatchParm.PWMCnt = 0;
     CatchParm.DutyCycleUse = 0;
 
-    //SVM_Init
+    // SVPWM参数初始化
     SVM.Ia = 0;     // 直接测量
     SVM.Ib = 0;     // 直接测量
     SVM.Ic = 0;     // 根据Ia + Ib + Ic =0可得
@@ -67,7 +67,7 @@ void Common_Init(void)
     SVM.Tb = 0;     // SVP输出
     SVM.Tc = 0;     // SVP输出
 
-    //SMO_Init
+    // 滑膜参数初始化
     smc.Valpha = 0;
     smc.Ealpha = 0;
     smc.EalphaFinal = 0;
@@ -84,10 +84,10 @@ void Common_Init(void)
     smc.Omega = 0;
     error_code = normal;
 
-    //Motor_CFG
+    // 速度环和开环参数初始化
     CtrlParm.OpenLoopSpeed = 0;
-    CtrlParm.OpenLoopSpeedEnd = END_SPEED * 65536; // 开环转度转换为角速度
-    CtrlParm.OpenLoopSpeedAdd = CtrlParm.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME;
+    CtrlParm.OpenLoopSpeedEnd = END_SPEED * 65536; // 单位周期角速度增益 (END_SPEED << THETA_OPENLOOP_SCALER)
+    CtrlParm.OpenLoopSpeedAdd = CtrlParm.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME; // 单位周期增量
     CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS * PWM_TS * 65536 / 60.0 * IRP_PERCALC;
     CtrlParm.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS * PWM_TS * 65536 / 60.0 * IRP_PERCALC;
 
