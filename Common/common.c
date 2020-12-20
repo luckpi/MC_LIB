@@ -88,8 +88,8 @@ void Common_Init(void)
     CtrlParm.OpenLoopSpeed = 0;
     CtrlParm.OpenLoopSpeedEnd = END_SPEED * 65536; // 单位周期角速度增益 (END_SPEED << THETA_OPENLOOP_SCALER)
     CtrlParm.OpenLoopSpeedAdd = CtrlParm.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME; // 单位周期增量
-    CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS * PWM_TS * 65536 / 60.0 * IRP_PERCALC;
-    CtrlParm.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS * PWM_TS * 65536 / 60.0 * IRP_PERCALC;
+    CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS;
+    CtrlParm.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS;
 
     SMC_Init(&smc, &motorParm);
     //PID_Init
