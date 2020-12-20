@@ -18,14 +18,12 @@ void OPA_init(void)
     Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
     Sysctrl_SetPeripheralGate(SysctrlPeripheralOpa, TRUE);
     DDL_ZERO_STRUCT(strGain);
-    strGain.enInGain = Gain15; //反向增益 PGA = 15
+    strGain.enNoInGain = Gain16; // 正向增益 PGA = 16
     OP1_INP();
-    OP1_INN();
     OP2_INP();
-    OP2_INN();
     OPA_Init();
-    OPA_Operate(OPA1, OpaOppositeMode, &strGain); //反向增益
-    OPA_Operate(OPA2, OpaOppositeMode, &strGain); //反向增益
+    OPA_Operate(OPA1, OpaForWardMode, &strGain); // 正向增益
+    OPA_Operate(OPA2, OpaForWardMode, &strGain); // 正向增益
 }
 /**************************************************************************************************
  函 数 名  : fputc

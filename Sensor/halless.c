@@ -9,11 +9,11 @@
 #include "smc.h"
 #include "PI.h"
 /* 基于滑动均值滤波器的电流偏移计算参数 */
-#define MOVING_AVG_WINDOW_SIZE          18      // 移动平均窗口样本大小 is 2^18
-#define CURRENT_OFFSET_MAX              2200    // 当前偏移最大限制
-#define CURRENT_OFFSET_MIN              1900    // 当前偏移最小限制
-#define CURRENT_OFFSET_INIT             2048    // 由于OPAMP偏置在VDD / 2，
-#define ADC_CURRENT_SCALE               16      // 将采样值转换为Q15格式
+#define MOVING_AVG_WINDOW_SIZE 18 // 移动平均窗口样本大小 is 2^18
+#define CURRENT_OFFSET_MAX 2200   // 当前偏移最大限制
+#define CURRENT_OFFSET_MIN 1900   // 当前偏移最小限制
+#define CURRENT_OFFSET_INIT 2048  // 由于OPAMP偏置在VDD / 2，
+#define ADC_CURRENT_SCALE 16      // 将采样值转换为Q15格式
 uint32_t cumulative_sum_phaseA = (CURRENT_OFFSET_INIT << MOVING_AVG_WINDOW_SIZE);
 uint32_t cumulative_sum_phaseB = (CURRENT_OFFSET_INIT << MOVING_AVG_WINDOW_SIZE);
 uint32_t moving_average_phaseA = 0;
@@ -62,8 +62,8 @@ static void PhaseCurrentSample(void)
         /* 实现了滑动均值滤波器以计算当前偏移量。 滑动均值滤波的窗口大小= 2 ^ MOVING_AVG_WINDOW_SIZE */
         Moving_Average_Filter(&cumulative_sum_phaseA, &moving_average_phaseA, &SVM.Ia);
         Moving_Average_Filter(&cumulative_sum_phaseB, &moving_average_phaseB, &SVM.Ib);
-        SVM.Ia = moving_average_phaseA - SVM.Ia; // 减去偏移值
-        SVM.Ib = moving_average_phaseB - SVM.Ib;
+        SVM.Ia -= moving_average_phaseA; // 减去偏移值
+        SVM.Ib -= moving_average_phaseB;
         SVM.Ia *= ADC_CURRENT_SCALE; // 转Q15
         SVM.Ib *= ADC_CURRENT_SCALE;
     }
