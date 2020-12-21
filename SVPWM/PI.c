@@ -25,7 +25,7 @@ void PI_Parameters(void)
 {
 
     // PI D Term
-    PIParmD.qKp = Q15(D_CURRCNTR_PTERM) << 4;
+    PIParmD.qKp = Q15(D_CURRCNTR_PTERM) * NKo;
     PIParmD.qKi = Q15(D_CURRCNTR_ITERM);
     PIParmD.qKc = Q15(D_CURRCNTR_CTERM);
     PIParmD.qOutMax = Q15(D_CURRCNTR_OUTMAX);
@@ -34,7 +34,7 @@ void PI_Parameters(void)
     InitPI(&PIParmD);
 
     // PI Q Term
-    PIParmQ.qKp = Q15(Q_CURRCNTR_PTERM) << 4;
+    PIParmQ.qKp = Q15(Q_CURRCNTR_PTERM) * NKo;
     PIParmQ.qKi = Q15(Q_CURRCNTR_ITERM);
     PIParmQ.qKc = Q15(Q_CURRCNTR_CTERM);
     PIParmQ.qOutMax = Q15(Q_CURRCNTR_OUTMAX);
@@ -43,7 +43,7 @@ void PI_Parameters(void)
     InitPI(&PIParmQ);
 
     // PI Qref Term
-    PIParmQref.qKp = Q15(SPEEDCNTR_PTERM) << 4;
+    PIParmQref.qKp = Q15(SPEEDCNTR_PTERM) * NKo;
     PIParmQref.qKi = Q15(SPEEDCNTR_ITERM);
     PIParmQref.qKc = Q15(SPEEDCNTR_CTERM);
     PIParmQref.qOutMax = Q15(SPEEDCNTR_OUTMAX);
