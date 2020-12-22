@@ -1,6 +1,7 @@
 #include "PI.h"
 #include "smc.h"
 #include "IQmath.h"
+#include "fdweak.h"
 #include "control.h"
 #include "svgen_dq.h"
 #include "MotorConfig.h"
@@ -119,9 +120,9 @@ void PI_Control(void)
     }
     else if (mcState == mcRun) // 闭环
     {
+        VelRefRaw = (((ADCSample.POT - 2000) * (CtrlParm.OmegaMax - CtrlParm.OmegaMin)) >> 11) + CtrlParm.OmegaMin; //速度电位器调节
         if (AccumThetaCnt == 0)
         {
-            VelRefRaw = (((ADCSample.POT - 2000) * (CtrlParm.OmegaMax - CtrlParm.OmegaMin)) >> 11) + CtrlParm.OmegaMin; //速度控制，值瞎给的
             // VelRefRaw = CtrlParm.OmegaMin;
             // 执行速度控制循环
             if (VelRefRaw < CtrlParm.OmegaMin)
@@ -148,12 +149,17 @@ void PI_Control(void)
                     CtrlParm.VelRef = VelRefRaw;
                 }
             }
+
+#ifndef TORQUE_MODE
             PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
             PIParmQref.qInRef = CtrlParm.VelRef * HoldParm.RotorDirection; // 电机参考速度和方向
             CalcPI(&PIParmQref);
             CtrlParm.IqRef = PIParmQref.qOut;
+#else
+            CtrlParm.IqRef = CtrlParm.VelRef;
+#endif
         }
-        CtrlParm.IdRef = 0;
+        CtrlParm.IdRef = FieldWeakening(Abs(CtrlParm.VelRef));
         // PI control for D
         PIParmD.qInMeas = SVM.Id;
         PIParmD.qInRef = CtrlParm.IdRef;

@@ -1,11 +1,13 @@
-#include "common.h"
-#include "control.h"
-#include "pwm.h"
-#include "adc.h"
 #include "PI.h"
-#include "svgen_dq.h"
+#include "adc.h"
+#include "pwm.h"
 #include "smc.h"
+#include "common.h"
+#include "fdweak.h"
+#include "control.h"
+#include "svgen_dq.h"
 #include "MotorConfig.h"
+
 MotorState_T mcState;
 ErrorState_T error_code;
 volatile HoldControlPara_T HoldParm;
@@ -91,7 +93,12 @@ void Common_Init(void)
     CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS;
     CtrlParm.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS;
 
+    // 滑模控制器初始化
     SMC_Init(&smc, &motorParm);
-    //PID_Init
+
+    // PI初始化
     PI_Parameters();
+
+    // 弱磁初始化
+    FWInit();
 }
