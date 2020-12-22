@@ -176,7 +176,7 @@ void PI_Control(void)
         // PIParmQ.qOutMax = IQSqrt(temp1 << 15);
         // PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
-        CtrlParm.IqRefmax = Q_MAX;
+        CtrlParm.IqRefmax = MAX_VOLTAGE_VECTOR;
 
         //Limit Q axis current
         if (CtrlParm.IqRef > CtrlParm.IqRefmax)
