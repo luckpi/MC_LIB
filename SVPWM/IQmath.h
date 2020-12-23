@@ -10,7 +10,7 @@
 #define _IQmpy(A, B)        (int32_t)((A * B) >> 15)
 #define _IQdiv2(A)          (int32_t)((A) >> 1)
 #define _IQmpy2(A)          (int32_t)(A << 1)
-#define _IQdiv(A, B)        (HDIV((A << 15), B)) // 使用硬件除法器
+#define _IQdiv(A, B)        (int32_t)((A << 15) / B)
 
 #define SIN_RAD             0x0300
 #define U0_90               0x0000
