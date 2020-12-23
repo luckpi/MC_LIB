@@ -45,7 +45,7 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
-    s->mdbi = s->Kslide / s->MaxSMCError;
+    s->mdbi = _IQdiv(s->Kslide, s->MaxSMCError);
     s->Kslf_min = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->FiltOmCoef = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
