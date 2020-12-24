@@ -92,6 +92,7 @@ void Common_Init(void)
     CtrlParm.OpenLoopSpeedAdd = CtrlParm.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME; // 单位周期增量
     CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS;
     CtrlParm.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS;
+    CtrlParm.IqRefmax = MAX_VOLTAGE_VECTOR;
 
     // 滑模控制器初始化
     SMC_Init(&smc, &motorParm);
@@ -99,6 +100,8 @@ void Common_Init(void)
     // PI初始化
     PI_Parameters();
 
+#ifdef FDWEAK_MODE
     // 弱磁初始化
     FWInit();
+#endif
 }

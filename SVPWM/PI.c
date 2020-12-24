@@ -52,8 +52,6 @@ void PI_Parameters(void)
 
     InitPI(&PIParmQref);
 
-    CtrlParm.IdRef = 0; // d轴不做功
-
     return;
 }
 /*****************************************************************************
@@ -112,6 +110,8 @@ void PI_Control(void)
         CalcPI(&PIParmQ);
         SVM.Vq = PIParmQ.qOut;
 
+        CtrlParm.IdRef = 0; // d轴不做功
+
         // PI control for D
         PIParmD.qInMeas = SVM.Id;
         PIParmD.qInRef = CtrlParm.IdRef;
@@ -150,16 +150,20 @@ void PI_Control(void)
                 }
             }
 
-#ifndef TORQUE_MODE
+#ifdef TORQUE_MODE
+            CtrlParm.IqRef = CtrlParm.VelRef;
+#else
             PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
             PIParmQref.qInRef = CtrlParm.VelRef * HoldParm.RotorDirection; // 电机参考速度和方向
             CalcPI(&PIParmQref);
             CtrlParm.IqRef = PIParmQref.qOut;
-#else
-            CtrlParm.IqRef = CtrlParm.VelRef;
 #endif
         }
+#ifdef FDWEAK_MODE
         CtrlParm.IdRef = FieldWeakening(Abs(CtrlParm.VelRef));
+#else
+        CtrlParm.IdRef = 0;
+#endif
         // PI control for D
         PIParmD.qInMeas = SVM.Id;
         PIParmD.qInRef = CtrlParm.IdRef;
@@ -175,8 +179,6 @@ void PI_Control(void)
         // temp1 = MAX_VOLTAGE_VECTOR - temp1;
         // PIParmQ.qOutMax = IQSqrt(temp1 << 15);
         // PIParmQ.qOutMin = -PIParmQ.qOutMax;
-
-        CtrlParm.IqRefmax = MAX_VOLTAGE_VECTOR;
 
         //Limit Q axis current
         if (CtrlParm.IqRef > CtrlParm.IqRefmax)

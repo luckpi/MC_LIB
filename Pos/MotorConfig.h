@@ -24,7 +24,10 @@
 #define ENDSPEED_ELECTR             (END_SPEED_RPM * NOPOLESPAIRS)
 
 // 转矩模式 开启会跳过速度环。注释关闭
-// #define TORQUE_MODE   
+// #define TORQUE_MODE  
+
+// 弱磁功能 注释关闭
+// #define FDWEAK_MODE   
 
 // FG增益
 #define NORM_LSDTBASE_SCALINGFACTOR 8
