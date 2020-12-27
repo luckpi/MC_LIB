@@ -106,7 +106,7 @@ void ADC_ISR(void)
     {
     case mcAhead:
         ADC_Calibrate();
-        AngleSin_Cos.IQAngle = -32768;
+        AngleSin_Cos.IQAngle = 0;
         break;
     case mcAlign:
         HoldParm.MainDetectCnt++;
