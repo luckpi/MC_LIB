@@ -12,13 +12,13 @@
 /****************************** Motor Parameters ******************************/
 #define MAX_MOTOR_VOLTAGE           24          // 最大电压 V
 #define MAX_MOTOR_CURRENT           7.815       // 最大电流 A  = ADC最大采样值 / (运放倍数 x 采样电阻大小)
-#define MOTOR_RS                    0.8f        // 定子电阻 Ω
-#define MOTOR_LS                    0.00185f    // 定子电感 H
+#define MOTOR_RS                    0.9         // 定子电阻 Ω
+#define MOTOR_LS                    0.00054     // 定子电感 H
 #define NOPOLESPAIRS                4           // 极对数
 #define MAX_VOLTAGE_VECTOR          30000       // 电压矢量最大值 Q15
 
 #define END_SPEED_RPM               500         // 开环结束切闭环速度
-#define NOMINAL_SPEED_RPM           3000        // 电机额定转速(RPM)
+#define NOMINAL_SPEED_RPM           4000        // 电机额定转速(RPM)
 #define MAXIMUM_SPEED_RPM           5300        // 电动机的最大转速(RPM)
 #define FW_NOMINAL_SPEED_RPM        3000
 #define ENDSPEED_ELECTR             (END_SPEED_RPM * NOPOLESPAIRS)
