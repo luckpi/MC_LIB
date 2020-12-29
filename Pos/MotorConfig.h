@@ -5,15 +5,15 @@
 /* PWM频率 */
 #define PWM_FREQ                    16000
 /* 死区时间 */
-#define PWM_DTS                     0.0000002
+#define PWM_DTS                     0.000002
 /* PWM周期 (1 / PWM_FREQ) */
 #define PWM_TS                      0.0000625
 
 /****************************** Motor Parameters ******************************/
 #define MAX_MOTOR_VOLTAGE           24          // 最大电压 V
-#define MAX_MOTOR_CURRENT           7.815       // 最大电流 A  = ADC最大采样值 / (运放倍数 x 采样电阻大小)
+#define MAX_MOTOR_CURRENT           3.125       // 最大电流 A  = ADC参考电压 / 2 / (运放倍数 x 采样电阻大小)
 #define MOTOR_RS                    0.9         // 定子电阻 Ω
-#define MOTOR_LS                    0.00054     // 定子电感 H
+#define MOTOR_LS                    0.00027     // 定子电感 H
 #define NOPOLESPAIRS                4           // 极对数
 #define MAX_VOLTAGE_VECTOR          30000       // 电压矢量最大值 Q15
 
