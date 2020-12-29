@@ -20,9 +20,9 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     m->Vol_Const = MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 / 32768.0 * (1.0 - PWM_DTS / PWM_TS);
     m->Cur_Const = MAX_MOTOR_CURRENT / 32768.0;
     m->Omg_Const = TWO_PI / 60.0;
-    m->qLsDtBase = (Q15(MOTOR_LS / m->Vol_Const * m->Cur_Const / PWM_TS)) >> 8;
+    m->qLsDtBase = (MOTOR_LS / m->Vol_Const * m->Cur_Const / PWM_TS * 32768) / 256;
     m->qLsDt = m->qLsDtBase;
-    m->qRs = (Q15(MOTOR_RS / m->Vol_Const * m->Cur_Const)) >> 1;
+    m->qRs = (MOTOR_RS / m->Vol_Const * m->Cur_Const * 32768) / 2;
     //                R * Ts
     // Fsmopos = 1 - --------
     //                  L
@@ -33,7 +33,6 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     // R  = 相位电阻。 如果电机数据表未提供，用万用表测量相位电阻,除以二得到相位电阻
     // L  = 相位电感。 如果电机数据表未提供，用万用表测量相位电感,除以二得到相位电感
     if (((int32_t)m->qRs << NORM_RS_SCALINGFACTOR) >= ((int32_t)m->qLsDt << NORM_LSDTBASE_SCALINGFACTOR))
-
         s->Fsmopos = 0;
     else
         s->Fsmopos = (0x7FFF - (((int32_t)m->qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)) / m->qLsDt));
@@ -49,7 +48,6 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     s->Kslf_min = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->FiltOmCoef = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
-    // s->MaxVoltage = (int16_t)(_IQmpy(ADCSample.Voltage, 18918));//_IQ(0.57735026918963) 最大矢量电压
     return;
 }
 
@@ -63,7 +61,6 @@ void LPF_Filter(int16_t Kslf, int16_t In, int16_t *Out)
 {
     // Kslf ：滑动模式控制器低通滤波器的增益     eRPS：电机的电气转速，单位为 RPS
     // Kslf = PWM_Ts * 2pi * eRPS
-    // Out = Out + (Kslf * (In - Out))
     (*Out) += _IQmpy(Kslf, (In - (*Out)));
 }
 
@@ -97,7 +94,7 @@ I   ：经过Clark变换后的实际电流
 U   ：Vbus / √3 * Valpha(Vbeta)  这里是百分比
 EMF： 估算的反电动势
 EstI：估算的电流
-z   : 校准因子
+Z   : 校准因子
 */
 void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
@@ -130,8 +127,8 @@ void SMC_Position_Estimation(p_SMC s)
     CalcEstI(s, s->Valpha, s->Ialpha, s->Ealpha, &s->EstIalpha, &s->Zalpha);
     CalcEstI(s, s->Vbeta, s->Ibeta, s->Ebeta, &s->EstIbeta, &s->Zbeta);
     CalcBEMF(s);
-    s->Theta = CORDIC_Atan(s->EbetaFinal, -s->EalphaFinal); // 应该是反正切求出角度，测试使用强托角度
-    AccumTheta += s->Theta - PrevTheta;                     // 可能有bug
+    s->Theta = CORDIC_Atan(s->EbetaFinal, -s->EalphaFinal); // 反正切求角度
+    AccumTheta += s->Theta - PrevTheta;                     // 累加固定周期内的角度值用于速度计算
     PrevTheta = s->Theta;
     if (++AccumThetaCnt == IRP_PERCALC)
     {
@@ -155,7 +152,7 @@ void SMC_Position_Estimation(p_SMC s)
                                       SpeedLoopTime * 65535      
 
         ********************************************************/
-        s->Omega = _IQmpy(AccumTheta, SMO_SPEED_EST_MULTIPLIER); // 电转速
+        s->Omega = _IQmpy(AccumTheta, SMO_SPEED_EST_MULTIPLIER); // eRPM
         AccumThetaCnt = 0;
         AccumTheta = 0;
     }
