@@ -3,9 +3,9 @@
 #include "pwm.h"
 #include "init.h"
 #include "IQmath.h"
-#include "halless.h"
 #include "control.h"
 #include "svgen_dq.h"
+#include "sensorless.h"
 #include "MotorConfig.h"
 /******************************************************************************
  函 数 名  : MotorAhead
