@@ -134,22 +134,19 @@ void PI_Control(void)
                 VelRefRaw = CtrlParm.OmegaMax;
             }
             temp2 = CtrlParm.VelRef - VelRefRaw;
-            if (temp2 < 0)
+            if (temp2 < -SPEEDREFRAMP)
             {
                 CtrlParm.VelRef += SPEEDREFRAMP;
             }
-            else if (temp2 > 0)
+            else if (temp2 > SPEEDREFRAMP)
             {
-                if (temp2 > SPEEDREFRAMP)
-                {
-                    CtrlParm.VelRef -= SPEEDREFRAMP;
-                }
-                else
-                {
-                    CtrlParm.VelRef = VelRefRaw;
-                }
-            }
 
+                CtrlParm.VelRef -= SPEEDREFRAMP;
+            }
+            else
+            {
+                CtrlParm.VelRef = VelRefRaw;
+            }
 #ifdef TORQUE_MODE
             CtrlParm.IqRef = CtrlParm.VelRef;
 #else

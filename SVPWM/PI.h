@@ -18,7 +18,7 @@
 
 //*** Velocity Control Loop Coefficients *****
 #define SPEEDCNTR_PTERM                      0.05
-#define SPEEDCNTR_ITERM                      0.01
+#define SPEEDCNTR_ITERM                      0.013
 #define SPEEDCNTR_CTERM                      0.9999
 #define SPEEDCNTR_OUTMAX                     0.5
 #define SPEEDREFRAMP                         2
