@@ -138,15 +138,6 @@ void SMC_Position_Estimation(p_SMC s)
                     eRPM = -----------------------------
                                 SpeedLoopTime * 65535
         
-                                    eRPM * 2
-                    RPM = -----------------------------
-                                        P
-        For example:
-        AccumTheta    = 16384
-        SpeedLoopTime = 0.001
-        Then:
-        Speed in eRPM is 15000 and RPM is 3000RPM
-        
                                                 60
         SMO_SPEED_EST_MULTIPLIER = -----------------------------
                                       SpeedLoopTime * 65535      

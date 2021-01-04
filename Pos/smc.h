@@ -41,7 +41,7 @@ typedef struct
     int16_t Gsmopos;     //  电机相关控制增益
     int16_t Kslide;      //  滑膜控制器增益
     int16_t MaxSMCError; //  最大电流误差
-    int16_t mdbi;        //  Kslide / MaxSMCError
+    int32_t mdbi;        //  Kslide / MaxSMCError
     int16_t Kslf;        //  滑膜滤波器增益
     int16_t Kslf_min;    //  滑膜滤波器最小增益
     int16_t FiltOmCoef;  //  过滤系数，用于Omega过滤的calc
