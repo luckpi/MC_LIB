@@ -3,9 +3,6 @@
 #include "ddl.h"
 #define CW 1
 #define CCW -1
-#define First_Gear 1000  // 一档
-#define Second_Gear 1500 // 二档
-#define Third_Gear 2500  // 三档
 // 控制顺序
 typedef enum
 {
@@ -31,18 +28,6 @@ typedef enum
     stall,        // 堵转
 } ErrorState_T;
 
-// 电机运行方向、占空比等参数
-typedef struct
-{
-    int8_t RotorDirection;  // 电机转动方向
-    uint16_t MainDetectCnt; // 主循环计数
-    uint16_t SpeedLoopCnt;  // 调整转速占空比的周期计数
-    uint16_t SpeedTime;     // 一个电周期时间
-    uint16_t RPM;           // 实际转速
-    uint16_t Set_RPM;       // 设定转速
-    uint8_t Stall_Cnt;      // 堵住计数溢出次数
-} HoldControlPara_T;
-
 // ADC相关
 typedef struct
 {
@@ -66,7 +51,6 @@ typedef struct
 extern MotorState_T mcState;
 extern ErrorState_T error_code;
 extern volatile PWMCatchPara_T CatchParm;
-extern volatile HoldControlPara_T HoldParm;
 extern volatile ADCSamplePara_T ADCSample;
 extern void Common_Init(void);
 extern void PowerupParaInit(void);
