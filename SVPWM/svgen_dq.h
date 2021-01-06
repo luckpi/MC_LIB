@@ -1,6 +1,7 @@
 #ifndef _SVPWM_H
 #define _SVPWM_H
 #include "common.h"
+
 typedef struct
 {
     // Clack和Park变量
@@ -23,11 +24,15 @@ typedef struct
     int32_t Tb;     // SVP输出
     int32_t Tc;     // SVP输出
 } SVGENDQ, *p_SVGENDQ;
+
 #define SVGENDQ_DEFAULTS                                     \
     {                                                        \
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
     }
-extern SVGENDQ SVM; // SVPWM
+
+extern SVGENDQ svm; // SVPWM
+
+extern void svgendq_Init(p_SVGENDQ);
 extern void svgendq_calc(p_SVGENDQ);
 extern void Clark_Cala(p_SVGENDQ);
 extern void Park_Cala(p_SVGENDQ);

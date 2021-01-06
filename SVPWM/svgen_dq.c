@@ -2,7 +2,34 @@
 #include "IQmath.h"
 #include "common.h"
 #include "pwm.h"
-SVGENDQ SVM = SVGENDQ_DEFAULTS;
+SVGENDQ svm = SVGENDQ_DEFAULTS;
+/*****************************************************************************
+ 函 数 名  : svgendq_Init
+ 功能描述  : 初始化SVPWM参数
+ 输入参数  : 无
+ 输出参数  : void
+*****************************************************************************/
+void svgendq_Init(p_SVGENDQ s)
+{
+    s->Ia = 0;     // 直接测量
+    s->Ib = 0;     // 直接测量
+    s->Ic = 0;     // 根据Ia + Ib + Ic =0可得
+    s->Ia_C = 0;   // Ia校准误差
+    s->Ib_C = 0;   // Ia校准误差
+    s->Ialpha = 0; // Clark变换输出
+    s->Ibeta = 0;  // Clark变换输出
+    s->Sine = 0;   // 正弦
+    s->Cosine = 0; // 余弦
+    s->Id = 0;     // Park d轴
+    s->Iq = 0;     // Park q轴
+    s->Vd = 0;     // PI输出
+    s->Vq = 0;     // PI输出
+    s->Valpha = 0; // Park逆变换输出
+    s->Vbeta = 0;  // Park逆变换输出
+    s->Ta = 0;     // SVP输出
+    s->Tb = 0;     // SVP输出
+    s->Tc = 0;     // SVP输出
+}
 /*****************************************************************************
  函 数 名  : svgendq_calc
  功能描述  : SVPWM计算
