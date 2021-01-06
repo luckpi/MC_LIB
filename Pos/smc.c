@@ -1,12 +1,12 @@
 #include "smc.h"
 
+MOTOR_ESTIM motorParm;
+SMC smc = SMC_DEFAULTS;
 int16_t PrevTheta = 0;      // 上一次角度值
 int16_t AccumTheta = 0;     // 累加角度变化量
 int16_t Theta_error = 0;    // 开环角和估算角的误差
 uint16_t trans_counter = 0; // 减小开环角和估算角差距间隔
 uint16_t AccumThetaCnt = 0; // 用于计算电机角速度的频率计数器
-SMC smc = SMC_DEFAULTS;
-MOTOR_ESTIM motorParm;
 
 /*****************************************************************************
  函 数 名  : SMC_Init
@@ -17,12 +17,10 @@ MOTOR_ESTIM motorParm;
 void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 {
     // 电机参数归一化
-    m->Vol_Const = MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 / 32768.0 * (1.0 - PWM_DTS / PWM_TS);
-    m->Cur_Const = MAX_MOTOR_CURRENT / 32768.0;
-    m->Omg_Const = TWO_PI / 60.0;
-    m->qLsDtBase = (MOTOR_LS / m->Vol_Const * m->Cur_Const / PWM_TS * 32768) / 256;
-    m->qLsDt = m->qLsDtBase;
-    m->qRs = (MOTOR_RS / m->Vol_Const * m->Cur_Const * 32768) / 2;
+    m->Vol_Const = MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 * (1.0 - PWM_DTS / PWM_TS);
+    m->Cur_Const = MAX_MOTOR_CURRENT;
+    m->qLsDt = MOTOR_LS / m->Vol_Const * m->Cur_Const / PWM_TS;
+    m->qRs = MOTOR_RS / m->Vol_Const * m->Cur_Const;
     //                R * Ts
     // Fsmopos = 1 - --------
     //                  L
@@ -32,22 +30,43 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     // Ts = 采样周期。 如果以PWM采样, Ts = 62.5 us
     // R  = 相位电阻。 如果电机数据表未提供，用万用表测量相位电阻,除以二得到相位电阻
     // L  = 相位电感。 如果电机数据表未提供，用万用表测量相位电感,除以二得到相位电感
-    if (((int32_t)m->qRs << NORM_RS_SCALINGFACTOR) >= ((int32_t)m->qLsDt << NORM_LSDTBASE_SCALINGFACTOR))
-        s->Fsmopos = 0;
+    if (m->qRs >= m->qLsDt)
+        s->Fsmopos = Q15(0);
     else
-        s->Fsmopos = (0x7FFF - (((int32_t)m->qRs << (15 + NORM_RS_SCALINGFACTOR - NORM_LSDTBASE_SCALINGFACTOR)) / m->qLsDt));
+        s->Fsmopos = Q15(1 - (m->qRs / m->qLsDt));
 
-    if (((int32_t)m->qLsDt << NORM_LSDTBASE_SCALINGFACTOR) < 32767)
-        s->Gsmopos = 0x7FFF;
+    if (m->qLsDt < 1)
+        s->Gsmopos = Q15(1);
     else
-        s->Gsmopos = ((int32_t)0x7FFF << (15 - NORM_LSDTBASE_SCALINGFACTOR)) / m->qLsDt;
+        s->Gsmopos = Q15(1 / m->qLsDt);
 
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
-    s->mdbi = _IQdiv(s->Kslide, s->MaxSMCError);
+    s->mdbi = Q15((SMCGAIN / MAXLINEARSMC));
     s->Kslf_min = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->FiltOmCoef = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
+
+    // 其他参数初始化
+    s->Valpha = 0;
+    s->Ealpha = 0;
+    s->Zalpha = 0;
+    s->EstIalpha = 0;
+    s->EalphaFinal = 0;
+
+    s->Vbeta = 0;
+    s->Ebeta = 0;
+    s->Zbeta = 0;
+    s->EstIbeta = 0;
+    s->EbetaFinal = 0;
+
+    s->Ialpha = 0;
+    s->Ibeta = 0;
+    s->Theta = 0;
+    s->Omega = 0;
+    s->OmegaFltred = 0;
+    s->Kslf = s->Kslf_min;
+
     return;
 }
 
@@ -59,8 +78,8 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 *****************************************************************************/
 void LPF_Filter(int16_t Kslf, int16_t In, int16_t *Out)
 {
-    // Kslf ：滑动模式控制器低通滤波器的增益     eRPS：电机的电气转速，单位为 RPS
-    // Kslf = PWM_Ts * 2pi * eRPS
+    // Kslf ：滑动模式控制器低通滤波器的系数     eRPS：电机的电气转速，单位为 RPS
+    // Kslf = PWM_Ts * 2 * PI * eRPS
     (*Out) += _IQmpy(Kslf, (In - (*Out)));
 }
 
@@ -99,7 +118,7 @@ Z   : 校准因子
 void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
 {
     int16_t I_Error;
-    *EstI = _IQmpy(s->Fsmopos, (*EstI)) + _IQmpy(s->Gsmopos, (U - EMF - (*Z)));
+    *EstI = ((s->Fsmopos * (*EstI)) + (s->Gsmopos * (U - EMF - (*Z)))) >> 15;
     I_Error = *EstI - I;
     if (I_Error > s->MaxSMCError)
     {
@@ -132,27 +151,15 @@ void SMC_Position_Estimation(p_SMC s)
     PrevTheta = s->Theta;
     if (++AccumThetaCnt == IRP_PERCALC)
     {
-        /*******************************************************
-          
-                                 AccumTheta * 60
-                    eRPM = -----------------------------
-                                SpeedLoopTime * 65535
-        
-                                                60
-        SMO_SPEED_EST_MULTIPLIER = -----------------------------
-                                      SpeedLoopTime * 65535      
-
-        ********************************************************/
-        s->Omega = _IQmpy(AccumTheta, SMO_SPEED_EST_MULTIPLIER); // eRPM
+        s->Omega = AccumTheta; // eRPS = (s->Omega / 65535) / SpeedLoopTime
         AccumThetaCnt = 0;
         AccumTheta = 0;
     }
     if (++trans_counter == TRANSITION_STEPS)
         trans_counter = 0;
     s->OmegaFltred += _IQmpy(s->FiltOmCoef, (s->Omega - s->OmegaFltred));
-    s->Kslf = Abs(_IQmpy(s->OmegaFltred, THETA_FILTER_CNST));
-    // 由于滤波器系数是动态的，因此我们需要确保最小
-    // 因此我们将最低的运行速度定义为最低的滤波器系数
+    s->Kslf = _IQmpy(s->OmegaFltred, THETA_FILTER_CNST);
+    // 动态低通滤波器系数限幅
     if (s->Kslf < s->Kslf_min)
     {
         s->Kslf = s->Kslf_min;
