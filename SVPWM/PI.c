@@ -17,13 +17,22 @@ static void InitPI(tPIParm *pParm)
     pParm->qOut = 0;
 }
 /*****************************************************************************
- 函 数 名  : PI_Parameters
+ 函 数 名  : PI_Init
  功能描述  : 初始化PI参数
  输入参数  : 无
  输出参数  : void
 *****************************************************************************/
-void PI_Parameters(void)
+void PI_Init(void)
 {
+    // 速度环和开环参数初始化
+    CtrlParm.qDiff = 0;
+    CtrlParm.OpenLoopSpeed = 0;
+    CtrlParm.RotorDirection = CW;
+    CtrlParm.IqRefmax = MAX_VOLTAGE_VECTOR;
+    CtrlParm.OpenLoopSpeedEnd = END_SPEED * 65536; // 单位周期角速度增益 (END_SPEED << THETA_OPENLOOP_SCALER)
+    CtrlParm.OpenLoopSpeedAdd = CtrlParm.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME; // 单位周期增量
+    CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS * 65535.0 / 60.0 / SPEEDLOOPFREQ; // RPM转SMC_Omega
+    CtrlParm.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS * 65535.0 / 60.0 / SPEEDLOOPFREQ;
 
     // PI D Term
     PIParmD.qKp = Q15(D_CURRCNTR_PTERM) * NKo;
@@ -94,7 +103,7 @@ static void CalcPI(tPIParm *pParm)
 *****************************************************************************/
 void PI_Control(void)
 {
-    volatile int16_t temp1, temp2, VelRefRaw;
+    volatile int16_t temp, VelRefRaw;
 
     if (mcState == mcAlign || mcState == mcDrag) // 开环强拖
     {
@@ -102,21 +111,21 @@ void PI_Control(void)
         // 而d当前参考等于0
         // 要获得最大启动扭矩，请将q电流设置为最大可接受值
 
-        CtrlParm.IqRef = Q_CURRENT_REF_OPENLOOP * HoldParm.RotorDirection; //控制方向
+        CtrlParm.IqRef = Q_CURRENT_REF_OPENLOOP * CtrlParm.RotorDirection; //控制方向
 
         // PI control for Q
-        PIParmQ.qInMeas = SVM.Iq;
+        PIParmQ.qInMeas = svm.Iq;
         PIParmQ.qInRef = CtrlParm.IqRef;
         CalcPI(&PIParmQ);
-        SVM.Vq = PIParmQ.qOut;
+        svm.Vq = PIParmQ.qOut;
 
         CtrlParm.IdRef = 0; // d轴不做功
 
         // PI control for D
-        PIParmD.qInMeas = SVM.Id;
+        PIParmD.qInMeas = svm.Id;
         PIParmD.qInRef = CtrlParm.IdRef;
         CalcPI(&PIParmD);
-        SVM.Vd = PIParmD.qOut;
+        svm.Vd = PIParmD.qOut;
     }
     else if (mcState == mcRun) // 闭环
     {
@@ -133,12 +142,12 @@ void PI_Control(void)
             {
                 VelRefRaw = CtrlParm.OmegaMax;
             }
-            temp2 = CtrlParm.VelRef - VelRefRaw;
-            if (temp2 < -SPEEDREFRAMP)
+            CtrlParm.qDiff = CtrlParm.VelRef - VelRefRaw;
+            if (CtrlParm.qDiff < -SPEEDREFRAMP)
             {
                 CtrlParm.VelRef += SPEEDREFRAMP;
             }
-            else if (temp2 > SPEEDREFRAMP)
+            else if (CtrlParm.qDiff > SPEEDREFRAMP)
             {
 
                 CtrlParm.VelRef -= SPEEDREFRAMP;
@@ -151,7 +160,7 @@ void PI_Control(void)
             CtrlParm.IqRef = CtrlParm.VelRef;
 #else
             PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
-            PIParmQref.qInRef = CtrlParm.VelRef * HoldParm.RotorDirection; // 电机参考速度和方向
+            PIParmQref.qInRef = CtrlParm.VelRef * CtrlParm.RotorDirection; // 电机参考速度和方向
             CalcPI(&PIParmQref);
             CtrlParm.IqRef = PIParmQref.qOut;
 #endif
@@ -162,19 +171,19 @@ void PI_Control(void)
         CtrlParm.IdRef = 0;
 #endif
         // PI control for D
-        PIParmD.qInMeas = SVM.Id;
+        PIParmD.qInMeas = svm.Id;
         PIParmD.qInRef = CtrlParm.IdRef;
         CalcPI(&PIParmD);
-        SVM.Vd = PIParmD.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
+        svm.Vd = PIParmD.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
         /* 具有d分量优先级的动态d-q调整*/
         // 向量限制
         // Vd is 不限
         // Vq is 限制，因此向量Vs小于最大值 95%.
         // Vs = SQRT(Vd^2 + Vq^2) < 0.95
         // Vq = SQRT(0.95^2 - Vd^2)
-        // temp1 = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
-        // temp1 = MAX_VOLTAGE_VECTOR - temp1;
-        // PIParmQ.qOutMax = IQSqrt(temp1 << 15);
+        // temp = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
+        // temp = MAX_VOLTAGE_VECTOR - temp;
+        // PIParmQ.qOutMax = IQSqrt(temp << 15);
         // PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
         //Limit Q axis current
@@ -184,9 +193,9 @@ void PI_Control(void)
         }
 
         // PI control for Q
-        PIParmQ.qInMeas = SVM.Iq;
+        PIParmQ.qInMeas = svm.Iq;
         PIParmQ.qInRef = CtrlParm.IqRef;
         CalcPI(&PIParmQ);
-        SVM.Vq = PIParmQ.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
+        svm.Vq = PIParmQ.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
     }
 }
