@@ -361,7 +361,7 @@ void PWM_init(void)
     u16ArrValue = PWM_FRE_SETATA;
     Tim3_M23_ARRSet(u16ArrValue, TRUE); //设置重载值,并使能缓存
 
-    PWMChangeDuty(&SVM); // 下管全开
+    PWMChangeDuty(&svm); // 下管全开
 
     stcTim3PortCmpCfg.enCHxACmpCtrl = Tim3PWMMode2;      //OCREFA输出控制OCMA:PWM模式2
     stcTim3PortCmpCfg.enCHxAPolarity = Tim3PortPositive; //正常输出
