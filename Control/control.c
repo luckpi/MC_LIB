@@ -30,17 +30,12 @@ static void MotorInit(void)
 }
 /*****************************************************************************
  函 数 名  : MotorAlign
- 功能描述  : 定位初始相位，开启ADC中断，准备进入强拖启动
+ 功能描述  : 定位初始角度
  输入参数  : 无
  输出参数  : void
 *****************************************************************************/
 static void MotorAlign(void)
 {
-    uint16_t LockTime = 4000;
-    if (HoldParm.MainDetectCnt > LockTime)
-    {
-        mcState = mcDrag;
-    }
     return;
 }
 /*****************************************************************************
@@ -55,7 +50,7 @@ void EnterRunInit(void)
 }
 /*****************************************************************************
  函 数 名  : CalculateParkAngle
- 功能描述  : 启动，边强拖，边检测
+ 功能描述  : 计算Park角度
  输入参数  : 无
  输出参数  : void
 *****************************************************************************/
@@ -76,7 +71,7 @@ void CalculateParkAngle(void)
             CtrlParm.IdRef = 0;
             mcState = mcRun;
         }
-        AngleSin_Cos.IQAngle += (int16_t)(CtrlParm.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * HoldParm.RotorDirection;
+        AngleSin_Cos.IQAngle += (int16_t)(CtrlParm.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * CtrlParm.RotorDirection;
     }
     else if (mcState == mcRun)
     {
@@ -98,10 +93,6 @@ void CalculateParkAngle(void)
 *****************************************************************************/
 static void MotorRun(void)
 {
-    if (HoldParm.SpeedLoopCnt > 500)
-    {
-        HoldParm.SpeedLoopCnt = 0;
-    }
 }
 
 /*****************************************************************************
