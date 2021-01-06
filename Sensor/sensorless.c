@@ -49,18 +49,18 @@ static void Moving_Average_Filter(uint32_t *sum, uint32_t *avg, int16_t *i)
 static void PhaseCurrentSample(void)
 {
     volatile uint32_t *BaseJqrResultAddress = (volatile uint32_t *)&(M0P_ADC->JQRRESULT0);
-    SVM.Ia = (uint16_t)(*(BaseJqrResultAddress));     // 相电流 A
-    SVM.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)); // 相电流 B
+    svm.Ia = (uint16_t)(*(BaseJqrResultAddress));     // 相电流 A
+    svm.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)); // 相电流 B
     if (mcState != mcAhead)
     {
         /* 实现了滑动均值滤波器以计算当前偏移量。 滑动均值滤波的窗口大小= 2 ^ MOVING_AVG_WINDOW_SIZE */
-        Moving_Average_Filter(&cumulative_sum_phaseA, &moving_average_phaseA, &SVM.Ia);
-        Moving_Average_Filter(&cumulative_sum_phaseB, &moving_average_phaseB, &SVM.Ib);
-        SVM.Ia -= moving_average_phaseA; // 减去偏移值
-        SVM.Ib -= moving_average_phaseB;
+        Moving_Average_Filter(&cumulative_sum_phaseA, &moving_average_phaseA, &svm.Ia);
+        Moving_Average_Filter(&cumulative_sum_phaseB, &moving_average_phaseB, &svm.Ib);
+        svm.Ia -= moving_average_phaseA; // 减去偏移值
+        svm.Ib -= moving_average_phaseB;
         //把电流转变成%比格式 2048转32768 //最大力矩 = 参考电压/(采样电阻*ADC放大倍数)
-        SVM.Ia *= ADC_CURRENT_SCALE; // 转Q15
-        SVM.Ib *= ADC_CURRENT_SCALE;
+        svm.Ia *= ADC_CURRENT_SCALE; // 转Q15
+        svm.Ib *= ADC_CURRENT_SCALE;
     }
 }
 /*****************************************************************************
@@ -75,16 +75,16 @@ static void ADC_Calibrate(void)
     if (++count > 64)
     {
         count = 0;
-        SVM.Ia_C >>= 6;
-        SVM.Ib_C >>= 6;
-        cumulative_sum_phaseA = SVM.Ia_C << MOVING_AVG_WINDOW_SIZE;
-        cumulative_sum_phaseB = SVM.Ib_C << MOVING_AVG_WINDOW_SIZE;
+        svm.Ia_C >>= 6;
+        svm.Ib_C >>= 6;
+        cumulative_sum_phaseA = svm.Ia_C << MOVING_AVG_WINDOW_SIZE;
+        cumulative_sum_phaseB = svm.Ib_C << MOVING_AVG_WINDOW_SIZE;
         mcState = mcInit;
     }
     else
     {
-        SVM.Ia_C += SVM.Ia;
-        SVM.Ib_C += SVM.Ib;
+        svm.Ia_C += svm.Ia;
+        svm.Ib_C += svm.Ib;
     }
 }
 /*****************************************************************************
@@ -95,6 +95,7 @@ static void ADC_Calibrate(void)
 *****************************************************************************/
 void ADC_ISR(void)
 {
+    static uint16_t ADC_CNT = 0;
     Gpio_WriteOutputIO(GpioPortB, GpioPin7, TRUE);
     PhaseCurrentSample();
     switch (mcState)
@@ -104,24 +105,28 @@ void ADC_ISR(void)
         AngleSin_Cos.IQAngle = 0;
         break;
     case mcAlign:
-        HoldParm.MainDetectCnt++;
-    case mcDrag:; // 强托阶段
+        if (++ADC_CNT > 4000)
+        {
+            ADC_CNT = 0;
+            mcState = mcDrag;
+        }
+    case mcDrag:; // 强拖阶段
     case mcRun:
-        Clark_Cala(&SVM);
-        smc.Ialpha = SVM.Ialpha; // 需要调整电流数据Q15格式
-        smc.Ibeta = SVM.Ibeta;
-        smc.Valpha = SVM.Valpha; // 需要调整电压数据Q15格式
-        smc.Vbeta = SVM.Vbeta;
+        Clark_Cala(&svm);
+        smc.Ialpha = svm.Ialpha;
+        smc.Ibeta = svm.Ibeta;
+        smc.Valpha = svm.Valpha;
+        smc.Vbeta = svm.Vbeta;
         SMC_Position_Estimation(&smc);
         CalculateParkAngle();
-        Park_Cala(&SVM);
+        Park_Cala(&svm);
         PI_Control();
         IQSin_Cos_Cale(&AngleSin_Cos);
-        SVM.Sine = AngleSin_Cos.IQSin;
-        SVM.Cosine = AngleSin_Cos.IQCos;
-        InvPark(&SVM);
-        svgendq_calc(&SVM);
-        PWMChangeDuty(&SVM);
+        svm.Sine = AngleSin_Cos.IQSin;
+        svm.Cosine = AngleSin_Cos.IQCos;
+        InvPark(&svm);
+        svgendq_calc(&svm);
+        PWMChangeDuty(&svm);
         break;
     default:
         break;
