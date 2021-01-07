@@ -71,13 +71,11 @@ void PI_Init(void)
 *****************************************************************************/
 static void CalcPI(tPIParm *pParm)
 {
-    int16_t Err;
     int32_t U;
     int32_t Exc;
 
-    Err = pParm->qInRef - pParm->qInMeas;
-    pParm->qErr = Err;
-    U = pParm->qdSum + _IQmpy(pParm->qKp, Err);
+    pParm->qErr = pParm->qInRef - pParm->qInMeas;
+    U = pParm->qdSum + _IQmpy(pParm->qKp, pParm->qErr);
 
     if (U > pParm->qOutMax)
     {
@@ -93,7 +91,7 @@ static void CalcPI(tPIParm *pParm)
     }
 
     Exc = U - pParm->qOut;
-    pParm->qdSum += _IQmpy(pParm->qKi, Err) - _IQmpy(pParm->qKc, Exc);
+    pParm->qdSum += _IQmpy(pParm->qKi, pParm->qErr) - _IQmpy(pParm->qKc, Exc);
 }
 /*****************************************************************************
  函 数 名  : PI_Control
