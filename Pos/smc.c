@@ -65,19 +65,6 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 }
 
 /*****************************************************************************
- 函 数 名  : LPF_Filter
- 功能描述  : 自适应滤波器
- 输入参数  : Kslf ,I, O
- 输出参数  : void
-*****************************************************************************/
-void LPF_Filter(int16_t Kslf, int16_t In, int16_t *Out)
-{
-    // Kslf ：滑动模式控制器低通滤波器的系数     eRPS：电机的电气转速，单位为 RPS
-    // Kslf = PWM_Ts * 2 * PI * eRPS
-    (*Out) += _IQmpy(Kslf, (In - (*Out)));
-}
-
-/*****************************************************************************
  函 数 名  : CalcBEMF
  功能描述  : 估算反电动势滤波
  输入参数  : *EMF , *EMFF,  Z
@@ -85,13 +72,18 @@ void LPF_Filter(int16_t Kslf, int16_t In, int16_t *Out)
 *****************************************************************************/
 void CalcBEMF(p_SMC s)
 {
+
+    // Kslf ：滑动模式控制器低通滤波器的系数     eRPS：电机的电气转速，单位为 RPS
+    // Kslf = PWM_Ts * 2 * PI * eRPS
+    // Out += Kslf * (In - Out)
+
     // α轴反电动势
-    LPF_Filter(s->Kslf, s->Zalpha, &s->Ealpha);      // 滤波用来计算下一个估算电流
-    LPF_Filter(s->Kslf, s->Ealpha, &s->EalphaFinal); // 滤波用来计算估算角
+    s->Ealpha += _IQmpy(s->Kslf, (s->Zalpha - s->Ealpha));           // 滤波用来计算下一个估算电流
+    s->EalphaFinal += _IQmpy(s->Kslf, (s->Ealpha - s->EalphaFinal)); // 滤波用来计算估算角
 
     // β轴反电动势
-    LPF_Filter(s->Kslf, s->Zbeta, &s->Ebeta);      // 滤波用来计算下一个估算电流
-    LPF_Filter(s->Kslf, s->Ebeta, &s->EbetaFinal); // 滤波用来计算估算角
+    s->Ebeta += _IQmpy(s->Kslf, (s->Zbeta - s->Ebeta));           // 滤波用来计算下一个估算电流
+    s->EbetaFinal += _IQmpy(s->Kslf, (s->Ebeta - s->EbetaFinal)); // 滤波用来计算估算角
 }
 
 /*
@@ -109,23 +101,42 @@ EMF： 估算的反电动势
 EstI：估算的电流
 Z   : 校准因子
 */
-void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t *Z)
+void CalcEstI(p_SMC s, p_SVGENDQ m)
 {
     int16_t I_Error;
-    *EstI = ((s->Fsmopos * (*EstI)) + (s->Gsmopos * (U - EMF - (*Z)))) >> 15;
-    I_Error = *EstI - I;
+
+    // 估算α轴电流
+    s->EstIalpha = ((s->Fsmopos * s->EstIalpha) + (s->Gsmopos * (m->Valpha - s->Ealpha - s->Zalpha))) >> 15;
+    I_Error = s->EstIalpha - m->Ialpha;
     if (I_Error > s->MaxSMCError)
     {
-        *Z = s->Kslide;
+        s->Zalpha = s->Kslide;
     }
     else if (I_Error < -s->MaxSMCError)
     {
-        *Z = -s->Kslide;
+        s->Zalpha = -s->Kslide;
     }
     else
     {
-        // s->Zalpha = (s->Kslide * s->IalphaError) / s->MaxSMCError
-        *Z = _IQmpy(s->mdbi, I_Error);
+        // s->Zalpha = (s->Kslide * s->I_Error) / s->MaxSMCError
+        s->Zalpha = _IQmpy(s->mdbi, I_Error);
+    }
+
+    // 估算β轴电流
+    s->EstIbeta = ((s->Fsmopos * s->EstIbeta) + (s->Gsmopos * (m->Vbeta - s->Ebeta - s->Zbeta))) >> 15;
+    I_Error = s->EstIbeta - m->Ibeta;
+    if (I_Error > s->MaxSMCError)
+    {
+        s->Zbeta = s->Kslide;
+    }
+    else if (I_Error < -s->MaxSMCError)
+    {
+        s->Zbeta = -s->Kslide;
+    }
+    else
+    {
+        // s->Zbeta = (s->Kslide * s->I_Error) / s->MaxSMCError
+        s->Zbeta = _IQmpy(s->mdbi, I_Error);
     }
 }
 
@@ -137,8 +148,7 @@ void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t
 *****************************************************************************/
 void SMC_Position_Estimation(p_SMC s, p_SVGENDQ m)
 {
-    CalcEstI(s, m->Valpha, m->Ialpha, s->Ealpha, &s->EstIalpha, &s->Zalpha);
-    CalcEstI(s, m->Vbeta, m->Ibeta, s->Ebeta, &s->EstIbeta, &s->Zbeta);
+    CalcEstI(s, m);
     CalcBEMF(s);
     s->Theta = CORDIC_Atan(s->EbetaFinal, -s->EalphaFinal); // 反正切求角度
     AccumTheta += s->Theta - PrevTheta;                     // 累加固定周期内的角度值用于速度计算
