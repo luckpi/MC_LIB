@@ -179,10 +179,10 @@ void PI_Control(void)
         // Vq is 限制，因此向量Vs小于最大值 95%.
         // Vs = SQRT(Vd^2 + Vq^2) < 0.95
         // Vq = SQRT(0.95^2 - Vd^2)
-        // temp = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
-        // temp = MAX_VOLTAGE_VECTOR - temp;
-        // PIParmQ.qOutMax = IQSqrt(temp << 15);
-        // PIParmQ.qOutMin = -PIParmQ.qOutMax;
+        temp = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
+        temp = MAX_VOLTAGE_VECTOR - temp;
+        PIParmQ.qOutMax = IQSqrt(temp << 15);
+        PIParmQ.qOutMin = -PIParmQ.qOutMax;
 
         //Limit Q axis current
         if (CtrlParm.IqRef > CtrlParm.IqRefmax)
