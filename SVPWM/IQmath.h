@@ -1,6 +1,8 @@
 #ifndef _IQMATH_H
 #define _IQMATH_H
 #include "common.h"
+#include "svgen_dq.h"
+
 #define Abs(A)              ((A >= 0) ? A : -A)
 #define Min(A, B)           ((A <= B) ? A : B)
 #define Max(A, B)           ((A >= B) ? A : B)
@@ -18,21 +20,9 @@
 #define U180_270            0x0200
 #define U270_360            0x0300
 
-typedef struct
-{
-    int16_t IQAngle;
-    int16_t IQSin;
-    int16_t IQCos;
-} IQSin_Cos, *p_IQSin_Cos;
 
-#define IQSin_Cos_DEFAULTS \
-    {                      \
-        0, 0, 0            \
-    }
-
-extern IQSin_Cos AngleSin_Cos;
 extern uint32_t IQSqrt(uint32_t M);
-extern void IQSin_Cos_Cale(p_IQSin_Cos pV);
+extern void IQSin_Cos_Cale(p_SVGENDQ pV);
 extern int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min);
 extern int32_t HDIV(int32_t Dividend, int16_t Divisor);
 

@@ -48,20 +48,14 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
 
     // 其他参数初始化
-    s->Valpha = 0;
     s->Ealpha = 0;
     s->Zalpha = 0;
     s->EstIalpha = 0;
     s->EalphaFinal = 0;
-
-    s->Vbeta = 0;
     s->Ebeta = 0;
     s->Zbeta = 0;
     s->EstIbeta = 0;
     s->EbetaFinal = 0;
-
-    s->Ialpha = 0;
-    s->Ibeta = 0;
     s->Theta = 0;
     s->Omega = 0;
     s->OmegaFltred = 0;
@@ -141,10 +135,10 @@ void CalcEstI(p_SMC s, int16_t U, int16_t I, int16_t EMF, int16_t *EstI, int16_t
  输入参数  : 滑膜参数结构体地址
  输出参数  : void
 *****************************************************************************/
-void SMC_Position_Estimation(p_SMC s)
+void SMC_Position_Estimation(p_SMC s, p_SVGENDQ m)
 {
-    CalcEstI(s, s->Valpha, s->Ialpha, s->Ealpha, &s->EstIalpha, &s->Zalpha);
-    CalcEstI(s, s->Vbeta, s->Ibeta, s->Ebeta, &s->EstIbeta, &s->Zbeta);
+    CalcEstI(s, m->Valpha, m->Ialpha, s->Ealpha, &s->EstIalpha, &s->Zalpha);
+    CalcEstI(s, m->Vbeta, m->Ibeta, s->Ebeta, &s->EstIbeta, &s->Zbeta);
     CalcBEMF(s);
     s->Theta = CORDIC_Atan(s->EbetaFinal, -s->EalphaFinal); // 反正切求角度
     AccumTheta += s->Theta - PrevTheta;                     // 累加固定周期内的角度值用于速度计算

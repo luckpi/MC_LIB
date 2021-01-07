@@ -1,6 +1,6 @@
 #include "common.h"
 #include "IQmath.h"
-IQSin_Cos AngleSin_Cos = IQSin_Cos_DEFAULTS;
+
 // SINCOS 0-90°表
 const int16_t IQSin_Cos_Table[256] = {
     0x0000, 0x00C9, 0x0192, 0x025B, 0x0324, 0x03ED, 0x04B6, 0x057F,
@@ -42,32 +42,32 @@ const int16_t IQSin_Cos_Table[256] = {
  输入参数  : 角度
  输出参数  : void
 *****************************************************************************/
-void IQSin_Cos_Cale(p_IQSin_Cos pV)
+void IQSin_Cos_Cale(p_SVGENDQ pV)
 {
     uint16_t hindex;
-    hindex = (uint16_t)pV->IQAngle; // -32768--32767 +32768 = 0--65535
+    hindex = (uint16_t)pV->Theta; // -32768--32767 +32768 = 0--65535
     hindex >>= 6;                   // 65536 / 64 = 1024 / 4 = 90° = 256  0x01-0xFF  0X100  0X1FF  0X200 0X2FF    0X300  0X3FF
 
     switch (hindex & SIN_RAD) //  0X300  &  0x0XXX  获取象限
     {
     case U0_90:
-        pV->IQSin = IQSin_Cos_Table[(uint8_t)(hindex)]; // 0---255  ==0---32766
-        pV->IQCos = IQSin_Cos_Table[(uint8_t)(0xFF - (uint8_t)(hindex))];
+        pV->Sine = IQSin_Cos_Table[(uint8_t)(hindex)]; // 0---255  ==0---32766
+        pV->Cosine = IQSin_Cos_Table[(uint8_t)(0xFF - (uint8_t)(hindex))];
         break;
 
     case U90_180:
-        pV->IQSin = IQSin_Cos_Table[(uint8_t)(0xFF - (uint8_t)(hindex))]; // 255---0 == 0---32766
-        pV->IQCos = -IQSin_Cos_Table[(uint8_t)(hindex)];
+        pV->Sine = IQSin_Cos_Table[(uint8_t)(0xFF - (uint8_t)(hindex))]; // 255---0 == 0---32766
+        pV->Cosine = -IQSin_Cos_Table[(uint8_t)(hindex)];
         break;
 
     case U180_270:
-        pV->IQSin = -IQSin_Cos_Table[(uint8_t)(hindex)];
-        pV->IQCos = -IQSin_Cos_Table[(uint8_t)(0xFF - (uint8_t)(hindex))];
+        pV->Sine = -IQSin_Cos_Table[(uint8_t)(hindex)];
+        pV->Cosine = -IQSin_Cos_Table[(uint8_t)(0xFF - (uint8_t)(hindex))];
         break;
 
     case U270_360:
-        pV->IQSin = -IQSin_Cos_Table[(uint8_t)(0xFF - (uint8_t)(hindex))];
-        pV->IQCos = IQSin_Cos_Table[(uint8_t)(hindex)];
+        pV->Sine = -IQSin_Cos_Table[(uint8_t)(0xFF - (uint8_t)(hindex))];
+        pV->Cosine = IQSin_Cos_Table[(uint8_t)(hindex)];
         break;
     default:
         break;

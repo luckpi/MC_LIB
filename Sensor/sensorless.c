@@ -102,7 +102,6 @@ void ADC_ISR(void)
     {
     case mcAhead:
         ADC_Calibrate();
-        AngleSin_Cos.IQAngle = 0;
         break;
     case mcAlign:
         if (++ADC_CNT > 4000)
@@ -113,17 +112,11 @@ void ADC_ISR(void)
     case mcDrag:; // 强拖阶段
     case mcRun:
         Clark_Cala(&svm);
-        smc.Ialpha = svm.Ialpha;
-        smc.Ibeta = svm.Ibeta;
-        smc.Valpha = svm.Valpha;
-        smc.Vbeta = svm.Vbeta;
-        SMC_Position_Estimation(&smc);
+        SMC_Position_Estimation(&smc, &svm);
         CalculateParkAngle();
         Park_Cala(&svm);
         PI_Control();
-        IQSin_Cos_Cale(&AngleSin_Cos);
-        svm.Sine = AngleSin_Cos.IQSin;
-        svm.Cosine = AngleSin_Cos.IQCos;
+        IQSin_Cos_Cale(&svm);
         InvPark(&svm);
         svgendq_calc(&svm);
         PWMChangeDuty(&svm);

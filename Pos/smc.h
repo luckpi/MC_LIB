@@ -3,7 +3,7 @@
 #include "common.h"
 #include "IQmath.h"
 #include "MotorConfig.h"
-
+#include "svgen_dq.h"
 #define ONE_BY_SQRT3                            0.5773502691    // 1 / √3
 
 #define THETA_AT_ALL_SPEED                      90              // 延迟角度  (0 ~ 360)
@@ -21,15 +21,11 @@
 #define THETA_FILTER_CNST                       6434    // Q15(PI / IRP_PERCALC)
 typedef struct
 {
-    int16_t Valpha;      //  α轴定子电压
-    int16_t Ialpha;      //  α轴定子电流
     int16_t EstIalpha;   //  估算的α轴定子电流
     int16_t Ealpha;      //  估算的α轴反电动势
     int16_t EalphaFinal; //  滤波后的反电动势用于反正切
     int16_t Zalpha;      //  α轴滑膜校准因子
 
-    int16_t Vbeta;      //  β轴定子电压
-    int16_t Ibeta;      //  β轴定子电流
     int16_t EstIbeta;   //  估算的β轴定子电流
     int16_t Ebeta;      //  估算的β轴反电动势
     int16_t EbetaFinal; //  滤波后的反电动势用于反正切
@@ -58,9 +54,9 @@ typedef struct
     float Cur_Const;
 } MOTOR_ESTIM, *p_MOTOR_ESTIM;
 
-#define SMC_DEFAULTS                                                           \
-    {                                                                          \
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+#define SMC_DEFAULTS                                               \
+    {                                                              \
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
     }
 
 extern SMC smc;
@@ -73,7 +69,7 @@ extern uint16_t trans_counter;
 extern MOTOR_ESTIM motorParm;
 
 extern void SMC_Init(p_SMC, p_MOTOR_ESTIM);
-extern void SMC_Position_Estimation(p_SMC);
+extern void SMC_Position_Estimation(p_SMC, p_SVGENDQ);
 extern int16_t CORDIC_Atan(int16_t alfa_est, int16_t beta_est);
 
 #endif

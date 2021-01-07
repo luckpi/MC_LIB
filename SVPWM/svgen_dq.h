@@ -12,6 +12,7 @@ typedef struct
     int32_t Ib_C;   // Ia校准误差
     int16_t Ialpha; // Clark变换输出
     int16_t Ibeta;  // Clark变换输出
+    int16_t Theta;  // 角度
     int16_t Sine;   // 正弦
     int16_t Cosine; // 余弦
     int16_t Id;     // Park d轴
@@ -25,9 +26,9 @@ typedef struct
     int32_t Tc;     // SVP输出
 } SVGENDQ, *p_SVGENDQ;
 
-#define SVGENDQ_DEFAULTS                                     \
-    {                                                        \
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+#define SVGENDQ_DEFAULTS                                        \
+    {                                                           \
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
     }
 
 extern SVGENDQ svm; // SVPWM
