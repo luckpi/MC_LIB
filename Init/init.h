@@ -61,6 +61,5 @@ extern void UART_init(void);
 extern void Clk_init(void);
 extern void DMA_init(void);
 extern void OPA_init(void);
-extern void Hall_init(void);
 
 #endif

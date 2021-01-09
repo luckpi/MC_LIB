@@ -1,6 +1,5 @@
 #include "opa.h"
 #include "pwm.h"
-#include "Hall.h"
 #include "init.h"
 #include "dmac.h"
 #include "common.h"
@@ -200,35 +199,6 @@ void DMA_init(void)
     //使能DMA，使能DMA0
     Dma_Enable();
     Dma_EnableChannel(DmaCh0);
-}
-/**************************************************************************************************
- 函 数 名  : Hall_Gpio_Init
- 功能描述  : 霍尔初始化
- 输入参数  : 无
- 输出参数  : void
-**************************************************************************************************/
-void Hall_init(void)
-{
-    stc_gpio_config_t pstcGpioCfg;
-
-    ///< 打开GPIO外设时钟门控
-    Sysctrl_SetPeripheralGate(SysctrlPeripheralGpio, TRUE);
-
-    ///< 端口方向配置->输入
-    pstcGpioCfg.enDir = GpioDirIn;
-    ///< 端口驱动能力配置->高驱动能力
-    pstcGpioCfg.enDrv = GpioDrvH;
-    ///< 端口上下拉配置->上拉
-    pstcGpioCfg.enPuPd = GpioNoPuPd;
-    ///< 端口开漏输出配置->开漏输出关闭
-    pstcGpioCfg.enOD = GpioOdDisable;
-    ///< 端口输入/输出值寄存器总线控制模式配置->AHB
-    pstcGpioCfg.enCtrlMode = GpioAHB;
-
-    ///< GPIO IO HALL初始化
-    Gpio_Init(GpioPortA, GpioPin1, &pstcGpioCfg); // U
-    Gpio_Init(GpioPortA, GpioPin0, &pstcGpioCfg); // V
-    Gpio_Init(GpioPortD, GpioPin0, &pstcGpioCfg); // W
 }
 /**************************************************************************************************
  函 数 名  : ADC_Init

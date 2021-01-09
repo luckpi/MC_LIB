@@ -24,7 +24,6 @@ typedef enum
     cmp_isr,      // cmp过流保护
     overvoltage,  // 过压
     undervoltage, // 欠压
-    hallerror,    // 霍尔错误
     stall,        // 堵转
 } ErrorState_T;
 
