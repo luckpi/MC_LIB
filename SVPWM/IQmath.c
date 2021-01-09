@@ -46,7 +46,7 @@ void IQSin_Cos_Cale(p_SVGENDQ pV)
 {
     uint16_t hindex;
     hindex = (uint16_t)pV->Theta; // -32768--32767 +32768 = 0--65535
-    hindex >>= 6;                   // 65536 / 64 = 1024 / 4 = 90° = 256  0x01-0xFF  0X100  0X1FF  0X200 0X2FF    0X300  0X3FF
+    hindex >>= 6;                 // 65536 / 64 = 1024 / 4 = 90° = 256  0x01-0xFF  0X100  0X1FF  0X200 0X2FF    0X300  0X3FF
 
     switch (hindex & SIN_RAD) //  0X300  &  0x0XXX  获取象限
     {
@@ -99,30 +99,124 @@ int32_t IQsat(int32_t Uint, int32_t U_max, int32_t U_min)
 *****************************************************************************/
 uint32_t IQSqrt(uint32_t M)
 {
-    uint32_t N = 0, i, tmp, ttp;
-    if (M == 0)
+    uint32_t Input = M;
+    uint32_t SqrtX = 0;
+    uint32_t Temp = 0;
+    if (M <= 0)
         return 0;
-    tmp = (M >> 30);
-    M <<= 2;
-    if (tmp > 1)
+    Temp = SqrtX + (1 << 30);
+    SqrtX >>= 1;
+    if (Temp <= Input)
     {
-        N++;
-        tmp -= N;
+        Input -= Temp;
+        SqrtX += (1 << 30);
     }
-    for (i = 15; i > 0; i--)
+    Temp = SqrtX + (1 << 28);
+    SqrtX >>= 1;
+    if (Temp <= Input)
     {
-        N <<= 1;
-        tmp <<= 2;
-        tmp += (M >> 30);
-        ttp = (N << 1) + 1;
-        M <<= 2;
-        if (tmp >= ttp)
-        {
-            tmp -= ttp;
-            N++;
-        }
+        Input -= Temp;
+        SqrtX += (1 << 28);
     }
-    return N;
+    Temp = SqrtX + (1 << 26);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 26);
+    }
+    Temp = SqrtX + (1 << 24);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 24);
+    }
+    Temp = SqrtX + (1 << 22);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 22);
+    }
+    Temp = SqrtX + (1 << 20);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 20);
+    }
+    Temp = SqrtX + (1 << 18);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 18);
+    }
+    Temp = SqrtX + (1 << 16);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 16);
+    }
+    Temp = SqrtX + (1 << 14);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 14);
+    }
+    Temp = SqrtX + (1 << 12);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 12);
+    }
+    Temp = SqrtX + (1 << 10);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 10);
+    }
+    Temp = SqrtX + (1 << 8);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 8);
+    }
+    Temp = SqrtX + (1 << 6);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 6);
+    }
+    Temp = SqrtX + (1 << 4);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 4);
+    }
+    Temp = SqrtX + (1 << 2);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 2);
+    }
+    Temp = SqrtX + (1 << 0);
+    SqrtX >>= 1;
+    if (Temp <= Input)
+    {
+        Input -= Temp;
+        SqrtX += (1 << 0);
+    }
+    return ((int32_t)(SqrtX));
 }
 /*****************************************************************************
  函 数 名  : HDIV
