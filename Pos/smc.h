@@ -14,11 +14,11 @@
 /* Sliding Mode Control Parameter data type */
 #define SPEEDLOOPFREQ                           1000    // 速度环频率（以赫兹为单位）。 此值必须为整数以避免预编译器错误
 #define SPEEDLOOPTIME                           0.001   // 调速周期 (1.0 / SPEEDLOOPFREQ)
-#define IRP_PERCALC                             16      // 每个速度计算的PWM回路 (SPEEDLOOPTIME / PWM_TS)
-#define TRANSITION_STEPS                        4       // IRP_PERCALC / 4
+#define IRP_PERCALC                             20      // 每个速度计算的PWM回路 (SPEEDLOOPTIME / PWM_TS)
+#define TRANSITION_STEPS                        5       // IRP_PERCALC / 4
 #define SMCGAIN                                 0.8     // 滑模控制器增益 (0.0 to 0.9999)
 #define MAXLINEARSMC                            0.5     // 滑膜最大误差值域 (0.0 to 0.9999)
-#define THETA_FILTER_CNST                       6434    // Q15(PI / IRP_PERCALC)
+#define THETA_FILTER_CNST                       5147    // Q15(PI / IRP_PERCALC)
 typedef struct
 {
     int16_t EstIalpha;   //  估算的α轴定子电流

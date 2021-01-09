@@ -4,6 +4,7 @@
 #include "dmac.h"
 #include "common.h"
 #include "sensorless.h"
+#include "MotorConfig.h"
 
 /**************************************************************************************************
  函 数 名  : OPA_Init

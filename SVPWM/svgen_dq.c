@@ -1,3 +1,4 @@
+#include "MotorConfig.h"
 #include "svgen_dq.h"
 #include "IQmath.h"
 #include "common.h"

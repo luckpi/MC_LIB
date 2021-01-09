@@ -2,12 +2,17 @@
 #define _MOTORCFG_H
 #include "common.h"
 /******************** PWM and Control Timing Parameters *********************/
+//  PWM配置
+#define PWMSYSCLK                   48000000  // PWM时钟
+#define SYSCLK                      48000000  // 除PWM外的模块时钟
+#define PWM_FRE_SETATA              1200      //自动重装载值((PWMSYSCLK / PWM_FRE) >> 1)
+
 /* PWM频率 */
-#define PWM_FREQ                    16000
+#define PWM_FREQ                    20000
 /* 死区时间 */
 #define PWM_DTS                     0.000002
 /* PWM周期 (1 / PWM_FREQ) */
-#define PWM_TS                      0.0000625
+#define PWM_TS                      0.000050
 
 /****************************** Motor Parameters ******************************/
 #define MAX_MOTOR_VOLTAGE           24          // 最大电压 V
