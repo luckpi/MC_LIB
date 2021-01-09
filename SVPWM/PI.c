@@ -128,7 +128,7 @@ void PI_Control(void)
     else if (mcState == mcRun) // 闭环
     {
         VelRefRaw = (((ADCSample.POT - 2000) * (CtrlParm.OmegaMax - CtrlParm.OmegaMin)) >> 11) + CtrlParm.OmegaMin; //速度电位器调节
-        if (AccumThetaCnt == 0)
+        if (++CtrlParm.SpeedRampCount >= SPEEDREFRAMP_COUNT)
         {
             // VelRefRaw = CtrlParm.OmegaMin;
             // 执行速度控制循环
@@ -154,15 +154,16 @@ void PI_Control(void)
             {
                 CtrlParm.VelRef = VelRefRaw;
             }
-#ifdef TORQUE_MODE
-            CtrlParm.IqRef = CtrlParm.VelRef;
-#else
-            PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
-            PIParmQref.qInRef = CtrlParm.VelRef * CtrlParm.RotorDirection; // 电机参考速度和方向
-            CalcPI(&PIParmQref);
-            CtrlParm.IqRef = PIParmQref.qOut;
-#endif
+            CtrlParm.SpeedRampCount = 0;
         }
+#ifdef TORQUE_MODE
+        CtrlParm.IqRef = CtrlParm.VelRef;
+#else
+        PIParmQref.qInMeas = smc.OmegaFltred;                          // 反馈速度
+        PIParmQref.qInRef = CtrlParm.VelRef * CtrlParm.RotorDirection; // 电机参考速度和方向
+        CalcPI(&PIParmQref);
+        CtrlParm.IqRef = PIParmQref.qOut;
+#endif
 #ifdef FDWEAK_MODE
         CtrlParm.IdRef = FieldWeakening(Abs(CtrlParm.VelRef));
 #else

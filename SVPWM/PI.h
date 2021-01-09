@@ -6,13 +6,13 @@
 /* PI 控制器调整值 */
 /********** D轴控制环路系数 **********/
 #define D_CURRCNTR_PTERM                     0.05
-#define D_CURRCNTR_ITERM                     0.005
+#define D_CURRCNTR_ITERM                     0.003
 #define D_CURRCNTR_CTERM                     0.999
 #define D_CURRCNTR_OUTMAX                    0.8
 
 /********** Q轴控制环路参数 **********/
 #define Q_CURRCNTR_PTERM                     0.05
-#define Q_CURRCNTR_ITERM                     0.005
+#define Q_CURRCNTR_ITERM                     0.003
 #define Q_CURRCNTR_CTERM                     0.999
 #define Q_CURRCNTR_OUTMAX                    0.8    
 
@@ -21,7 +21,8 @@
 #define SPEEDCNTR_ITERM                      0.005
 #define SPEEDCNTR_CTERM                      0.9999
 #define SPEEDCNTR_OUTMAX                     0.8
-#define SPEEDREFRAMP                         2
+#define SPEEDREFRAMP                         1
+#define SPEEDREFRAMP_COUNT                   3
 
 typedef struct
 {
@@ -55,6 +56,7 @@ typedef struct
     int16_t IdRefFF;        // 弱磁期间前馈Idref
     int16_t IdRefPI;        // 弱场Idref PI输出
     int16_t IqRefmax;       // 最大Q轴电流
+    int16_t SpeedRampCount; // 速度环PI周期
     int16_t RotorDirection; // 电机转向
 } tCtrlParm;
 
