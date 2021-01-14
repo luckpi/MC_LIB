@@ -7,8 +7,7 @@
 #define ONE_BY_SQRT3                            0.5773502691    // 1 / √3
 
 #define THETA_AT_ALL_SPEED                      90              // 延迟角度  (0 ~ 360)
-#define THETA_ALL                               16384           // (uint16_t)(THETA_AT_ALL_SPEED / 180.0 * 32768.0)
-#define CONSTANT_PHASE_SHIFT                    THETA_ALL
+#define CONSTANT_PHASE_SHIFT                    16384           // (uint16_t)(THETA_AT_ALL_SPEED / 180.0 * 32768.0)
 #define _0_05DEG                                9               // 闭环减小开环强制角和估算角误差，每次步进0.05°
 
 /* Sliding Mode Control Parameter data type */
@@ -16,7 +15,7 @@
 #define SPEEDLOOPTIME                           0.001   // 调速周期 (1.0 / SPEEDLOOPFREQ)
 #define IRP_PERCALC                             20      // 每个速度计算的PWM回路 (SPEEDLOOPTIME / PWM_TS)
 #define TRANSITION_STEPS                        5       // IRP_PERCALC / 4
-#define SMCGAIN                                 0.8     // 滑模控制器增益 (0.0 to 0.9999)
+#define SMCGAIN                                 0.85    // 滑模控制器增益 (0.0 to 0.9999)
 #define MAXLINEARSMC                            0.5     // 滑膜最大误差值域 (0.0 to 0.9999)
 #define THETA_FILTER_CNST                       5147    // Q15(PI / IRP_PERCALC)
 typedef struct
@@ -48,10 +47,10 @@ typedef struct
 /* 电机归一化参数 */
 typedef struct
 {
-    float qRs;
-    float qLsDt;     // Ls / dt
-    float Vol_Const;
-    float Cur_Const;
+    int32_t qRs;
+    int32_t qLsDt;     // Ls / dt
+    int32_t Vol_Const;
+    int32_t Cur_Const;
 } MOTOR_ESTIM, *p_MOTOR_ESTIM;
 
 #define SMC_DEFAULTS                                               \

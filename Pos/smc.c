@@ -17,10 +17,10 @@ uint16_t AccumThetaCnt = 0; // 用于计算电机角速度的频率计数器
 void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 {
     // 电机参数归一化
-    m->Vol_Const = MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 * (1.0 - PWM_DTS / PWM_TS);
-    m->Cur_Const = MAX_MOTOR_CURRENT;
-    m->qLsDt = MOTOR_LS / m->Vol_Const * m->Cur_Const / PWM_TS;
-    m->qRs = MOTOR_RS / m->Vol_Const * m->Cur_Const;
+    m->Vol_Const = MAX_MOTOR_VOLTAGE * 100000 * ONE_BY_SQRT3 * (1.0 - PWM_DTS / PWM_TS);
+    m->Cur_Const = MAX_MOTOR_CURRENT * 100000;
+    m->qLsDt = MOTOR_LS * 32767 * m->Cur_Const / m->Vol_Const / PWM_TS;
+    m->qRs = MOTOR_RS * 32767 * m->Cur_Const / m->Vol_Const;
     //                R * Ts
     // Fsmopos = 1 - --------
     //                  L
@@ -31,20 +31,20 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     // R  = 相位电阻。 如果电机数据表未提供，用万用表测量相位电阻,除以二得到相位电阻
     // L  = 相位电感。 如果电机数据表未提供，用万用表测量相位电感,除以二得到相位电感
     if (m->qRs >= m->qLsDt)
-        s->Fsmopos = Q15(0);
+        s->Fsmopos = 0;
     else
-        s->Fsmopos = Q15(1 - (m->qRs / m->qLsDt));
+        s->Fsmopos = 32767 - _IQdiv(m->qRs, m->qLsDt);
 
-    if (m->qLsDt < 1)
-        s->Gsmopos = Q15(1);
+    if (m->qLsDt < 32767)
+        s->Gsmopos = 32767;
     else
-        s->Gsmopos = Q15(1 / m->qLsDt);
+        s->Gsmopos = _IQdiv(32767, m->qLsDt);
 
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
     s->mdbi = Q15((SMCGAIN / MAXLINEARSMC));
-    s->Kslf_min = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
-    s->FiltOmCoef = _IQmpy(ENDSPEED_ELECTR, THETA_FILTER_CNST);
+    s->Kslf_min = _IQmpy((ENDSPEED_ELECTR * 65535 / 60 / SPEEDLOOPFREQ), THETA_FILTER_CNST);
+    s->FiltOmCoef = s->Kslf_min;
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
 
     // 其他参数初始化
@@ -73,8 +73,6 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 void CalcBEMF(p_SMC s)
 {
 
-    // Kslf ：滑动模式控制器低通滤波器的系数     eRPS：电机的电气转速，单位为 RPS
-    // Kslf = PWM_Ts * 2 * PI * eRPS
     // Out += Kslf * (In - Out)
 
     // α轴反电动势
@@ -162,6 +160,7 @@ void SMC_Position_Estimation(p_SMC s, p_SVGENDQ m)
     if (++trans_counter == TRANSITION_STEPS)
         trans_counter = 0;
     s->OmegaFltred += _IQmpy(s->FiltOmCoef, (s->Omega - s->OmegaFltred));
+    // Kslf = PWM_Ts * 2 * PI * eRPS
     s->Kslf = _IQmpy(s->OmegaFltred, THETA_FILTER_CNST);
     // 动态低通滤波器系数限幅
     if (s->Kslf < s->Kslf_min)
