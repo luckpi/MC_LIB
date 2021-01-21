@@ -9,18 +9,18 @@
 /*
 Clark：
     ia + ib + ic = 0 ;
-    iAlpha = ia ;
-    iBeta = (ia + 2 * ib) / √3;
+    iα = ia ;
+    iβ = (ib - ic) / √3 = (ia + 2 * ib) / √3;
 */
 void Clark_Cala(p_SVGENDQ s)
 {
     s->Ialpha = s->Ia;
-    s->Ibeta = _IQmpy((s->Ia + _IQmpy2(s->Ib)), 18918); // _IQ(0.57735026918963)
+    s->Ibeta = _IQmpy((s->Ia + _IQmpy2(s->Ib)), 18918);
 }
 /*
 Park：
-    ld =  iAlpha * cos(θ) + iBeta * sin(θ)
-    lq = -iAlpha * sin(θ) + iBeta * cos(θ)
+    ld =  iα * cos(θ) + iβ * sin(θ)
+    lq = -iα * sin(θ) + iβ * cos(θ)
 */
 void Park_Cala(p_SVGENDQ s)
 {
