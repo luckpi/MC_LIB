@@ -16,41 +16,42 @@
 #define IRP_PERCALC                             20      // 每个速度计算的PWM回路 (SPEEDLOOPTIME / PWM_TS)
 #define TRANSITION_STEPS                        5       // IRP_PERCALC / 4
 #define SMCGAIN                                 0.85    // 滑模控制器增益 (0.0 to 0.9999)
-#define MAXLINEARSMC                            0.5     // 滑膜最大误差值域 (0.0 to 0.9999)
+#define MAXLINEARSMC                            0.01    // 滑膜最大误差值域 (0.0 to 0.9999)
 #define THETA_FILTER_CNST                       5147    // Q15(PI / IRP_PERCALC)
 typedef struct
 {
-    int16_t EstIalpha;   //  估算的α轴定子电流
-    int16_t Ealpha;      //  估算的α轴反电动势
-    int16_t EalphaFinal; //  滤波后的反电动势用于反正切
-    int16_t Zalpha;      //  α轴滑膜校准因子
+    int16_t EstIalpha;   // 估算的α轴定子电流
+    int16_t IalphaError; // 估算的α轴电流误差
+    int16_t Ealpha;      // 估算的α轴反电动势
+    int16_t EalphaFinal; // 滤波后的反电动势用于反正切
+    int16_t Zalpha;      // α轴滑膜校准因子
 
-    int16_t EstIbeta;   //  估算的β轴定子电流
-    int16_t Ebeta;      //  估算的β轴反电动势
-    int16_t EbetaFinal; //  滤波后的反电动势用于反正切
-    int16_t Zbeta;      //  β轴滑膜校准因子
+    int16_t EstIbeta;    // 估算的β轴定子电流
+    int16_t IbetaError; // 估算的β轴电流误差
+    int16_t Ebeta;       // 估算的β轴反电动势
+    int16_t EbetaFinal;  // 滤波后的反电动势用于反正切
+    int16_t Zbeta;       // β轴滑膜校准因子
 
-    int16_t Fsmopos;     //  电机相关控制增益
-    int16_t Gsmopos;     //  电机相关控制增益
-    int16_t Kslide;      //  滑膜控制器增益
-    int16_t MaxSMCError; //  最大电流误差
-    int32_t mdbi;        //  Kslide / MaxSMCError
-    int16_t Kslf;        //  滑膜滤波器增益
-    int16_t Kslf_min;    //  滑膜滤波器最小增益
-    int16_t FiltOmCoef;  //  过滤系数，用于Omega过滤的calc
-    int16_t ThetaOffset; //  偏移量用于补偿转子角度
-    int16_t Theta;       //  转子补偿角
-    int16_t Omega;       //  转子角速度
-    int16_t OmegaFltred; //  用于速度环的转子角速度
+    int16_t Fsmopos;     // 电机相关控制增益
+    int16_t Gsmopos;     // 电机相关控制增益
+    int16_t Kslide;      // 滑膜控制器增益
+    int16_t MaxSMCError; // 最大电流误差
+    int32_t mdbi;        // Kslide / MaxSMCError
+    int16_t Kslf;        // 滑膜滤波器增益
+    int16_t Kslf_min;    // 滑膜滤波器最小增益
+    int16_t FiltOmCoef;  // 过滤系数，用于Omega过滤的calc
+    int16_t ThetaOffset; // 偏移量用于补偿转子角度
+    int16_t Theta;       // 转子补偿角
+    int16_t Omega;       // 转子角速度
+    int16_t OmegaFltred; // 用于速度环的转子角速度
 } SMC, *p_SMC;
 
 /* 电机归一化参数 */
 typedef struct
 {
     int32_t qRs;
-    int32_t qLsDt;     // Ls / dt
-    int32_t Vol_Const;
-    int32_t Cur_Const;
+    int32_t qLsDt; // Ls / dt
+    int32_t Cur_Vol;
 } MOTOR_ESTIM, *p_MOTOR_ESTIM;
 
 #define SMC_DEFAULTS                                               \

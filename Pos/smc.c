@@ -16,20 +16,19 @@ uint16_t AccumThetaCnt = 0; // 用于计算电机角速度的频率计数器
 *****************************************************************************/
 void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 {
-    // 电机参数归一化
-    m->Vol_Const = MAX_MOTOR_VOLTAGE * 100000 * ONE_BY_SQRT3 * (1.0 - PWM_DTS / PWM_TS);
-    m->Cur_Const = MAX_MOTOR_CURRENT * 100000;
-    m->qLsDt = MOTOR_LS * 32767 * m->Cur_Const / m->Vol_Const / PWM_TS;
-    m->qRs = MOTOR_RS * 32767 * m->Cur_Const / m->Vol_Const;
+    // 电机参数归一化, 通过计算，将电压和电流归一化处理
+    m->Cur_Vol = MAX_MOTOR_CURRENT / (MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 * (1.0 - PWM_DTS / PWM_TS)) * 32767;
+    m->qLsDt = MOTOR_LS * 32767 / PWM_TS;
+    m->qRs = MOTOR_RS * m->Cur_Vol;
     //                R * Ts
     // Fsmopos = 1 - --------
     //                  L
     //             Ts
     // Gsmopos = ------
     //              L
-    // Ts = 采样周期。 如果以PWM采样, Ts = 62.5 us
-    // R  = 相位电阻。 如果电机数据表未提供，用万用表测量相位电阻,除以二得到相位电阻
-    // L  = 相位电感。 如果电机数据表未提供，用万用表测量相位电感,除以二得到相位电感
+    // Ts = 采样周期。 如果以PWM采样, Ts = PWM_Ts
+    // R  = 相位电阻。 如果电机数据表未提供，用万用表测量线电阻,除以二得到相位电阻
+    // L  = 相位电感。 如果电机数据表未提供，用万用表测量线电感,除以二得到相位电感
     if (m->qRs >= m->qLsDt)
         s->Fsmopos = 0;
     else
@@ -42,9 +41,13 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 
     s->Kslide = Q15(SMCGAIN);
     s->MaxSMCError = Q15(MAXLINEARSMC);
+    // Kslide / MaxSMCError
     s->mdbi = Q15((SMCGAIN / MAXLINEARSMC));
+    // BEMF动态滤波器系数最小值
     s->Kslf_min = _IQmpy((ENDSPEED_ELECTR * 65535 / 60 / SPEEDLOOPFREQ), THETA_FILTER_CNST);
+    // 转子角速度滤波器系数
     s->FiltOmCoef = s->Kslf_min;
+    // 相位补偿，经过两次滤波后的BEMF存在90°的相位延时
     s->ThetaOffset = CONSTANT_PHASE_SHIFT;
 
     // 其他参数初始化
@@ -94,47 +97,45 @@ F = (1 - Ts * R / L)，G = Ts / L (两个增益函数和电机特性有关)
 
 输入参数：
 I   ：经过Clark变换后的实际电流
-U   ：Vbus / √3 * Valpha(Vbeta)  这里是百分比
+U   ：Vbus / √3 * Valpha(Vbeta)  归一化处理时，将其耦合在F增益中
 EMF： 估算的反电动势
 EstI：估算的电流
 Z   : 校准因子
 */
 void CalcEstI(p_SMC s, p_SVGENDQ m)
 {
-    int16_t I_Error;
-
     // 估算α轴电流
-    s->EstIalpha = ((s->Fsmopos * s->EstIalpha) + (s->Gsmopos * (m->Valpha - s->Ealpha - s->Zalpha))) >> 15;
-    I_Error = s->EstIalpha - m->Ialpha;
-    if (I_Error > s->MaxSMCError)
+    s->EstIalpha = _IQmpy(s->Fsmopos, s->EstIalpha) + _IQmpy(s->Gsmopos, (m->Valpha - s->Ealpha - s->Zalpha));
+    s->IalphaError = s->EstIalpha - m->Ialpha;
+    if (s->IalphaError > s->MaxSMCError)
     {
         s->Zalpha = s->Kslide;
     }
-    else if (I_Error < -s->MaxSMCError)
+    else if (s->IalphaError < -s->MaxSMCError)
     {
         s->Zalpha = -s->Kslide;
     }
     else
     {
-        // s->Zalpha = (s->Kslide * s->I_Error) / s->MaxSMCError
-        s->Zalpha = _IQmpy(s->mdbi, I_Error);
+        // s->Zalpha = (s->Kslide * s->IalphaError) / s->MaxSMCError
+        s->Zalpha = _IQmpy(s->mdbi, s->IalphaError);
     }
 
     // 估算β轴电流
-    s->EstIbeta = ((s->Fsmopos * s->EstIbeta) + (s->Gsmopos * (m->Vbeta - s->Ebeta - s->Zbeta))) >> 15;
-    I_Error = s->EstIbeta - m->Ibeta;
-    if (I_Error > s->MaxSMCError)
+    s->EstIbeta = _IQmpy(s->Fsmopos, s->EstIbeta) + _IQmpy(s->Gsmopos, (m->Vbeta - s->Ebeta - s->Zbeta));
+    s->IbetaError = s->EstIbeta - m->Ibeta;
+    if (s->IbetaError > s->MaxSMCError)
     {
         s->Zbeta = s->Kslide;
     }
-    else if (I_Error < -s->MaxSMCError)
+    else if (s->IbetaError < -s->MaxSMCError)
     {
         s->Zbeta = -s->Kslide;
     }
     else
     {
-        // s->Zbeta = (s->Kslide * s->I_Error) / s->MaxSMCError
-        s->Zbeta = _IQmpy(s->mdbi, I_Error);
+        // s->Zbeta = (s->Kslide * s->IbetaError) / s->MaxSMCError
+        s->Zbeta = _IQmpy(s->mdbi, s->IbetaError);
     }
 }
 
