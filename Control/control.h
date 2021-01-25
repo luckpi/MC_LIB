@@ -4,7 +4,6 @@
 
 extern void MotorControl(void);
 extern void MotorStop(void);
-extern void EnterRunInit(void);
 extern void CalculateParkAngle(void);
 
 #endif

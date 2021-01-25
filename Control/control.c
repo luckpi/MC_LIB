@@ -7,6 +7,10 @@
 #include "svgen_dq.h"
 #include "sensorless.h"
 #include "MotorConfig.h"
+
+#define _0_05DEG    9   // 缩减开环角与估算角的单位周期增量
+#define STEPS       5   // 缩减开环角与估算角的周期
+
 /******************************************************************************
  函 数 名  : MotorAhead
  功能描述  : 开始启动
@@ -61,28 +65,42 @@ void CalculateParkAngle(void)
         if (CtrlParm.OpenLoopSpeed < CtrlParm.OpenLoopSpeedEnd)
         {
             CtrlParm.OpenLoopSpeed += CtrlParm.OpenLoopSpeedAdd;
+            if (CtrlParm.OpenLoopSpeed >= CtrlParm.OpenLoopSpeedEnd)
+            {
+                // 计算开环角和估算角误差，开启速度环
+                CtrlParm.Theta_error = svm.Theta - smc.Theta;
+                PIParmQref.qdSum = CtrlParm.IqRef >> 3;
+                CtrlParm.VelRef = CtrlParm.OmegaMin;
+                CtrlParm.SpeedLoop_FLAG = 1;
+                PIParmD.qInRef = 0;
+                CtrlParm.IdRef = 0;
+            }
+            svm.Theta += (int16_t)(CtrlParm.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * CtrlParm.RotorDirection;
         }
         else
         {
-            Theta_error = svm.Theta - smc.Theta;
-            PIParmQref.qdSum = CtrlParm.IqRef >> 3;
-            CtrlParm.VelRef = CtrlParm.OmegaMin;
-            PIParmD.qInRef = 0;
-            CtrlParm.IdRef = 0;
-            mcState = mcRun;
+            // 慢慢减小开环强制角度和估算角度误差
+            if ((Abs(CtrlParm.Theta_error) > _0_05DEG))
+            {
+                if (++CtrlParm.trans_counter >= STEPS)
+                {
+                    if (CtrlParm.Theta_error < 0)
+                        CtrlParm.Theta_error += _0_05DEG;
+                    else
+                        CtrlParm.Theta_error -= _0_05DEG;
+                    CtrlParm.trans_counter = 0;
+                }
+            }
+            else
+            {
+                mcState = mcRun;
+            }
+            svm.Theta = smc.Theta + CtrlParm.Theta_error;
         }
-        svm.Theta += (int16_t)(CtrlParm.OpenLoopSpeed >> THETA_OPENLOOP_SCALER) * CtrlParm.RotorDirection;
     }
     else if (mcState == mcRun)
     {
-        if ((Abs(Theta_error) > _0_05DEG) && (trans_counter == 0)) // 慢慢减小开环强制角度和估算角度误差
-        {
-            if (Theta_error < 0)
-                Theta_error += _0_05DEG;
-            else
-                Theta_error -= _0_05DEG;
-        }
-        svm.Theta = smc.Theta + Theta_error;
+        svm.Theta = smc.Theta;
     }
 }
 /*****************************************************************************
