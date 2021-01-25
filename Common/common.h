@@ -30,9 +30,9 @@ typedef enum
 // ADC相关
 typedef struct
 {
-    int16_t POT;           // 电位器
-    int16_t Voltage;       // 电压采样值
-    int16_t Current;       // 电流采样值
+    int16_t POT;            // 电位器
+    int16_t Voltage;        // 电压采样值
+    int16_t Current;        // 电流采样值
     uint8_t OverVoltageCnt; // 过压次数
     uint8_t OverCurrentCnt; // 过流次数
 } ADCSamplePara_T;

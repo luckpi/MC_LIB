@@ -26,12 +26,15 @@ void PI_Init(void)
 {
     // 速度环和开环参数初始化
     CtrlParm.qDiff = 0;
+    CtrlParm.trans_counter = 0;
     CtrlParm.OpenLoopSpeed = 0;
+    CtrlParm.SpeedRampCount = 0;
+    CtrlParm.SpeedLoop_FLAG = 0;
     CtrlParm.RotorDirection = CW;
     CtrlParm.IqRefmax = MAX_VOLTAGE_VECTOR;
     CtrlParm.OpenLoopSpeedEnd = END_SPEED * 65536; // 单位周期角速度增益 (END_SPEED << THETA_OPENLOOP_SCALER)
-    CtrlParm.OpenLoopSpeedAdd = CtrlParm.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME; // 单位周期增量
-    CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS * 65535.0 / 60.0 / SPEEDLOOPFREQ; // RPM转SMC_Omega
+    CtrlParm.OpenLoopSpeedAdd = CtrlParm.OpenLoopSpeedEnd / PWM_FREQ / OPENLOOP_TIME;  // 单位周期增量
+    CtrlParm.OmegaMin = END_SPEED_RPM * NOPOLESPAIRS * 65535.0 / 60.0 / SPEEDLOOPFREQ; // RPM转Omega
     CtrlParm.OmegaMax = NOMINAL_SPEED_RPM * NOPOLESPAIRS * 65535.0 / 60.0 / SPEEDLOOPFREQ;
 
     // PI D Term
@@ -101,37 +104,24 @@ static void CalcPI(tPIParm *pParm)
 *****************************************************************************/
 void PI_Control(void)
 {
-    volatile int16_t temp, VelRefRaw;
+    volatile int32_t temp, VelRefRaw;
+    // 弱磁模式开关
+#ifdef FDWEAK_MODE
+    CtrlParm.IdRef = FieldWeakening(Abs(CtrlParm.VelRef));
+#else
+    CtrlParm.IdRef = 0;
+#endif
+    // D轴PI控制
+    PIParmD.qInMeas = svm.Id;
+    PIParmD.qInRef = CtrlParm.IdRef;
+    CalcPI(&PIParmD);
+    svm.Vd = PIParmD.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
 
-    if (mcState == mcAlign || mcState == mcDrag) // 开环强拖
+    if (CtrlParm.SpeedLoop_FLAG == 1)
     {
-        // q当前参考等于vel参考
-        // 而d当前参考等于0
-        // 要获得最大启动扭矩，请将q电流设置为最大可接受值
-
-        CtrlParm.IqRef = Q_CURRENT_REF_OPENLOOP * CtrlParm.RotorDirection; //控制方向
-
-        // PI control for Q
-        PIParmQ.qInMeas = svm.Iq;
-        PIParmQ.qInRef = CtrlParm.IqRef;
-        CalcPI(&PIParmQ);
-        svm.Vq = PIParmQ.qOut;
-
-        CtrlParm.IdRef = 0; // d轴不做功
-
-        // PI control for D
-        PIParmD.qInMeas = svm.Id;
-        PIParmD.qInRef = CtrlParm.IdRef;
-        CalcPI(&PIParmD);
-        svm.Vd = PIParmD.qOut;
-    }
-    else if (mcState == mcRun) // 闭环
-    {
-        VelRefRaw = (((ADCSample.POT - 2000) * (CtrlParm.OmegaMax - CtrlParm.OmegaMin)) >> 11) + CtrlParm.OmegaMin; //速度电位器调节
         if (++CtrlParm.SpeedRampCount >= SPEEDREFRAMP_COUNT)
         {
-            // VelRefRaw = CtrlParm.OmegaMin;
-            // 执行速度控制循环
+            VelRefRaw = (((ADCSample.POT - 2000) * (CtrlParm.OmegaMax - CtrlParm.OmegaMin)) >> 11) + CtrlParm.OmegaMin; //速度电位器调节
             if (VelRefRaw < CtrlParm.OmegaMin)
             {
                 VelRefRaw = CtrlParm.OmegaMin;
@@ -164,37 +154,27 @@ void PI_Control(void)
         CalcPI(&PIParmQref);
         CtrlParm.IqRef = PIParmQref.qOut;
 #endif
-#ifdef FDWEAK_MODE
-        CtrlParm.IdRef = FieldWeakening(Abs(CtrlParm.VelRef));
-#else
-        CtrlParm.IdRef = 0;
-#endif
-        // PI control for D
-        PIParmD.qInMeas = svm.Id;
-        PIParmD.qInRef = CtrlParm.IdRef;
-        CalcPI(&PIParmD);
-        svm.Vd = PIParmD.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
-        /* 具有d分量优先级的动态d-q调整*/
-        // 向量限制
-        // Vd is 不限
-        // Vq is 限制，因此向量Vs小于最大值 95%.
-        // Vs = SQRT(Vd^2 + Vq^2) < 0.95
-        // Vq = SQRT(0.95^2 - Vd^2)
-        temp = (int16_t)(_IQmpy(PIParmD.qOut, PIParmD.qOut));
-        temp = MAX_VOLTAGE_VECTOR - temp;
-        PIParmQ.qOutMax = IQSqrt(temp << 15);
+        // 根据Vd动态限幅Vq，Vs <= 95%
+        // Vs = sqrt(Vd^2 + Vq^2) < 0.95 -> Vq = sqrt(0.95^2 - Vd^2)
+        temp = svm.Vd * svm.Vd;
+        temp = (MAX_VOLTAGE_VECTOR << 15) - temp;
+        PIParmQ.qOutMax = IQSqrt(temp);
         PIParmQ.qOutMin = -PIParmQ.qOutMax;
-
-        //Limit Q axis current
-        if (CtrlParm.IqRef > CtrlParm.IqRefmax)
-        {
-            CtrlParm.IqRef = CtrlParm.IqRefmax;
-        }
-
-        // PI control for Q
-        PIParmQ.qInMeas = svm.Iq;
-        PIParmQ.qInRef = CtrlParm.IqRef;
-        CalcPI(&PIParmQ);
-        svm.Vq = PIParmQ.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
     }
+    else
+    {
+        CtrlParm.IqRef = Q_CURRENT_REF_OPENLOOP * CtrlParm.RotorDirection;
+    }
+
+    // Q轴限幅
+    if (Abs(CtrlParm.IqRef) > CtrlParm.IqRefmax)
+    {
+        CtrlParm.IqRef = CtrlParm.IqRefmax * CtrlParm.RotorDirection;
+    }
+
+    // Q轴PI控制
+    PIParmQ.qInMeas = svm.Iq;
+    PIParmQ.qInRef = CtrlParm.IqRef;
+    CalcPI(&PIParmQ);
+    svm.Vq = PIParmQ.qOut; // 这是%，如果应转换为V，则乘以 (DC / 2)
 }

@@ -1,24 +1,24 @@
 #ifndef _PI_H
 #define _PI_H
 #include "common.h"
-#define Q_CURRENT_REF_OPENLOOP               4500    // 启动力矩  I / 最大电流
+#define Q_CURRENT_REF_OPENLOOP               2000    // 启动力矩  I / 最大电流
 #define NKo                                  16     // KP增益
 /* PI 控制器调整值 */
 /********** D轴控制环路系数 **********/
 #define D_CURRCNTR_PTERM                     0.05
-#define D_CURRCNTR_ITERM                     0.003
+#define D_CURRCNTR_ITERM                     0.005
 #define D_CURRCNTR_CTERM                     0.999
 #define D_CURRCNTR_OUTMAX                    0.8
 
 /********** Q轴控制环路参数 **********/
 #define Q_CURRCNTR_PTERM                     0.05
-#define Q_CURRCNTR_ITERM                     0.003
+#define Q_CURRCNTR_ITERM                     0.005
 #define Q_CURRCNTR_CTERM                     0.999
 #define Q_CURRCNTR_OUTMAX                    0.8    
 
 /********** 闭环速度环路参数 **********/
-#define SPEEDCNTR_PTERM                      0.05
-#define SPEEDCNTR_ITERM                      0.005
+#define SPEEDCNTR_PTERM                      0.2
+#define SPEEDCNTR_ITERM                      0.0025
 #define SPEEDCNTR_CTERM                      0.9999
 #define SPEEDCNTR_OUTMAX                     0.8
 #define SPEEDREFRAMP                         1
@@ -44,8 +44,11 @@ typedef struct
     int32_t OpenLoopSpeed;    // 开环速度
     int32_t OpenLoopSpeedEnd; // 开环结束速度
     int16_t OpenLoopSpeedAdd; // 开环速度增量
-    int16_t OmegaMin;         // 最小转速
-    int16_t OmegaMax;         // 最大转速
+    int32_t OmegaMin;         // 最小转速
+    int32_t OmegaMax;         // 最大转速
+    int16_t Theta_error;      // 开环角和估算角的误差
+    uint16_t trans_counter;   // 减小开环角和估算角差距间隔
+    uint16_t SpeedLoop_FLAG;  // 速度环标识位
 
     // 闭环控制
     int16_t VelRef;         // 参考速度
