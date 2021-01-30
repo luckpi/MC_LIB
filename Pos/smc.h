@@ -15,7 +15,7 @@
 #define SPEEDLOOPTIME                           0.001           // 调速周期 (1.0 / SPEEDLOOPFREQ)
 #define IRP_PERCALC                             20              // 每个速度计算的PWM回路 (SPEEDLOOPTIME / PWM_TS)
 #define SMCGAIN                                 0.85            // 滑模控制器增益 (0.0 to 0.9999)
-#define MAXLINEARSMC                            0.01            // 滑膜最大误差值域 (0.0 to 0.9999)
+#define MAXLINEARSMC                            0.03            // 滑膜最大误差值域 (0.0 to 0.9999)
 #define THETA_FILTER_CNST                       5147            // Q15(PI / IRP_PERCALC)
 
 typedef struct

@@ -16,7 +16,7 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 {
     // 电机参数归一化, 通过计算，将电压和电流归一化处理
     m->Cur_Vol = MAX_MOTOR_CURRENT / (MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 * (1.0 - PWM_DTS / PWM_TS)) * 32767;
-    m->qLsDt = MOTOR_LS * 32767 / PWM_TS;
+    m->qLsDt = MOTOR_LS * m->Cur_Vol / PWM_TS;
     m->qRs = MOTOR_RS * m->Cur_Vol;
     //                R * Ts
     // Fsmopos = 1 - --------
@@ -95,7 +95,7 @@ void CalcBEMF(p_SMC s)
  (Vs:输入电压矢量，Is:电机电流矢量，R:绕组电感，L:绕组电感，Ts:控制周期，Es:反电动势矢量)
  输入参数：
  I   ：经过Clark变换后的实际电流
- U   ：Vbus / √3 * Valpha(Vbeta)  归一化处理时，将其耦合在F增益中
+ U   ：Vbus / √3 * Valpha(Vbeta)  归一化处理时，将其耦合在G增益中
  EMF ：估算的反电动势
  EstI：估算的电流
  Z   : 校准因子
