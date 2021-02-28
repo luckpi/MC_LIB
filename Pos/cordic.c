@@ -57,15 +57,15 @@ int16_t CORDIC_Atan(int16_t x, int16_t y)
     {
         /* 向量在第四象限中 */
         Angle += ATAN1DIV1;
-        wXi = wXi - wYi;
-        wYi = wXold + wYi;
+        wXi -= wYi;
+        wYi += wXold;
     }
     else
     {
         /* 向量在第一象限中 */
         Angle -= ATAN1DIV1;
-        wXi = wXi + wYi;
-        wYi = -wXold + wYi;
+        wXi += wYi;
+        wYi -= wXold;
     }
     wXold = wXi;
 

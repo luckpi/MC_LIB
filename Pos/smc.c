@@ -15,7 +15,7 @@ uint16_t AccumThetaCnt = 0; // 用于计算电机角速度的频率计数器
 void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
 {
     // 电机参数归一化, 通过计算，将电压和电流归一化处理
-    m->Cur_Vol = MAX_MOTOR_CURRENT / (MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 * (1.0 - PWM_DTS / PWM_TS)) * 32767;
+    m->Cur_Vol = MAX_MOTOR_CURRENT / (MAX_MOTOR_VOLTAGE * ONE_BY_SQRT3 * (1.0 - PWM_DTS / PWM_TS)) * Q15(1);
     m->qLsDt = MOTOR_LS * m->Cur_Vol / PWM_TS;
     m->qRs = MOTOR_RS * m->Cur_Vol;
     //                R * Ts
@@ -28,14 +28,14 @@ void SMC_Init(p_SMC s, p_MOTOR_ESTIM m)
     // R  = 相位电阻。 如果电机数据表未提供，用万用表测量线电阻,除以二得到相位电阻
     // L  = 相位电感。 如果电机数据表未提供，用万用表测量线电感,除以二得到相位电感
     if (m->qRs >= m->qLsDt)
-        s->Fsmopos = 0;
+        s->Fsmopos = Q15(0);
     else
-        s->Fsmopos = 32767 - _IQdiv(m->qRs, m->qLsDt);
+        s->Fsmopos = Q15(1) - _IQdiv(m->qRs, m->qLsDt);
 
-    if (m->qLsDt < 32767)
-        s->Gsmopos = 32767;
+    if (m->qLsDt < Q15(1))
+        s->Gsmopos = Q15(1);
     else
-        s->Gsmopos = _IQdiv(32767, m->qLsDt);
+        s->Gsmopos = _IQdiv(Q15(1), m->qLsDt);
     // 滑膜增益
     s->Kslide = Q15(SMCGAIN);
     // 滑膜估算误差值域
@@ -77,11 +77,11 @@ void CalcBEMF(p_SMC s)
     // Out = Out + Kslf * (In - Out)
 
     // α轴反电动势
-    s->Ealpha += _IQmpy(s->Kslf, (s->Zalpha - s->Ealpha)); // 滤波用来计算下一个估算电流
+    s->Ealpha += _IQmpy(s->Kslf, (s->Zalpha - s->Ealpha));           // 滤波用来计算下一个估算电流
     s->EalphaFinal += _IQmpy(s->Kslf, (s->Ealpha - s->EalphaFinal)); // 滤波用来计算估算角
 
     // β轴反电动势
-    s->Ebeta += _IQmpy(s->Kslf, (s->Zbeta - s->Ebeta)); // 滤波用来计算下一个估算电流
+    s->Ebeta += _IQmpy(s->Kslf, (s->Zbeta - s->Ebeta));           // 滤波用来计算下一个估算电流
     s->EbetaFinal += _IQmpy(s->Kslf, (s->Ebeta - s->EbetaFinal)); // 滤波用来计算估算角
 }
 
