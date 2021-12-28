@@ -53,11 +53,8 @@ static void PhaseCurrentSample(void)
     svm.Ib = (uint16_t)(*(BaseJqrResultAddress + 1)); // 相电流 B
     if (mcState != mcAhead)
     {
-        /* 实现了滑动均值滤波器以计算当前偏移量。 滑动均值滤波的窗口大小= 2 ^ MOVING_AVG_WINDOW_SIZE */
-        Moving_Average_Filter(&cumulative_sum_phaseA, &moving_average_phaseA, &svm.Ia);
-        Moving_Average_Filter(&cumulative_sum_phaseB, &moving_average_phaseB, &svm.Ib);
-        svm.Ia -= moving_average_phaseA; // 减去偏移值
-        svm.Ib -= moving_average_phaseB;
+        svm.Ia -= svm.Ia_C; // 减去偏移值
+        svm.Ib -= svm.Ib_C;
         //把电流转变成%比格式 2048转32768 //最大力矩 = 参考电压/(采样电阻*ADC放大倍数)
         svm.Ia *= ADC_CURRENT_SCALE; // 转Q15
         svm.Ib *= ADC_CURRENT_SCALE;
