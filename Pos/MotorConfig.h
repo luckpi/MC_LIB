@@ -16,28 +16,23 @@
 
 /****************************** Motor Parameters ******************************/
 #define MAX_MOTOR_VOLTAGE           24          // 最大电压 V
-#define MAX_MOTOR_CURRENT           3.125       // 最大电流 A  = ADC参考电压 / 2 / (运放倍数 x 采样电阻大小)
-#define MOTOR_RS                    0.9         // 定子电阻 Ω
-#define MOTOR_LS                    0.00027     // 定子电感 H
+#define MAX_MOTOR_CURRENT           15.625      // 最大电流 A  = ADC参考电压 / 2 / (运放倍数 x 采样电阻大小)
+#define MOTOR_RS                    0.75        // 定子电阻 Ω
+#define MOTOR_LS                    0.00175     // 定子电感 H
 #define NOPOLESPAIRS                4           // 极对数
 #define MAX_VOLTAGE_VECTOR          30000       // 电压矢量最大值 Q15
 
 #define END_SPEED_RPM               500         // 开环结束切闭环速度
-#define NOMINAL_SPEED_RPM           4000        // 电机额定转速(RPM)
+#define NOMINAL_SPEED_RPM           3000        // 电机额定转速(RPM)
 #define MAXIMUM_SPEED_RPM           5300        // 电动机的最大转速(RPM)
-#define FW_NOMINAL_SPEED_RPM        3000
+#define FW_NOMINAL_SPEED_RPM        3000        // 弱磁额定转速
 #define ENDSPEED_ELECTR             (END_SPEED_RPM * NOPOLESPAIRS)
 
 // 转矩模式 开启会跳过速度环。注释关闭
-// #define TORQUE_MODE  
+// #define TORQUE_MODE
 
 // 弱磁功能 注释关闭
-// #define FDWEAK_MODE   
-
-// FG增益
-#define NORM_LSDTBASE_SCALINGFACTOR 8
-#define NORM_RS_SCALINGFACTOR       1
-
+// #define FDWEAK_MODE
 
 /****************************** Open Lood Parameters ******************************/
 #define THETA_OPENLOOP_SCALER        16         // 缩放加速度

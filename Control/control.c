@@ -69,7 +69,7 @@ void CalculateParkAngle(void)
             {
                 // 计算开环角和估算角误差，开启速度环
                 CtrlParm.Theta_error = svm.Theta - smc.Theta;
-                PIParmQref.qdSum = CtrlParm.IqRef >> 3;
+                PIParmQref.qdSum = CtrlParm.IqRef;
                 CtrlParm.VelRef = CtrlParm.OmegaMin;
                 CtrlParm.SpeedLoop_FLAG = 1;
                 PIParmD.qInRef = 0;

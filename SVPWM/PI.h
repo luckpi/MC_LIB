@@ -1,7 +1,7 @@
 #ifndef _PI_H
 #define _PI_H
 #include "common.h"
-#define Q_CURRENT_REF_OPENLOOP               2000    // 启动力矩  I / 最大电流
+#define Q_CURRENT_REF_OPENLOOP               1638    // 启动力矩  I / 最大电流
 #define NKo                                  16     // KP增益
 /* PI 控制器调整值 */
 /********** D轴控制环路系数 **********/
